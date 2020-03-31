@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>novatel_oem7_msgs</name>
+  <version>0.1.4</version>
+  <description>
+      Messages for NovAtel Oem7 family of receivers.
+  </description>
+
+  <maintainer email="support@novatel.com">NovAtel Support</maintainer>
+  <url type="website">http://www.novatel.com</url>
+  <license>MIT</license>
+
+  <url type="repository">TODO</url>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <depend>std_msgs</depend>
+  <exec_depend>message_runtime</exec_depend>
+
+</package>

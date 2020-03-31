@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>novatel_oem7_driver</name>
+  <version>0.1.5</version>
+  <description>NovAtel Oem7 ROS Driver</description>
+
+  <maintainer email="support@novatel.com">NovAtel Support</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">http://www.novatel.com</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_export_depend>nodelet</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <exec_depend>nodelet</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+
+  <export>
+    <nodelet             plugin="${prefix}/novatel_oem7_driver_nodelets.xml" />
+    <novatel_oem7_driver plugin="${prefix}/novatel_oem7_driver_plugins.xml" />
+  </export>
+</package>

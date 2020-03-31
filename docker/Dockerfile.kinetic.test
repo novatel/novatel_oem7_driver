@@ -1,0 +1,24 @@
+from ros:kinetic
+
+# Needed to deal with a recent key revocation, presumably melodic dockerfile will be updated eventually, and this can be remvoed.
+#sudo apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116
+#sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+#sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+#sudo apt-get update && sudo apt-get install -y sudo ros-kinetic-desktop ros-kinetic-catkin build-essential gdb
+
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && apt-get install -y ros-kinetic-tf ros-kinetic-gps-umd vim sudo  
+RUN apt install 
+
+#----------------------------------
+# Create 'test:test' user/password in sudo group.
+RUN useradd -m test && echo "test:test" | chpasswd && adduser test sudo
+USER test
+#----------------------------------
+
+
+# If no command is provided when the container is started, this will be run, giving you a shell inside the container as the 'test' user.
+CMD "/bin/bash"

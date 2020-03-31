@@ -1,0 +1,10 @@
+Header           header
+Oem7Header       nov_header
+uint32           week
+float64          seconds
+float64          pitch_rate
+float64          roll_rate
+float64          yaw_rate
+float64          lateral_acc
+float64          longitudinal_acc
+float64          vertical_acc

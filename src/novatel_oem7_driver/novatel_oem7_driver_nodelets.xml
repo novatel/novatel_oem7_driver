@@ -1,0 +1,25 @@
+
+<library path="lib/libnovatel_oem7_driver">
+    <class name="novatel_oem7_driver/Oem7LogNodelet" type="novatel_oem7_driver::Oem7LogNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            Oem7 Log Nodelet.
+        </description>
+    </class>
+
+    <class name="novatel_oem7_driver/Oem7MessageNodelet" type="novatel_oem7_driver::Oem7MessageNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            Oem7 Message Nodelet.
+        </description>
+    </class>
+
+    <class name="novatel_oem7_driver/Oem7ConfigNodelet" type="novatel_oem7_driver::Oem7ConfigNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            Oem7 Config Nodelet.
+        </description>
+    </class>
+
+
+
+
+</library>
+

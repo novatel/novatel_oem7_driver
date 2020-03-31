@@ -1,0 +1,15 @@
+.bash_history
+.bloom_logs
+.catkin_workspace
+.ros
+.viminfo
+build
+devel
+install
+doc
+src/CMakeLists.txt
+*.pyc
+*.deb
+*.ddeb
+debian
+obj-*

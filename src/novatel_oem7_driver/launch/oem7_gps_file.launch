@@ -1,0 +1,19 @@
+<launch>
+
+    <arg name="oem7_file_name"/>
+
+	<param name="/novatel/oem7/receivers/main/oem7_file_name"     value="$(arg oem7_file_name)"  type="string" />
+	<param name="/novatel/oem7/receivers/main/oem7_if"            value="Oem7ReceiverFile"       type="string" />
+	<param name="/novatel/oem7/receivers/main/oem7_publish_delay" value="0.001"                  type="double" />
+	
+	<!-- Standard configuration, default oem7 components. -->
+	<include file="$(find novatel_oem7_driver)/config/std_driver_config.xml" />
+	
+	<!-- Disable default init commands -->
+	<param name="/novatel/oem7/receivers/main/receiver_init_commands" value="" />
+
+	
+</launch>
+
+
+

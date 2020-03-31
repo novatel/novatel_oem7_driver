@@ -1,0 +1,8 @@
+<launch>
+
+   <include file="$(find novatel_oem7_driver)/test/publish_test.xml" >
+	    <arg name="oem7_test_name"  value="rxstatus"/>
+		<arg name="oem7_topic_list" value="/novatel/oem7/rxstatus"/>
+	</include>
+
+</launch>

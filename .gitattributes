@@ -1,0 +1,1 @@
+novatel_oem7/bin/liboem7decoder.a filter=lfs diff=lfs merge=lfs -text

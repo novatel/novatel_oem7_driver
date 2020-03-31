@@ -1,0 +1,26 @@
+# Oem7 messages; message names and IDs are as they appear in Oem7 manual.
+# Correctness of message ID is critical for correct operation.
+oem7_msgs:
+   # Standard messages - Do not remove.
+   BESTPOS:                      42
+   BESTVEL:                      99
+   BESTUTM:                     726
+   INSPVAS:                     508
+   INSPVAX:                    1465
+   INSSTDEV:                   2051
+   CORRIMUS:                   2264
+   IMURATECORRIMUS:            1362
+   RANGE:                        43
+   RAWIMUSX:                   1462
+   RAWEPHEM:                     41
+   GLOEPHEMERIS:                723
+   BDSEPHEMERIS:               1696
+   GALINAVEPHEMERIS:           1309
+   GALFNAVEPHEMERIS:           1310
+   HEADING2:                   1335
+   TIME:                        101
+   RXSTATUS:                     93
+   INSUPDATESTATUS:            1825
+   INSCONFIG:                  1945
+   PSRDOP2:                    1163
+   # More messages may be added in order to process Oem7 'raw' messages.
