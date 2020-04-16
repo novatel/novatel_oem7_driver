@@ -30,6 +30,11 @@ build_deb_pkg()
    ./create-$ROS_DISTRO-package.sh
 }
 
+on_invalid_args()
+{
+    print_usage
+    exit 1
+}
 
 INSTALL=
 CLEAN=
@@ -37,9 +42,12 @@ DEBUG_FLAG=
 ROSDOC=
 BUILD_DEB_PKG=
 RUN_TESTS=
-
+NO_ARGS=on_invalid_args
 
 while getopts "hcdrpft" OPT; do
+
+    NO_ARGS=
+   
     case $OPT in
         h )
             print_usage
@@ -65,44 +73,52 @@ while getopts "hcdrpft" OPT; do
             BUILD_DEB_PKG=build_deb_pkg
             ;;
             
-	t ) 
-	    RUN_TESTS=run_tests
-	    ;;
+        t ) 
+            RUN_TESTS=run_tests
+            CATKIN_TEST_RESULTS=catkin_test_results
+            ;;
 	    	
         f ) 
             CLEAN=clean
             INSTALL=install
             BUILD_DEB_PKG=build_deb_pkg
-	    RUN_TESTS=run_tests
+            RUN_TESTS=run_tests
+            CATKIN_TEST_RESULTS=catkin_test_results
      	    ;;
      	    
         * ) 		
-	    print_usage
-            exit 1
-	    ;;
+            on_invalid_args
+	        ;;
     esac
 done
 
 
+$NO_ARGS
 
 if [[ $CLEAN ]];
 then
 	# Remove all intermediate and temporary files.
-	catkin_make clean
 	rm -rf  .ros devel build doc install  
 	rm -rf *.deb src/*.ddeb 
 	rm -rf src/novatel_oem7_driver/debian src/novatel_oem7_driver/obj-*
 	rm -rf src/novatel_oem7_msgs/debian src/novatel_oem7_msgs/obj-*
+	rm -f src/CMakeLists.txt
+
+	if [[ -z $INSTALL && -z $RUN_TESTS && -z $BUILD_DEB_PKG ]];
+	then
+		exit 0
+	fi
+
 fi
-
-
 
 set -e
 
-. ./envsetup.sh
-
 # Build local artifacts
+source /opt/ros/$ROS_DISTRO/setup.bash
+
 catkin_make $DEBUG_FLAG $CLEAN $INSTALL $RUN_TESTS
+
+$CATKIN_TEST_RESULTS
 
 if [[ $INSTALL ]];
 then

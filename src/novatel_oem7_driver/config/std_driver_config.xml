@@ -18,6 +18,9 @@
 	    <rosparam file="$(find novatel_oem7_driver)/config/std_msg_handlers.yaml" />
 	
 	    <param name="oem7_msg_decoder"   value="Oem7MessageDecoder"    type="string" />
+
+        <!-- All unknown fragments are published to oem7raw topic -->
+        <param name="oem7_publish_unknown_oem7raw" value="true" type="bool" />
 	</node>
 
 	<!-- Nodelet sending receiver configuration commands. -->

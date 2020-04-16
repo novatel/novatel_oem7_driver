@@ -32,19 +32,19 @@
 
 namespace novatel_oem7_driver
 {
-  const int BESTPOS_OEM7_MSGID           =   42;
-  const int BESTUTM_OEM7_MSGID           =  726;
-  const int BESTVEL_OEM7_MSGID           =   99;
-  const int CORRIMUS_OEM7_MSGID          = 2264;
-  const int HEADING2_OEM7_MSGID          = 1335;
-  const int IMURATECORRIMU_OEM7_MSGID    = 1362;
-  const int INSCONFIG_OEM7_MSGID         = 1945;
-  const int INSPVAS_OEM7_MSGID           =  508;
-  const int INSPVAX_OEM7_MSGID           = 1465;
-  const int INSSTDEV_OEM7_MSGID          = 2051;
-  const int PSRDOP2_OEM7_MSGID           = 1163;
-  const int RXSTATUS_OEM7_MSGID          =   93;
-  const int TIME_OEM7_MSGID              =  101;
+  const int BESTPOS_OEM7_MSGID            =   42;
+  const int BESTUTM_OEM7_MSGID            =  726;
+  const int BESTVEL_OEM7_MSGID            =   99;
+  const int CORRIMUS_OEM7_MSGID           = 2264;
+  const int HEADING2_OEM7_MSGID           = 1335;
+  const int IMURATECORRIMUS_OEM7_MSGID    = 1362;
+  const int INSCONFIG_OEM7_MSGID          = 1945;
+  const int INSPVAS_OEM7_MSGID            =  508;
+  const int INSPVAX_OEM7_MSGID            = 1465;
+  const int INSSTDEV_OEM7_MSGID           = 2051;
+  const int PSRDOP2_OEM7_MSGID            = 1163;
+  const int RXSTATUS_OEM7_MSGID           =   93;
+  const int TIME_OEM7_MSGID               =  101;
 }
 
 #endif

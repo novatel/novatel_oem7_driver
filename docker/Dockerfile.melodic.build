@@ -7,32 +7,20 @@ from ros:melodic
 #sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 #sudo apt-get update && sudo apt-get install -y sudo ros-kinetic-desktop ros-kinetic-catkin build-essential gdb
 
-#sudo apt-get install dh-make
-#rosdep init
-#rosdep update
-#sudo chown -R $( whoami) ~/.ros
-
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y ros-melodic-rosdoc-lite ros-melodic-tf ros-melodic-gps-umd dh-make python-bloom vim 
+RUN apt-get update && apt-get install -y ros-melodic-rosdoc-lite ros-melodic-tf ros-melodic-gps-umd dh-make python-bloom vim sudo 
 
-# Replace dash with bash
-#RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
 
 #----------------------------------
-# TODO - Not sure about this, since we want to run as your host user id.  Might need to remove this build user.
-# User management
 RUN groupadd -g 1000 build  
 RUN useradd -u 1000 -g 1000 -G sudo,build,dialout -ms /bin/bash build
+RUN echo "build:build" | chpasswd
 USER build
 #----------------------------------
 
-
-
-# bindmount source directory
-# Make /home/build the working directory.  This will be mapped to a host directory on your machine.
-#WORKDIR /home/build
 
 # If no command is provided when the container is started, this will be run, giving you a shell inside the container as the 'build' user.
 CMD "/bin/bash"

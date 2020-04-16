@@ -16,6 +16,7 @@ float32                         sol_age
 uint8                           num_svs
 uint8                           num_sol_svs
 uint8                           num_sol_l1_svs
+uint8                           num_sol_multi_svs
 uint8                           reserved
 BestExtendedSolutionStatus      ext_sol_stat
 uint8                           galileo_beidou_sig_mask

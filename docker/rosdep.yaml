@@ -1,0 +1,5 @@
+novatel_oem7_msgs: 
+    ubuntu: 
+        xenial: [ros-kinetic-novatel-oem7-msgs]
+        bionic: [ros-melodic-novatel-oem7-msgs]
+

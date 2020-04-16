@@ -65,6 +65,7 @@ namespace novatel_oem7_driver
     double publish_delay_sec_; ///< Delay after publishing each message; used to throttle output with static data sources.
 
     Oem7RosPublisher oem7rawmsg_pub_; ///< Publishes raw Oem7 messages.
+    bool publish_unknown_oem7raw_; ///< Publish all unknown messages to 'Oem7Raw'
 
     ros::CallbackQueue timer_queue_; ///< Dedicated queue for command requests.
     boost::shared_ptr<ros::AsyncSpinner> timer_spinner_; ///< 1 thread servicing the command queue.
@@ -91,6 +92,8 @@ namespace novatel_oem7_driver
 
     typedef std::map<int, long> log_count_map_t;
     log_count_map_t log_counts_; ///< Indidividual log counts.
+    
+    long unknown_msg_num_;   ///< number of messages received that could not be identified.
     long discarded_msg_num_; ///< Number of messages received and discarded by the driver.
 
 
@@ -130,6 +133,8 @@ namespace novatel_oem7_driver
       initializeOem7MessageUtil(getNodeHandle());
 
       getNodeHandle().setCallbackQueue(&timer_queue_);
+
+      getPrivateNodeHandle().getParam("oem7_publish_unknown_oem7raw", publish_unknown_oem7raw_);
 
       getPrivateNodeHandle().getParam("oem7_publish_delay", publish_delay_sec_);
       if(publish_delay_sec_ > 0)
@@ -241,7 +246,8 @@ namespace novatel_oem7_driver
     void outputLogStatistics()
     {
       NODELET_INFO("Log Statistics:");
-      NODELET_INFO_STREAM("Logs: " << total_log_count_ << "; discarded: " << discarded_msg_num_);
+      NODELET_INFO_STREAM("Logs: " << total_log_count_ << "; unknown: "   << unknown_msg_num_
+                                                       << "; discarded: " << discarded_msg_num_);
 
       for(log_count_map_t::iterator itr = log_counts_.begin();
                                     itr != log_counts_.end();
@@ -274,7 +280,21 @@ namespace novatel_oem7_driver
       }
     }
 
-    /**
+    void publishOem7RawMsg(Oem7RawMessageIf::ConstPtr raw_msg)
+    {
+        novatel_oem7_msgs::Oem7RawMsg::Ptr oem7_raw_msg(new novatel_oem7_msgs::Oem7RawMsg);
+        oem7_raw_msg->message_data.insert(
+                                        oem7_raw_msg->message_data.end(),
+                                        raw_msg->getMessageData(0),
+                                        raw_msg->getMessageData(raw_msg->getMessageDataLength()));
+
+        assert(oem7_raw_msg->message_data.size() == raw_msg->getMessageDataLength());
+
+        oem7rawmsg_pub_.publish(oem7_raw_msg);
+    } 
+
+
+   /**
      * Called by ROS decoder with new raw messages
      */
     void onNewMessage(Oem7RawMessageIf::ConstPtr raw_msg)
@@ -287,12 +307,20 @@ namespace novatel_oem7_driver
       // Discard all unknown messages; this is normally when dealing with responses to ASCII commands.
       if(raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_UNKNOWN)
       {
-        ++discarded_msg_num_;
-        NODELET_DEBUG_STREAM("Discarded:  [ID: " << raw_msg->getMessageType()       <<
-                                          " T: " << raw_msg->getMessageType()       <<
-                                          " F: " << raw_msg->getMessageFormat()     <<
-                                          " L: " << raw_msg->getMessageDataLength() <<
+        ++unknown_msg_num_;
+        NODELET_DEBUG_STREAM("Unknown:    [ID: "   << raw_msg->getMessageId()          <<
+                                          "Type: " << raw_msg->getMessageType()        <<
+                                          "Fmt: "  << raw_msg->getMessageFormat()      <<
+                                          "Len: "  << raw_msg->getMessageDataLength()  <<
                                           "]");
+        if(publish_unknown_oem7raw_)
+        {
+            publishOem7RawMsg(raw_msg);
+        }
+        else
+        {
+            ++discarded_msg_num_;
+        }
       }
       else
       {
@@ -325,18 +353,10 @@ namespace novatel_oem7_driver
 
             msg_handler_->handleMessage(raw_msg);
 
-
+            // Publish Oem7RawMsg if specified
             if(raw_msg_pub_.find(raw_msg->getMessageId()) != raw_msg_pub_.end())
             {
-              novatel_oem7_msgs::Oem7RawMsg::Ptr oem7_raw_msg(new novatel_oem7_msgs::Oem7RawMsg);
-              oem7_raw_msg->message_data.insert(
-                                            oem7_raw_msg->message_data.end(),
-                                             raw_msg->getMessageData(0),
-                                             raw_msg->getMessageData(raw_msg->getMessageDataLength()));
-
-              assert(oem7_raw_msg->message_data.size() == raw_msg->getMessageDataLength());
-
-              oem7rawmsg_pub_.publish(oem7_raw_msg);
+                publishOem7RawMsg(raw_msg);
             }
 
             if(publish_delay_sec_ > 0)
@@ -368,8 +388,10 @@ namespace novatel_oem7_driver
       oem7_msg_decoder_loader("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageDecoderIf"),
       rsp_sem_(0),
       total_log_count_(0),
+      unknown_msg_num_(0),
       discarded_msg_num_(0),
-      publish_delay_sec_(0)
+      publish_delay_sec_(0),
+      publish_unknown_oem7raw_(false)
     {
     }
 

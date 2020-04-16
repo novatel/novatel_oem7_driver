@@ -154,6 +154,7 @@ MakeROSMessage<novatel_oem7_msgs::BESTPOS>(
   bestpos->num_svs                = bp->num_svs;
   bestpos->num_sol_svs            = bp->num_sol_svs;
   bestpos->num_sol_l1_svs         = bp->num_sol_l1_svs;
+  bestpos->num_sol_multi_svs      = bp->num_sol_multi_svs;
   bestpos->reserved               = bp->reserved;
   bestpos->ext_sol_stat.status    = bp->ext_sol_stat;
   bestpos->galileo_beidou_sig_mask= bp->galileo_beidou_sig_mask;
@@ -384,7 +385,7 @@ MakeROSMessage<novatel_oem7_msgs::INSSTDEV>(
 {
   assert(msg->getMessageId() == INSSTDEV_OEM7_MSGID);
 
-  const INSSTDEVMem* raw = reinterpret_cast<const INSSTDEVMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
+  const INSSTDEVMem* raw = reinterpret_cast<const INSSTDEVMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
   insstdev.reset(new novatel_oem7_msgs::INSSTDEV);
 
   insstdev->latitude_stdev         = raw->latitude_stdev;
@@ -425,7 +426,7 @@ MakeROSMessage<novatel_oem7_msgs::CORRIMU>(
     corrimu->longitudinal_acc = raw->longitudinal_acc;
     corrimu->vertical_acc     = raw->vertical_acc;
   }
-  else if(msg->getMessageId() == IMURATECORRIMU_OEM7_MSGID)
+  else if(msg->getMessageId() == IMURATECORRIMUS_OEM7_MSGID)
   {
     const IMURATECORRIMUSMem* raw =
         reinterpret_cast<const IMURATECORRIMUSMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));

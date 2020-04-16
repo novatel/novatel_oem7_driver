@@ -246,7 +246,7 @@ namespace novatel_oem7_driver
       static const std::vector<int> MSG_IDS(
                                       {
                                         CORRIMUS_OEM7_MSGID,
-                                        IMURATECORRIMU_OEM7_MSGID,
+                                        IMURATECORRIMUS_OEM7_MSGID,
                                         INSPVAS_OEM7_MSGID,
                                         INSPVAX_OEM7_MSGID,
                                         INSSTDEV_OEM7_MSGID,
@@ -269,7 +269,7 @@ namespace novatel_oem7_driver
         publishInsStDevMsg(msg);
       }
       else if(msg->getMessageId() == CORRIMUS_OEM7_MSGID ||
-              msg->getMessageId() == IMURATECORRIMU_OEM7_MSGID)
+              msg->getMessageId() == IMURATECORRIMUS_OEM7_MSGID)
       {
         publishCorrImuMsg(msg);
 

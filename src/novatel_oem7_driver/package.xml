@@ -11,10 +11,17 @@
   <url type="website">http://www.novatel.com</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  
   <build_depend>nodelet</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>gps_common</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>novatel_oem7_msgs</build_depend>
+  
   <build_export_depend>nodelet</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
+  
+  <exec_depend>novatel_oem7_msgs</exec_depend>
   <exec_depend>nodelet</exec_depend>
   <exec_depend>roscpp</exec_depend>
 

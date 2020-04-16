@@ -6,6 +6,7 @@
 build
 devel
 install
+docker-test
 doc
 src/CMakeLists.txt
 *.pyc
