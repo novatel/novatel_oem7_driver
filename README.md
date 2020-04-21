@@ -69,7 +69,10 @@ roslaunch novatel_oem7_driver oem7_tty.launch oem7_tty_name:=/dev/ttyUSB0
   
 To (optionally) set a specific baud rate, e.g. 115200, set **oem7_tty_baud**:=115200  
 Ensure that the baud rate of receiver port matches; the driver does ***not*** automatically configure receiver baud rate.  
-Setting the baud rate is required for physical RS232 ports.
+Setting the baud rate is required for physical RS232 ports. 
+Note that baud rate does not need to be used for USB ports.
+
+For more USB related information, please refer to the [USB Communications documentation]](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).
 
 In order to use USB ports, the user you're operating as must be allowed to read/write to the /dev/ttyUSB* ports. On Ubuntu
 Linux, this requires the user be a member of the 'dialout' group. 
@@ -89,7 +92,7 @@ SUBSYSTEM=="usb", SYSFS{idProduct}=="0100", SYSFS{idVendor}=="09d7",
 PROGRAM="/sbin/modprobe usbserial vendor=0x09d7 product=0x0100"
   
 BUS=="usb", SYSFS{idProduct}=="0100", SYSFS{idVendor}=="09d7",
-SYSFS{product}=="NovAtel GPS Receiver", SYSFS{manufacturer}=="NovAtel Inc.", SYMLINK+="gps%n" 
+SYSFS{product}=="NovAtel GPS Receiver", SYSFS{manufacturer}=="Hexagon NovAtel Inc.", SYMLINK+="gps%n" 
 ```
 
 #### Optional: Associate NovAtel USB with Linux usbserial via command to live kernel
@@ -103,11 +106,8 @@ echo '09d7 0100' > /sys/bus/usb-serial/drivers/generic/new_id
 ```
 
 
-your Linux machine must be configured to attach 
-
-install OEM7 USB [drivers](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).   
-Setting the baud rate is not required for USB serial ports.
-
+#### Optional: Install the USB driver
+There is an older dedicated package you may install to add a USB driver, [located here](https://www.novatel.com/support/info/documents/809).
 
 
 ###  ROS Parameter namespace layout
