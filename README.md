@@ -72,7 +72,7 @@ Ensure that the baud rate of receiver port matches; the driver does ***not*** au
 Setting the baud rate is required for physical RS232 ports. 
 Note that baud rate does not need to be used for USB ports.
 
-For more USB related information, please refer to the [USB Communications documentation]](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).
+For more USB related information, please refer to the [USB Communications documentation](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).
 
 In order to use USB ports, the user you're operating as must be allowed to read/write to the /dev/ttyUSB* ports. On Ubuntu
 Linux, this requires the user be a member of the 'dialout' group. 
