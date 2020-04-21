@@ -1,13 +1,5 @@
-# NovAtel OEM7 Driver
+﻿# NovAtel OEM7 Driver
 [**ROS**](https://www.ros.org) Driver for [**NovAtel**](https://www.novatel.com) OEM7 GNSS Receivers.  
-
-<HR>
-<div style="border:1px solid black;padding:2px;margin:2px;background:black;color:white">
-<H1>BETA Driver</H1>
-<strong>This driver is considered pre-release at this time. This is provided as-is. Please refer to the bundled license.</strong>
-</div>
-<HR>
-
 
 ## Getting Started
 
@@ -79,7 +71,41 @@ To (optionally) set a specific baud rate, e.g. 115200, set **oem7_tty_baud**:=11
 Ensure that the baud rate of receiver port matches; the driver does ***not*** automatically configure receiver baud rate.  
 Setting the baud rate is required for physical RS232 ports.
 
-In order to use USB ports, install OEM7 USB [drivers](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).   
+In order to use USB ports, the user you're operating as must be allowed to read/write to the /dev/ttyUSB* ports. On Ubuntu
+Linux, this requires the user be a member of the 'dialout' group. 
+
+If you are using an older kernel, it might not know to attach your NovAtel sensor to the built-in usbserial kernel module.
+You can manually instruct your kernel to do this by either of two methods:
+
+#### Optional: Associate NovAtel USB with Linux usbserial via udev
+Note, this is only needed if you are using an older kernel that does not attach your USB-attached NovAtel sensor to virtual
+serial ports at /dev/ttyUSB0, /dev/ttyUSB1, /dev/ttyUSB2 (etc). Check `dmesg` output when connecting via USB to check if
+you are using a kernel that automatically makes this connection.
+
+1. Create a new udev rules file, such as: `/etc/udev/rules.d/z90_novatel.rules`
+2. Paste in the following:
+```
+SUBSYSTEM=="usb", SYSFS{idProduct}=="0100", SYSFS{idVendor}=="09d7",
+PROGRAM="/sbin/modprobe usbserial vendor=0x09d7 product=0x0100"
+  
+BUS=="usb", SYSFS{idProduct}=="0100", SYSFS{idVendor}=="09d7",
+SYSFS{product}=="NovAtel GPS Receiver", SYSFS{manufacturer}=="NovAtel Inc.", SYMLINK+="gps%n" 
+```
+
+#### Optional: Associate NovAtel USB with Linux usbserial via command to live kernel
+Note, this is only needed if you are using an older kernel that does not attach your USB-attached NovAtel sensor to virtual
+serial ports at /dev/ttyUSB0, /dev/ttyUSB1, /dev/ttyUSB2 (etc). Check `dmesg` output when connecting via USB to check if
+you are using a kernel that automatically makes this connection.
+
+Execute this command in your shell:
+```shell
+echo '09d7 0100' > /sys/bus/usb-serial/drivers/generic/new_id
+```
+
+
+your Linux machine must be configured to attach 
+
+install OEM7 USB [drivers](https://docs.novatel.com/OEM7/Content/Operation/USB_Communications.htm).   
 Setting the baud rate is not required for USB serial ports.
 
 
