@@ -129,14 +129,15 @@ catkin_install_python(PROGRAMS test/oem7_bist.py test/oem7_message_test.py
 # rostest novatel_oem7_driver your_launch_file.lauch" syntax.
 
 
-find_package(rostest REQUIRED)
-add_rostest(test/align.test)
-add_rostest(test/bestpos.test)
-add_rostest(test/ins1.test)
-add_rostest(test/ins2.test)
-add_rostest(test/rxstatus.test)
-add_rostest(test/time.test)
-
+if (CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+	add_rostest(test/align.test)
+	add_rostest(test/bestpos.test)
+	add_rostest(test/ins1.test)
+	add_rostest(test/ins2.test)
+	add_rostest(test/rxstatus.test)
+	add_rostest(test/time.test)
+endif()
 
 
 #message("includes:")
