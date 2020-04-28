@@ -4,10 +4,6 @@ project(novatel_oem7_driver)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-# Without this line, .deb package build fails due to lpthread linking errors.
-set(novatel_oem7_msgs_DIR ${CMAKE_CURRENT_LIST_DIR}/../../install/share/novatel_oem7_msgs/cmake)
-
-
 set(BUILD_DEPS
   nodelet
   roscpp
