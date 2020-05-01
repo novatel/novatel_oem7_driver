@@ -65,8 +65,13 @@ add_library(${PROJECT_NAME}
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# Link to i386 or amd64 version of the Decoder. ARM is not supported.
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/amd64") 
+else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/i386") 
+endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin") 
 message(STATUS "Linking to Oem7 Decoder at: '${OEM7_DECODER_LIB}'")
 
 target_link_libraries(${PROJECT_NAME}
