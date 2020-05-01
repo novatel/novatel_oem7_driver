@@ -23,7 +23,7 @@ find_package(Boost  			REQUIRED COMPONENTS system thread)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJET_NAME}
+  LIBRARIES ${PROJECT_NAME}
 )
 
 # Make package available as a macro to C++
@@ -37,8 +37,8 @@ include_directories(include
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${novatel_oem7_msgs_INCLUDE_DIRS}
-   "../../novatel_oem7/include"
-	src
+    "novatel_oem7/include"
+    src
 )
 
 
@@ -66,7 +66,7 @@ add_library(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
-FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "../../novatel_oem7/bin") 
+FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin") 
 message(STATUS "Linking to Oem7 Decoder at: '${OEM7_DECODER_LIB}'")
 
 target_link_libraries(${PROJECT_NAME}
