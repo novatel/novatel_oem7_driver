@@ -3,7 +3,7 @@
 UBUNTU_TGT_DISTRO=$1
 ROS_TGT_DISTRO=$2
 
-rosdep init # this usually fails with harmless error
+echo build | sudo -S rosdep init # this usually fails with harmless error
 rosdep update
 
 rm *.deb
