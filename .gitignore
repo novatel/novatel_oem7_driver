@@ -6,7 +6,8 @@
 build
 devel
 install
-docker-test
+docker-kinetic-test
+docker-melodic-test
 doc
 src/CMakeLists.txt
 *.pyc
