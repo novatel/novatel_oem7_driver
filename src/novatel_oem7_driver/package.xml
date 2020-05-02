@@ -12,18 +12,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>nodelet</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>gps_common</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>novatel_oem7_msgs</build_depend>
+  <depend>boost</depend>
+  <depend>nodelet</depend>
+  <depend>roscpp</depend>
+  <depend>gps_common</depend>
+  <depend>sensor_msgs</depend>
+  <depend>novatel_oem7_msgs</depend>
+  <depend>tf</depend>
   
-  <build_export_depend>nodelet</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  
-  <exec_depend>novatel_oem7_msgs</exec_depend>
-  <exec_depend>nodelet</exec_depend>
-  <exec_depend>roscpp</exec_depend>
+  <test_depend>rostest</test_depend>
 
   <export>
     <nodelet             plugin="${prefix}/novatel_oem7_driver_nodelets.xml" />
