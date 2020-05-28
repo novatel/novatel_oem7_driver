@@ -1,8 +1,25 @@
 # NovAtel OEM7 Driver
-[**ROS**](https://www.ros.org) Driver for [**NovAtel**](https://www.novatel.com) OEM7 GNSS Receivers.  
+[**ROS**](https://www.ros.org) Driver for [**NovAtel**](https://www.novatel.com) OEM7 GNSS/SPAN Receivers.  
 
 ## Getting Started
+This documents how to custom-build the novatel_oem7_driver for ROS from the provided source code. Typical users will prefer to 
+install the pre-made binary release that has been published in the ROS distribution.
 
+Refer to our documentation under the ROS community wiki for:
+ * Hardware Setup
+ * Binary Driver Installation
+ * Driver Configuration
+ * Driver Runtime Operation
+ * Post-Processing data
+ * Information on Relevant NovAtel Services and Products
+ * Advanced Topics
+
+novatel_oem7_driver documentation on ROS community wiki is located here:
+http://wiki.ros.org/novatel_oem7_driver
+
+<HR>
+
+## Building novatel_oem7_driver from source code
 ### Prerequisites
 * ROS Kinetic or Melodic, including gps-common and tf ROS packages.
 * Obtain OEM7 receiver.  
@@ -58,19 +75,9 @@ You can then install these via `dpkg`, provided you have installed the required 
 sudo dpkg -i ros-{$ROS_DISTRO}-novatel-oem7*.deb
 ```
 
-## Driver Documentation
-Refer to our documentation under the ROS community wiki for:
- * Hardware Setup
- * Binary Driver Installation
- * Driver Configuration
- * Driver Runtime Operation
- * Post-Processing data
- * Information on Relevant NovAtel Services and Products
- * Advanced Topics
-
-novatel_oem7_driver documentation on ROS community wiki is located here:
+## Next Steps
+Refer to the novatel_oem7_driver documentation in the ROS wiki for more information:
 http://wiki.ros.org/novatel_oem7_driver
-
 
 
 ## Authors
