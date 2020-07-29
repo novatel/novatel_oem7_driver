@@ -4,7 +4,7 @@
   <version>1.1.0</version>
   <description>NovAtel Oem7 ROS Driver</description>
 
-  <maintainer email="support@novatel.com">NovAtel Support</maintainer>
+  <maintainer email="support.novatel@hexagon.com">NovAtel Support</maintainer>
 
   <license>MIT</license>
 
