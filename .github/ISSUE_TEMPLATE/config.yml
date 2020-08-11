@@ -2,7 +2,10 @@ blank_issues_enabled: false
 contact_links:
   - name: Customer Support Questions
     url: https://docs.novatel.com/OEM7/Content/Front_Matter/Customer_Support.htm
-    about: Integration questions to NovAtel Applications Engineering go to support.novatel@hexagon.com, or open this link
+    about: Integration questions to NovAtel Applications Engineering go to support.novatel@hexagon.com, or click open to the right
+  - name: NovAtel OEM7 Documentation
+    url: https://docs.novatel.com/OEM7/Content/Home.htm
+    about: Visit the OEM7 Documentation Portal
   - name: Wiki Documentation
     url: http://wiki.ros.org/novatel_oem7_driver
     about: Detailed documentation about this driver is available here
