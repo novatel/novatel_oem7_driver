@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a bug in novatel_oem7_driver
 title: ''
 labels: bug
 assignees: novatel-applications-engineering
