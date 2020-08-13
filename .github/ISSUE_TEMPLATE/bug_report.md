@@ -8,9 +8,9 @@ assignees: novatel-applications-engineering
 ---
 
 **NOTE** 
-Bug reports are not to contain personalized information. Use these forms to submit generalized reports about the open source novatel_oem7_driver. All other inquires should be directed to private communications channels with NovAtel Applications Engineering.
+Bug reports are not to contain personalized information. Use these forms to submit generalized reports about the open source novatel_oem7_driver. All other inquires should be directed to private communications channels with NovAtel Customer Support.
 
-You may reach NovAtel Applications Engineering by contacting support.novatel@hexagon.com. Or, you may follow the general Support process explained here: https://docs.novatel.com/OEM7/Content/Front_Matter/Customer_Support.htm
+You may reach NovAtel Customer Support by contacting support.novatel@hexagon.com. Or, you may follow the general Support process explained here: https://docs.novatel.com/OEM7/Content/Front_Matter/Customer_Support.htm
 
 --------------
 
