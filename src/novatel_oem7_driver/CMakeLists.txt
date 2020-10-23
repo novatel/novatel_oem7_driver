@@ -54,6 +54,7 @@ add_library(${PROJECT_NAME}
    src/oem7_message_decoder.cpp
    src/oem7_message_util.cpp
    src/oem7_ros_messages.cpp
+   src/oem7_debug_file.cpp
    src/message_handler.cpp
    src/bestpos_handler.cpp
    src/ins_handler.cpp

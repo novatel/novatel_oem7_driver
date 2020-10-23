@@ -31,6 +31,7 @@
 #include <boost/scoped_ptr.hpp>
 #include "oem7_message_decoder_lib.hpp"
 
+#include "oem7_debug_file.hpp"
 
 
 
@@ -43,6 +44,10 @@ namespace novatel_oem7_driver
   class Oem7MessageDecoder: public Oem7MessageDecoderIf, public novatel_oem7::Oem7MessageDecoderLibUserIf
   {
     ros::NodeHandle nh_; // ROS Node Handle.
+
+    Oem7DebugFile decoder_dbg_file_;
+    Oem7DebugFile receiver_dbg_file_;
+ 
 
     Oem7MessageDecoderUserIf* user_; //< Parser user callback interface
 
@@ -72,12 +77,27 @@ namespace novatel_oem7_driver
 
       decoder_ = novatel_oem7::GetOem7MessageDecoder(this);
 
+      std::string decoder_dbg_file_name;
+      std::string receiver_dbg_file_name;
+      nh_.getParam("oem7_receiver_log_file", receiver_dbg_file_name);
+      nh_.getParam("oem7_decoder_log_file",  decoder_dbg_file_name);
+      
+      decoder_dbg_file_.initialize( decoder_dbg_file_name);
+      receiver_dbg_file_.initialize(receiver_dbg_file_name);
+ 
+
       return true;
     }
 
     virtual bool read( boost::asio::mutable_buffer buf, size_t& s)
     {
-      return recvr_->read(buf, s);
+      bool ok = recvr_->read(buf, s);
+      if(ok)
+      {
+        receiver_dbg_file_.write(boost::asio::buffer_cast<unsigned char*>(buf), s);
+      }
+
+      return ok;
     }
 
 
@@ -99,6 +119,8 @@ namespace novatel_oem7_driver
           {
             if(msg)
             {
+              decoder_dbg_file_.write(msg->getMessageData(0), msg->getMessageDataLength());
+
               user_->onNewMessage(msg);
             }
             // else: No messages available now; keep retrying until we get one or decoder gives up.
