@@ -56,10 +56,54 @@ namespace novatel_oem7_driver
    */
   int16_t ToROSGPSStatus(const novatel_oem7_msgs::BESTPOS::Ptr bestpos)
   {
-    if(bestpos->pos_type.type == novatel_oem7_msgs::PositionOrVelocityType::NONE)
-      return gps_common::GPSStatus::STATUS_NO_FIX;
+    // ROS does not support all necessary solution types to map Oem7 solution types correctly.
+    // For consistency, OEM7 WAAS is reported as SBAS.
 
-    return gps_common::GPSStatus::STATUS_FIX;
+
+    switch(bestpos->pos_type.type)
+    {
+      case novatel_oem7_msgs::PositionOrVelocityType::PSRDIFF:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PSRDIFF:
+      case novatel_oem7_msgs::PositionOrVelocityType::L1_FLOAT:
+      case novatel_oem7_msgs::PositionOrVelocityType::NARROW_FLOAT:
+      case novatel_oem7_msgs::PositionOrVelocityType::L1_INT:
+      case novatel_oem7_msgs::PositionOrVelocityType::WIDE_INT:
+      case novatel_oem7_msgs::PositionOrVelocityType::NARROW_INT:
+      case novatel_oem7_msgs::PositionOrVelocityType::RTK_DIRECT_INS:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_RTKFLOAT:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_RTKFIXED:
+        return gps_common::GPSStatus::STATUS_DGPS_FIX;
+
+      case novatel_oem7_msgs::PositionOrVelocityType::FIXEDPOS:
+      case novatel_oem7_msgs::PositionOrVelocityType::FIXEDHEIGHT:
+      case novatel_oem7_msgs::PositionOrVelocityType::DOPPLER_VELOCITY:
+      case novatel_oem7_msgs::PositionOrVelocityType::SINGLE:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PSRSP:
+      case novatel_oem7_msgs::PositionOrVelocityType::PROPAGATED:
+      case novatel_oem7_msgs::PositionOrVelocityType::OPERATIONAL:
+      case novatel_oem7_msgs::PositionOrVelocityType::WARNING:
+      case novatel_oem7_msgs::PositionOrVelocityType::OUT_OF_BOUNDS:
+        return gps_common::GPSStatus::STATUS_FIX;
+
+      case novatel_oem7_msgs::PositionOrVelocityType::WAAS:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_SBAS:
+      case novatel_oem7_msgs::PositionOrVelocityType::PPP_CONVERGING:
+      case novatel_oem7_msgs::PositionOrVelocityType::PPP:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PPP_CONVERGING:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PPP:
+      case novatel_oem7_msgs::PositionOrVelocityType::PPP_BASIC_CONVERGING:
+      case novatel_oem7_msgs::PositionOrVelocityType::PPP_BASIC:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PPP_BASIC_CONVERGING:
+      case novatel_oem7_msgs::PositionOrVelocityType::INS_PPP_BASIC:
+        return gps_common::GPSStatus::STATUS_SBAS_FIX;
+
+      case novatel_oem7_msgs::PositionOrVelocityType::NONE:
+        return gps_common::GPSStatus::STATUS_NO_FIX;
+
+      default:
+        ROS_ERROR_STREAM("Unknown OEM7 PositionOrVelocityType: " << bestpos->pos_type.type);
+        return gps_common::GPSStatus::STATUS_NO_FIX;
+    };
   }
 
   /***
