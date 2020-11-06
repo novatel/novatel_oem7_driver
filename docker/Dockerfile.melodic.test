@@ -2,7 +2,7 @@ from ros:melodic
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y ros-melodic-tf ros-melodic-gps-common vim sudo  
+RUN apt-get update && apt-get install -y vim sudo  
 
 #----------------------------------
 # Create 'test:test' user/password in sudo group.

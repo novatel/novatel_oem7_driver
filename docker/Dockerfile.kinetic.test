@@ -2,7 +2,7 @@ from ros:kinetic
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y ros-kinetic-tf ros-kinetic-gps-common vim sudo  
+RUN apt-get update && apt-get install -y vim sudo  
 RUN apt install 
 
 #----------------------------------
