@@ -299,8 +299,6 @@ namespace novatel_oem7_driver
      */
     void onNewMessage(Oem7RawMessageIf::ConstPtr raw_msg)
     {
-
-
       NODELET_DEBUG_STREAM("onNewMsg: fmt= " << raw_msg->getMessageFormat()
                               <<   " type= " << raw_msg->getMessageType());
 
@@ -337,13 +335,14 @@ namespace novatel_oem7_driver
         if(raw_msg->getMessageType() == Oem7RawMessageIf::OEM7MSGTYPE_RSP) // Response
         {
           std::string rsp(raw_msg->getMessageData(0), raw_msg->getMessageData(raw_msg->getMessageDataLength()));
+          if(rsp.find_first_not_of(" /t/r/n") != std::string::npos) // ignore all whitespace
+          {
+            nodelet_mtx_.lock();
+            rsp_ = rsp;
+            nodelet_mtx_.unlock();
 
-
-          nodelet_mtx_.lock();
-          rsp_ = rsp;
-          nodelet_mtx_.unlock();
-
-          rsp_sem_.post();
+            rsp_sem_.post();
+          }
         }
         else // Log
         {
