@@ -4,12 +4,16 @@
     <arg name="oem7_if"         default="Oem7ReceiverPort" />
     <arg name="oem7_tty_name"   default="/dev/ttyUSB0" />
     <arg name="oem7_tty_baud"   default="9600" />
+    
+    <arg name="oem7_receiver_log" default="" /> <!--  E.g. "oem7.gps" -->
 
 
     <param name="/novatel/oem7/receivers/main/oem7_if"        value="$(arg oem7_if)"         type="string" />
     <param name="/novatel/oem7/receivers/main/oem7_tty_name"  value="$(arg oem7_tty_name)"   type="string" />
     <param name="/novatel/oem7/receivers/main/oem7_tty_baud"  value="$(arg oem7_tty_baud)"   type="int" />
 
+    <param name="/novatel/oem7/receivers/main/oem7_receiver_log_file" 
+                                                  value="$(arg oem7_receiver_log)"   type="string" />
     
     <!-- Standard configuration, default oem7 components. -->
     <arg name="oem7_bist" default="false" /> 
