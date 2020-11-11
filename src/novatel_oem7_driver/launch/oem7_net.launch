@@ -5,11 +5,15 @@
 	<arg name="oem7_ip_addr"                             /> <!--  E.g. "10.128.224.1"  -->
 	<arg name="oem7_port"      default="3001"            />
 
+    <arg name="oem7_receiver_log" default=""/> <!--  E.g. "oem7.gps" -->
 
 	<param name="/novatel/oem7/receivers/main/oem7_if"        value="$(arg oem7_if)"      type="string" />
 	<param name="/novatel/oem7/receivers/main/oem7_ip_addr"   value="$(arg oem7_ip_addr)" type="string" />
 	<param name="/novatel/oem7/receivers/main/oem7_port"      value="$(arg oem7_port)"    type="int" />
 	
+	<param name="/novatel/oem7/receivers/main/oem7_receiver_log_file" 
+	                                              value="$(arg oem7_receiver_log)"   type="string" />
+    	
 	 
 	<!-- Standard configuration, default oem7 components. -->
 	<arg name="oem7_bist" default="false" /> 
