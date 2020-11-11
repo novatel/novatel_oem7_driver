@@ -424,25 +424,19 @@ namespace novatel_oem7_driver
         }
 
         //-------------------------------------------------------------------------------------------------------
-        // Gather statistics on position sources for debugging purposes.
+        // Log INS vs BESTPOS preference
         // This logic is not necessary for correct operation.
-        static long num_INS            = 0; // INSPVA messages received
-        static long num_prefer_INS     = 0; // times INS source was preferred
-        static long num_prefer_BESTPOS = 0; // BESTPOS source was preferred
-
-        ++num_INS;
-        if(prefer_INS)
+        static bool prev_prefer_INS = false;
+        if(prev_prefer_INS != prefer_INS)
         {
-          ++num_prefer_INS;
+          ROS_INFO_STREAM("GPSFix position source= INSPVA: " << prev_prefer_INS
+                                                               << " --> " << prefer_INS
+                                                               << " at GPSTime["
+                                                               << inspva_->nov_header.gps_week_number         << " "
+                                                               << inspva_->nov_header.gps_week_milliseconds   << "]"
+                                                               );
         }
-        else
-        {
-          ++num_prefer_BESTPOS;
-        }
-
-        ROS_INFO_STREAM_THROTTLE(10, "INSPVA: Total= "  << num_INS        <<
-                                     " pref INS= "      << num_prefer_INS <<
-                                     " pref BESTPOS= "  << num_prefer_BESTPOS);
+        prev_prefer_INS = prefer_INS;
         //--------------------------------------------------------------------------------------------------------
 
         if(!bestpos_ || prefer_INS)
