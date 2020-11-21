@@ -17,6 +17,7 @@
   <depend>roscpp</depend>
   <depend>gps_common</depend>
   <depend>sensor_msgs</depend>
+  <depend>nmea_msgs</depend>
   <depend>novatel_oem7_msgs</depend>
   <depend>tf</depend>
   

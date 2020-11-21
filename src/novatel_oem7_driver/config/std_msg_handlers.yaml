@@ -4,4 +4,5 @@ oem7_msg_handlers:
 - "ALIGNHandler"
 - "RXSTATUSHandler"
 - "TimeHandler"
+- "NMEAHandler"
             

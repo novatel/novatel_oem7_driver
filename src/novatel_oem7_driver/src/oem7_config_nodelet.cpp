@@ -65,9 +65,9 @@ namespace novatel_oem7_driver
         NODELET_INFO_STREAM(getName() << ": Oem7ConfigNodelet v." << novatel_oem7_driver_VERSION << "; "
                                       << __DATE__ << " " << __TIME__);
 
-        serviceCbTimer_ = getNodeHandle().createTimer(ros::Duration(0.0), &Oem7ConfigNodelet::serviceLoopCb, this, true);
-
         client_ = getNodeHandle().serviceClient<novatel_oem7_msgs::Oem7AbasciiCmd>("Oem7Cmd");
+
+        serviceCbTimer_ = getNodeHandle().createTimer(ros::Duration(0.0), &Oem7ConfigNodelet::serviceLoopCb, this, true);
       }
 
       /**
@@ -80,6 +80,15 @@ namespace novatel_oem7_driver
         std::vector<std::string> receiver_init_commands;
         getNodeHandle().getParam("receiver_init_commands", receiver_init_commands);
         for(const auto& cmd : receiver_init_commands)
+        {
+          issueConfigCmd(cmd);
+        }
+
+        NODELET_INFO_STREAM("Oem7 extended initialization commands:");
+
+        std::vector<std::string> receiver_ext_init_commands;
+        getNodeHandle().getParam("receiver_ext_init_commands", receiver_ext_init_commands);
+        for(const auto& cmd : receiver_ext_init_commands)
         {
           issueConfigCmd(cmd);
         }
