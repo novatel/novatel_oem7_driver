@@ -167,7 +167,7 @@ namespace novatel_oem7_driver
       }
       else
       {
-        ROS_WARN_THROTTLE(10, "/IMU: PVA not available; 'IMU' not published.");
+        ROS_WARN_THROTTLE(10, "/IMU: PVA not available; skipped 'IMU' message.");
         return;
       }
 
