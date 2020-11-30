@@ -11,7 +11,10 @@ set(BUILD_DEPS
   gps_common
   sensor_msgs
   nmea_msgs
+  nav_msgs
   tf
+  geodesy
+  geographic_msgs
   message_generation
   novatel_oem7_msgs
 )

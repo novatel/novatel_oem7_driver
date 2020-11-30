@@ -2,6 +2,7 @@
 IMU:        {topic: /gps/imu,                 frame_id: gps}
 GPSFix:     {topic: /gps/gps,                 frame_id: gps}
 NavSatFix:  {topic: /gps/fix,                 frame_id: gps} 
+Odometry:   {topic: /novatel/oem7/odom,       frame_id: odom} 
 
 # Oem7-specific 
 Oem7RawMsg: {topic: /novatel/oem7/oem7raw,    frame_id: gps, queue_size: "200"}

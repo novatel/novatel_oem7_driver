@@ -2,7 +2,7 @@ from ros:kinetic
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y python-catkin-tools ros-kinetic-tf ros-kinetic-gps-common ros-kinetic-nmea-msgs ros-kinetic-rosdoc-lite dh-make python-bloom vim sudo 
+RUN apt-get update && apt-get install -y python-catkin-tools ros-kinetic-tf  ros-kinetic-geodesy ros-kinetic-gps-common  ros-kinetic-nmea-msgs ros-kinetic-nav-msgs ros-kinetic-rosdoc-lite dh-make python-bloom vim sudo fakeroot 
 
 
 #RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
