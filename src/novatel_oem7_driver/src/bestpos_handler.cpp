@@ -45,7 +45,6 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/Point.h"
 
-
 #include "geographic_msgs/GeoPoint.h"
 #include "geodesy/utm.h"
 
@@ -89,6 +88,37 @@ namespace novatel_oem7_driver
         std::pow(hgt_stdev, 2)
     );
   }
+
+
+  /*
+   * Refer to NovAtel APN029
+   */
+  double computeHorizontalError(double lat_stdev, double lon_stdev)
+  {
+    //95%:  2 * DRMS:
+
+    return 2.0 * std::sqrt(
+        std::pow(lat_stdev, 2) +
+        std::pow(lon_stdev, 2));
+  }
+
+  /*
+   * Refer to NovAtel APN029
+   */
+  double computeVerticalError(double hgt_stdev)
+  {
+    //95%
+    return 2.0 * hgt_stdev;
+  }
+
+  /*
+   * Refer to NovAtel APN029
+   */
+  double computeSphericalError(double lat_stdev, double lon_stdev, double hgt_stdev)
+  {
+    // 90% spherical accuracy
+    return 0.833 * (lat_stdev + lon_stdev + hgt_stdev);
+  };
   /***
    * Derive ROS GPS Status from Oem7 BESTPOS
    *
@@ -387,13 +417,18 @@ namespace novatel_oem7_driver
         gpsfix_->position_covariance[8] = std::pow(bestpos_->hgt_stdev, 2);
         gpsfix_->position_covariance_type = gps_common::GPSFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
 
+        gpsfix_->err_horz = computeHorizontalError(bestpos_->lon_stdev, bestpos_->lat_stdev);
+        gpsfix_->err_vert = computeVerticalError(  bestpos_->hgt_stdev);
+        gpsfix_->err      = computeSphericalError( bestpos_->lon_stdev, bestpos_->lat_stdev, bestpos_->hgt_stdev);
+
         gpsfix_->time = MakeGpsTime_Seconds(
                           bestpos_->nov_header.gps_week_number,
                           bestpos_->nov_header.gps_week_milliseconds);
 
 
-        gpsfix_->status.satellites_used = bestpos_->num_sol_svs;
-        gpsfix_->status.status = ToROSGPSStatus(bestpos_);
+        gpsfix_->status.satellites_visible = bestpos_->num_svs;
+        gpsfix_->status.satellites_used    = bestpos_->num_sol_svs;
+        gpsfix_->status.status             = ToROSGPSStatus(bestpos_);
 
         gpsfix_->status.position_source = gps_common::GPSStatus::SOURCE_GPS;
       }
@@ -548,7 +583,7 @@ namespace novatel_oem7_driver
       boost::shared_ptr<nav_msgs::Odometry> odometry(new nav_msgs::Odometry);
       odometry->child_frame_id = base_frame_;
 
-      if(bestpos_)
+      if(gpsfix_)
       {
         GeoPointFromGnss(
             odometry->pose.pose.position,
@@ -567,15 +602,6 @@ namespace novatel_oem7_driver
                                                  degreesToRadians(inspva_->roll),
                                                 -degreesToRadians(inspva_->pitch),
                                                 -degreesToRadians(inspva_->azimuth));
-
-        if(!bestpos_ || prefer_INS_)
-        {
-          GeoPointFromGnss(
-               odometry->pose.pose.position,
-               inspva_->latitude,
-               inspva_->longitude,
-               inspva_->height);
-        }
       } // inspva_
 
       if(inspvax_)
