@@ -458,6 +458,8 @@ namespace novatel_oem7_driver
 
       if(inspva_ )
       {
+        double undulation = 0;
+
         // Populate INS data
         gpsfix_->pitch  = inspva_->pitch;
         gpsfix_->roll   = inspva_->roll;
@@ -518,6 +520,11 @@ namespace novatel_oem7_driver
 
           gpsfix_->status.position_source |= (gps_common::GPSStatus::SOURCE_GYRO | gps_common::GPSStatus::SOURCE_ACCEL);
 
+          if(bestpos_)
+          {
+            gpsfix_->altitude = inspva_->height - bestpos_->undulation;
+          }
+
           if(inspvax_)
           {
             // Convert stdev to diagonal covariance
@@ -525,6 +532,11 @@ namespace novatel_oem7_driver
             gpsfix_->position_covariance[4] = std::pow(inspvax_->latitude_stdev,  2);
             gpsfix_->position_covariance[8] = std::pow(inspvax_->height_stdev,    2);
             gpsfix_->position_covariance_type = gps_common::GPSFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
+
+            if(!bestpos_)
+            {
+              gpsfix_->altitude = inspva_->height - inspvax_->undulation;
+            }
           }
         }
 
