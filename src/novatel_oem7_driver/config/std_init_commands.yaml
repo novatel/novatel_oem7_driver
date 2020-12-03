@@ -42,8 +42,23 @@ receiver_init_commands:
 - "UNLOGALL THISPORT"
 #- "FRESET"
 #- "!PAUSE 10"
+
+# INS Setup Commands - refer to https://docs.novatel.com/OEM7/Content/SPAN_Operation/SPAN_Operation.htm?tocpath=Operation%7CSPAN%20Operation%7C_____0
+# for INS setup help.
 #- "SETINSPROFILE LAND"
-#- "SETINSTRANSLATION ANT 1<x> <y> <z> <std. x> <std. y> <std. z>
+# IMU offsets (SETINSTRANSLATION command). If using SPAN then these must be entered precisely.
+#    * ANT1 is the IMU to Primary GNSS antenna offset and MUST be entered precisely for proper INS
+#       functioning. 
+#    * ANT2 must be entered if using a dual antenna setup in order to take advantage of the second antenna in INS
+#    * USER offsets the INS position from its default center of IMU to a specified location. To make INS positions match
+#       the GNSS (BESTPOS, GPSFix etc.) outputting at antenna center then set this equal to ANT1.
+#- "SETINSTRANSLATION ANT 1 <x> <y> <z> <std. x> <std. y> <std. z>
+#- "SETINSTRANSLATION USER <x> <y> <z> 
+# INS rotation offsets (SETINSROTATION command) 
+#    * RBV (rotation from IMU body to vehcile) should be entered if the IMU is not aligned y-forward with the vehicle 
+#       or calibrated even if it is for small rotational offsets
+#- "SETINSROTATION RBV <x> <y> <z> <std. x> <std. y> <std. z>
+
 #- ... etc.
 
 
