@@ -5,7 +5,8 @@
 		<arg name="oem7_topic_list" value="/novatel/oem7/bestpos 
 		                                   /novatel/oem7/bestvel 
 		                                   /novatel/oem7/bestutm 
-		                                   /novatel/oem7/inspva 
+		                                   /novatel/oem7/inspva
+                                                   /novatel/oem7/odom 
 		                                   /gps/gps 
 		                                   /gps/fix"/>
 	</include>
