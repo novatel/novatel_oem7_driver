@@ -12,8 +12,6 @@
     <param name="/novatel/oem7/receivers/main/oem7_tty_name"  value="$(arg oem7_tty_name)"   type="string" />
     <param name="/novatel/oem7/receivers/main/oem7_tty_baud"  value="$(arg oem7_tty_baud)"   type="int" />
 
-    <param name="/novatel/oem7/receivers/main/oem7_receiver_log_file" 
-                                                  value="$(arg oem7_receiver_log)"   type="string" />
     
     <!-- Standard configuration, default oem7 components. -->
     <arg name="oem7_bist" default="false" /> 

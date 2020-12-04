@@ -11,9 +11,6 @@
 	<param name="/novatel/oem7/receivers/main/oem7_ip_addr"   value="$(arg oem7_ip_addr)" type="string" />
 	<param name="/novatel/oem7/receivers/main/oem7_port"      value="$(arg oem7_port)"    type="int" />
 	
-	<param name="/novatel/oem7/receivers/main/oem7_receiver_log_file" 
-	                                              value="$(arg oem7_receiver_log)"   type="string" />
-    	
 	 
 	<!-- Standard configuration, default oem7 components. -->
 	<arg name="oem7_bist" default="false" /> 
