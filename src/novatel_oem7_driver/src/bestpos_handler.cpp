@@ -321,9 +321,10 @@ namespace novatel_oem7_driver
     int32_t bestvel_period_;
     int32_t inspva_period_;
 
-    bool prefer_INS_; ///< Position reported by INS is preferred to BESTPOS
-
     std::string base_frame_; ///< Base frame for Odometry
+
+    bool position_source_BESTPOS_; //< User override: always use BESTPOS
+    bool position_source_INS_; ///< User override: always use INS
 
 
     /***
@@ -477,42 +478,48 @@ namespace novatel_oem7_driver
 
 
 
+
         // For normal installations, INSPVA messages are sent at much higher rate than BESTPOS/BESTVEL.
         // More recent INSPVAS are preferred, unless they report inferior accuracy.
-        if(bestpos_ && inspvax_)
+        // This takes effect, unless explicitly overriden:
+        assert(position_source_BESTPOS_ != position_source_INS_ || !position_source_BESTPOS_); // Can't both be true, both can be false.
+        bool prefer_INS = position_source_INS_; // Init to override value
+        if(!position_source_INS_ && !position_source_BESTPOS_) // Not overriden: determine source on-the-fly based on quality
         {
-          ValueRelation time_rel = GetOem7MessageTimeRelation(inspva_->nov_header, bestpos_->nov_header);
-          if(time_rel == REL_GT || time_rel == REL_EQ)
+          if(bestpos_ && inspvax_)
           {
-            static const float ACCURACY_MARGIN_FACTOR = 1.1; // Avoid shifting rapidly between data sources.
-            prefer_INS_ = Get3DPositionError(
-                             inspvax_->latitude_stdev,
-                             inspvax_->longitude_stdev,
-                             inspvax_->height_stdev) <
-                          Get3DPositionError(
-                             bestpos_->lat_stdev,
-                             bestpos_->lon_stdev,
-                             bestpos_->hgt_stdev) * ACCURACY_MARGIN_FACTOR;
+            ValueRelation time_rel = GetOem7MessageTimeRelation(inspva_->nov_header, bestpos_->nov_header);
+            if(time_rel == REL_GT || time_rel == REL_EQ)
+            {
+              static const float ACCURACY_MARGIN_FACTOR = 1.1; // Avoid shifting rapidly between data sources.
+              prefer_INS = Get3DPositionError(
+                              inspvax_->latitude_stdev,
+                              inspvax_->longitude_stdev,
+                              inspvax_->height_stdev) <
+                           Get3DPositionError(
+                              bestpos_->lat_stdev,
+                              bestpos_->lon_stdev,
+                              bestpos_->hgt_stdev) * ACCURACY_MARGIN_FACTOR;
+            }
           }
         }
-
         //-------------------------------------------------------------------------------------------------------
         // Log INS vs BESTPOS preference
         // This logic is not necessary for correct operation.
         static bool prev_prefer_INS = false;
-        if(prev_prefer_INS != prefer_INS_)
+        if(prev_prefer_INS != prefer_INS)
         {
           ROS_INFO_STREAM("GPSFix position source= INSPVA: " << prev_prefer_INS
-                                                               << " --> " << prefer_INS_
+                                                               << " --> " << prefer_INS
                                                                << " at GPSTime["
                                                                << inspva_->nov_header.gps_week_number         << " "
                                                                << inspva_->nov_header.gps_week_milliseconds   << "]"
                                                                );
         }
-        prev_prefer_INS = prefer_INS_;
+        prev_prefer_INS = prefer_INS;
         //--------------------------------------------------------------------------------------------------------
 
-        if(!bestpos_ || prefer_INS_)
+        if(!bestpos_ || prefer_INS)
         {
           gpsfix_->latitude   = inspva_->latitude;
           gpsfix_->longitude  = inspva_->longitude;
@@ -540,7 +547,7 @@ namespace novatel_oem7_driver
           }
         }
 
-        if(!bestvel_ || prefer_INS_)
+        if(!bestvel_ || prefer_INS)
         {
            // Compute track and horizontal speed from north and east velocities
 
@@ -649,7 +656,8 @@ namespace novatel_oem7_driver
       bestpos_period_(INT_MAX),
       bestvel_period_(INT_MAX),
       inspva_period_( INT_MAX),
-      prefer_INS_(false)
+      position_source_BESTPOS_(false),
+      position_source_INS_(false)
     {
     }
 
@@ -668,6 +676,23 @@ namespace novatel_oem7_driver
       Odometry_pub_.setup<nav_msgs::Odometry>(       "Odometry",  nh);
 
       nh.param<std::string>("base_frame", base_frame_, "base_link");
+
+      // Determine if position source is overriden by the user; otherwise it is determined dynamically.
+      std::string position_source;
+      nh.getParam("position_source", position_source);
+      if(position_source == "BESTPOS")
+      {
+        position_source_BESTPOS_ = true;
+      }
+      else if(position_source == "INSPVAS")
+      {
+        position_source_INS_ = true;
+      }
+      else
+      {
+        position_source = "BESTPOS or INSPVAS based on quality";
+      }
+      ROS_INFO_STREAM("GPSFix position source: " << position_source);
     }
 
     const std::vector<int>& getMessageIds()
