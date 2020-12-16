@@ -2,7 +2,7 @@ from ros:melodic
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y ros-melodic-rosdoc-lite ros-melodic-tf ros-melodic-geodesy ros-melodic-gps-common ros-melodic-nav-msgs ros-melodic-nmea-msgs dh-make python-bloom fakeroot vim sudo
+RUN apt-get update && apt-get install -y ros-melodic-rosdoc-lite ros-melodic-tf2-geometry-msgs ros-melodic-geodesy ros-melodic-gps-common ros-melodic-nav-msgs ros-melodic-nmea-msgs dh-make python-bloom fakeroot vim sudo
 
 #RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
 

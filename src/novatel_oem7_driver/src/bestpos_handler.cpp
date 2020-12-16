@@ -45,8 +45,9 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/Point.h"
 
-#include "geographic_msgs/GeoPoint.h"
-#include "geodesy/utm.h"
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <gps_common/conversions.h>
 
 #include <cmath>
 #include <stdint.h>
@@ -269,27 +270,20 @@ namespace novatel_oem7_driver
   }
 
   /**
-   * Get Geometry point from GNSS position, assuming zero origin.
+   * Get Geometry (UTM) point from GNSS position, assuming zero origin.
    */
-  void GeoPointFromGnss(
+  void UTMPointFromGnss(
           geometry_msgs::Point& pt,
           double lat,
           double lon,
           double hgt)
   {
-    // GeoPoint --> UTMPoint --> Point
-    // There probably is a better way of doing this conversion.
+    pt.z = hgt;
 
-    geographic_msgs::GeoPoint geo_pt;
-    geo_pt.latitude  = lat;
-    geo_pt.longitude = lon;
-    geo_pt.altitude  = hgt;
-
-    geodesy::UTMPoint utm_pt;
-    geodesy::fromMsg(geo_pt, utm_pt);
-
-    pt = geodesy::toGeometry(utm_pt);
+    std::string zone; //unused
+    gps_common::LLtoUTM(lat, lon, pt.x, pt.y, zone);
   }
+
   /***
    * Handler of position-related messages. Synthesizes ROS messages GPSFix and NavSatFix from native Oem7 Messages.
    */
@@ -325,6 +319,8 @@ namespace novatel_oem7_driver
 
     bool position_source_BESTPOS_; //< User override: always use BESTPOS
     bool position_source_INS_; ///< User override: always use INS
+
+    tf2::Quaternion Z90_DEG_ROTATION; ///< Rotate ENU to ROS frames.
 
 
     /***
@@ -462,8 +458,8 @@ namespace novatel_oem7_driver
         double undulation = 0;
 
         // Populate INS data
-        gpsfix_->pitch  = inspva_->pitch;
-        gpsfix_->roll   = inspva_->roll;
+        gpsfix_->pitch  = -inspva_->pitch;
+        gpsfix_->roll   =  inspva_->roll;
         //gpsfix->dip: not populated.
 
         // BESTPOS/BESTVEL take INS into account
@@ -604,33 +600,47 @@ namespace novatel_oem7_driver
 
       if(gpsfix_)
       {
-        GeoPointFromGnss(
+        UTMPointFromGnss(
             odometry->pose.pose.position,
             gpsfix_->latitude,
             gpsfix_->longitude,
             gpsfix_->altitude);
+
+        odometry->pose.covariance[ 0] = gpsfix_->position_covariance[0];
+        odometry->pose.covariance[ 7] = gpsfix_->position_covariance[4];
+        odometry->pose.covariance[14] = gpsfix_->position_covariance[8];
       }
 
       if(inspva_)
       {
-        odometry->twist.twist.linear.x = inspva_->east_velocity;
-        odometry->twist.twist.linear.y = inspva_->north_velocity;
+        // INSPVA uses 'y-forward' ENU orientation;
+        // ROS uses x-forward orientation.
+
+        odometry->twist.twist.linear.x = inspva_->north_velocity;
+        odometry->twist.twist.linear.y = inspva_->east_velocity;
         odometry->twist.twist.linear.z = inspva_->up_velocity;
 
-        odometry->pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(
-                                                 degreesToRadians(inspva_->roll),
-                                                -degreesToRadians(inspva_->pitch),
-                                                -degreesToRadians(inspva_->azimuth));
+
+        tf2::Quaternion enu_orientation;
+        enu_orientation.setRPY(
+                          degreesToRadians(inspva_->roll),
+                         -degreesToRadians(inspva_->pitch),
+                         -degreesToRadians(inspva_->azimuth));
+
+        tf2::Quaternion ros_orientation = Z90_DEG_ROTATION * enu_orientation;
+
+        odometry->pose.pose.orientation = tf2::toMsg(ros_orientation);
       } // inspva_
+
 
       if(inspvax_)
       {
-        odometry->pose.covariance[21] = std::pow(inspvax_->pitch_stdev,     2);
-        odometry->pose.covariance[28] = std::pow(inspvax_->roll_stdev,      2);
+        odometry->pose.covariance[21] = std::pow(inspvax_->roll_stdev,      2);
+        odometry->pose.covariance[28] = std::pow(inspvax_->pitch_stdev,     2);
         odometry->pose.covariance[35] = std::pow(inspvax_->azimuth_stdev,   2);
 
-        odometry->twist.covariance[0]  = std::pow(inspvax_->east_velocity_stdev,  2);
-        odometry->twist.covariance[7]  = std::pow(inspvax_->north_velocity_stdev, 2);
+        odometry->twist.covariance[0]  = std::pow(inspvax_->north_velocity_stdev, 2);
+        odometry->twist.covariance[7]  = std::pow(inspvax_->east_velocity_stdev,  2);
         odometry->twist.covariance[14] = std::pow(inspvax_->up_velocity_stdev,    2);
       }
 
@@ -659,6 +669,7 @@ namespace novatel_oem7_driver
       position_source_BESTPOS_(false),
       position_source_INS_(false)
     {
+      Z90_DEG_ROTATION.setRPY(0, 0, degreesToRadians(90.0));
     }
 
     ~BESTPOSHandler()
