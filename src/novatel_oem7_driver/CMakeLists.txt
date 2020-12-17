@@ -7,6 +7,7 @@ add_compile_options(-std=c++11)
 set(BUILD_DEPS
   nodelet
   roscpp
+  rosbag
   std_msgs
   gps_common
   sensor_msgs
