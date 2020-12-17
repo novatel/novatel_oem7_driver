@@ -27,7 +27,8 @@
 #include <ros/ros.h>
 
 
-#include <tf/tf.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
 
@@ -160,14 +161,16 @@ namespace novatel_oem7_driver
 
       if(inspva_)
       {
-        imu->orientation = tf::createQuaternionMsgFromRollPitchYaw(
-                                   degreesToRadians(inspva_->roll),
-                                  -degreesToRadians(inspva_->pitch),
-                                  -degreesToRadians(inspva_->azimuth));
+        tf2::Quaternion tf_orientation;
+        tf_orientation.setRPY(
+                           degreesToRadians(inspva_->roll),
+                          -degreesToRadians(inspva_->pitch),
+                          -degreesToRadians(inspva_->azimuth));
+        imu->orientation = tf2::toMsg(tf_orientation);
       }
       else
       {
-        ROS_WARN_THROTTLE(10, "/IMU: PVA not available; 'IMU' not published.");
+        ROS_WARN_THROTTLE(10, "INSPVA not available; 'Imu' message not generated.");
         return;
       }
 

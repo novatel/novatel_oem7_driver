@@ -10,7 +10,9 @@ set(BUILD_DEPS
   std_msgs
   gps_common
   sensor_msgs
-  tf
+  nmea_msgs
+  nav_msgs
+  tf2_geometry_msgs
   message_generation
   novatel_oem7_msgs
 )
@@ -61,6 +63,7 @@ add_library(${PROJECT_NAME}
    src/align_handler.cpp
    src/time_handler.cpp
    src/receiverstatus_handler.cpp
+   src/nmea_handler.cpp
 )
 
 

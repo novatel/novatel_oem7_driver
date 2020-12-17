@@ -1,0 +1,13 @@
+receiver_ext_init_commands: 
+- "LOG GPGGA ONTIME 1"
+- "LOG GPGSA ONTIME 1"
+- "LOG GPGSV ONTIME 1"
+- "LOG GPRMC ONTIME 1"
+
+# Additional topics
+NMEA_Sentence: {topic: /gps/nmea_sentence,    frame_id: gps}
+
+
+
+
+

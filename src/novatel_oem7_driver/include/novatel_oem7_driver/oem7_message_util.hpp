@@ -28,6 +28,8 @@
 #include "novatel_oem7_msgs/Oem7Header.h"
 #include "novatel_oem7_msgs/Oem7RawMsg.h"
 
+#include "novatel_oem7_driver/oem7_message_ids.h"
+
 #include "oem7_raw_message_if.hpp"
 using novatel_oem7::Oem7RawMessageIf;
 
@@ -37,6 +39,27 @@ using novatel_oem7::Oem7RawMessageIf;
 
 namespace novatel_oem7_driver
 {
+
+  static const std::vector<int> OEM7_NMEA_MSGIDS(
+    {
+     GLMLA_OEM7_MSGID,
+     GPALM_OEM7_MSGID,
+     GPGGA_OEM7_MSGID,
+     GPGGALONG_OEM7_MSGID,
+     GPGLL_OEM7_MSGID,
+     GPGRS_OEM7_MSGID,
+     GPGSA_OEM7_MSGID,
+     GPGST_OEM7_MSGID,
+     GPGSV_OEM7_MSGID,
+     GPHDT_OEM7_MSGID,
+     GPHDTDUALANTENNA_MSGID,
+     GPRMB_OEM7_MSGID,
+     GPRMC_OEM7_MSGID,
+     GPVTG_OEM7_MSGID,
+     GPZDA_OEM7_MSGID
+    }
+  );
+
 
   void initializeOem7MessageUtil(ros::NodeHandle& nh);
   int getOem7MessageId(const std::string& msg_name);
@@ -59,6 +82,8 @@ namespace novatel_oem7_driver
       const Oem7RawMessageIf::ConstPtr& raw_msg, ///< [in] Raw binary message
       novatel_oem7_msgs::Oem7Header::Type& hdr   ///< [out] Oem7 Message Header
       );
+
+  bool isNMEAMessage(const Oem7RawMessageIf::ConstPtr& raw_msg);
 
   size_t Get_INSCONFIG_NumTranslations(const INSCONFIG_FixedMem* insconfig);
 

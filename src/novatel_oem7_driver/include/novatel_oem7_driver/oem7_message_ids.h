@@ -45,6 +45,27 @@ namespace novatel_oem7_driver
   const int PSRDOP2_OEM7_MSGID            = 1163;
   const int RXSTATUS_OEM7_MSGID           =   93;
   const int TIME_OEM7_MSGID               =  101;
+
+  // NMEA0183
+  const int GLMLA_OEM7_MSGID              =   859;
+  const int GPALM_OEM7_MSGID              =   217;
+  const int GPGGA_OEM7_MSGID              =   218;
+  const int GPGGALONG_OEM7_MSGID          =   521;
+  const int GPGLL_OEM7_MSGID              =   219;
+  const int GPGRS_OEM7_MSGID              =   220;
+  const int GPGSA_OEM7_MSGID              =   221;
+  const int GPGST_OEM7_MSGID              =   222;
+  const int GPGSV_OEM7_MSGID              =   223;
+  const int GPHDT_OEM7_MSGID              =  1045;
+  const int GPHDTDUALANTENNA_MSGID        =  2045;
+  const int GPRMB_OEM7_MSGID              =   224;
+  const int GPRMC_OEM7_MSGID              =   225;
+  const int GPVTG_OEM7_MSGID              =   226;
+  const int GPZDA_OEM7_MSGID              =   227;
+
+
+
+
 }
 
 #endif

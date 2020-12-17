@@ -61,6 +61,13 @@
             Receiver Status (RXSTATUS) messages. 
         </description>
     </class>
+    
+    <class name="NMEAHandler" type="novatel_oem7_driver::NMEAHandler" base_class_type="novatel_oem7_driver::Oem7MessageHandlerIf">
+        <description>
+            NMEA 0183 messages. 
+        </description>
+    </class>
+    
 
 </library>
 

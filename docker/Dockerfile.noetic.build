@@ -2,7 +2,7 @@ from ros:noetic
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y ros-noetic-rosdoc-lite ros-noetic-tf ros-noetic-gps-common dh-make python3-bloom vim sudo fakeroot
+RUN apt-get update && apt-get install -y ros-noetic-rosdoc-lite ros-noetic-tf2-geometry-msgs ros-noetic-gps-common ros-noetic-nmea-msgs ros-noetic-nav-msgs dh-make python3-bloom vim sudo fakeroot
 
 RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
 
