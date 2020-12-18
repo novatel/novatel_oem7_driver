@@ -21,14 +21,17 @@
 #
 #################################################################################
 
-import unittest
-import rostest
+
 import rosbag
+import rospy
 
 import os
+import sys
 
 import traceback
 from docutils.nodes import topic
+
+
 
 def get_topic_list(bag_name):
     """ Return a list of topics stored in this bag """
@@ -56,12 +59,9 @@ def compare(ref_msg, uut_msg):
     uut_msg.header.stamp = None
     
     if(ref_msg != uut_msg):
-        print("Messages do not match:")
-        print("Reference:------------")
-        print(ref_msg)
-        print("\n\n\n")
-        print("UUT-------------")
-        print(uut_msg)
+        rospy.logerr("Messages do not match:")
+        rospy.logerr("Ref:\r\n" + str(ref_msg))
+        rospy.logerr("UUT:\r\n" + str(uut_msg))
         return False;
     
     return True
@@ -81,20 +81,19 @@ def verify_bag_equivalency(ref_bag, uut_bag):
       for ref_msg in ref_gen:
         uut_msg = next(uut_gen)
         if not compare(ref_msg, uut_msg):
-            print("\n\n")
-            print("Topic: {} Msg No: {}".format(topic, msgno))
+            rospy.logerr("Topic: {} Msg No: {}".format(topic, msgno))
             assert False
             
         msgno += 1
       
-      print("Verified {} '{}' messages".format(msgno, topic))
+      rospy.loginfo("Verified {} '{}' messages".format(msgno, topic))
       # Check for presence of unexpected messages
       unexpected_messages = 0
       try:
           while True:
               uut_top, uut_msg, uut_t = next(uut_gen)
-              print("Unexpected message")
-              print(uut_msg)
+              rospy.logerr("Unexpected message")
+              rospy.logerr(uut_msg)
               unexpected_messages += 1
   
       except StopIteration:
