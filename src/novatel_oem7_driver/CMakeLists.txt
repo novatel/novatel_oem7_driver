@@ -7,7 +7,6 @@ add_compile_options(-std=c++11)
 set(BUILD_DEPS
   nodelet
   roscpp
-  rosbag
   std_msgs
   gps_common
   sensor_msgs
@@ -137,7 +136,6 @@ catkin_install_python(PROGRAMS test/oem7_bist.py test/oem7_message_test.py
 
 if (CATKIN_ENABLE_TESTING)
 	find_package(rostest REQUIRED)
-	find_package(rosbag  REQUIRED)
 	add_rostest(test/align.test)
 	add_rostest(test/bestpos.test)
 	add_rostest(test/ins1.test)
