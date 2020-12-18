@@ -21,7 +21,7 @@ http://wiki.ros.org/novatel_oem7_driver
 
 ## Building novatel_oem7_driver from source code
 ### Prerequisites
-* ROS Kinetic or Melodic, including gps-common and tf ROS packages.
+* Install ROS Noetic, Melodic or Kinetic.
 * Obtain OEM7 receiver.  
 
 
@@ -44,25 +44,26 @@ These instructions assume that you are using Ubuntu 18.04.
 1. Install Docker, add the user you intend on using to the 'docker' group. For example:
    1. Add the current user to the 'docker' group: `sudo usermod -aG docker ${USER}`
    1. Apply the membership changes to the current session: `su - ${USER}`
-1. From the base directory of the repository, run `./docker/run-build.sh -b melodic` (this may take >10mins)
+1. From the base directory of the repository, create container for the desird ROS distro,e.g. Noetic:
+   `./docker/run-build.sh -b noetic` 
 1. From within your docker container (where the prompt from above should land), run `./build.sh -f`
 
 #### Option C: Build from source (local environment)
 Here are approximate instructions for building this driver with your local ROS development environment. Please note this is for reference. The Docker approach is recommended.
 
 1. Install ROS with developer support to your environment ([**ROS Wiki Ubuntu 18.04**](http://wiki.ros.org/Installation/Ubuntu))
-1. Install ROS dependencies using `rosdep install --from-paths src --ingore-src -r -y`
-1. Set `ROS_DISTRO` environment variable (Ex: `ROS_DISTRO=melodic`)
-1. Run `source /opt/ros/melodic/setup.bash`
-1. Run `bash envsetup.sh`
+1. Install ROS dependencies using `rosdep install --from-paths src --ignore-src -r -y`
+1. Set `ROS_DISTRO` environment variable (Ex: `ROS_DISTRO=noetic`)
+1. Run `source /opt/ros/${ROS_DISTRO}/setup.bash`
+1. Run `source envsetup.sh`
 1. Run build: `./build.sh -f`
 
-#### Create .deb from your build and install it
-After building, run the `create-${ROS_DISTRO}-package.sh` script to produce the .deb packages (novatel-oem7-driver and novatel-oem7-msgs) for your binary build.
+#### Install .deb packages 
+Building produces two deb package, novatel-oem7-driver and novatel-oem7-msgs.
 
-You can then install these via `dpkg`, provided you have installed the required common packages mentioned earlier:
+You can then install these via `apt` or `dpkg`:
 ```
-sudo dpkg -i ros-{$ROS_DISTRO}-novatel-oem7*.deb
+sudo apt install ./ros-{$ROS_DISTRO}-novatel-oem7*.deb
 ```
 
 ## Next Steps
