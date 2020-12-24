@@ -44,8 +44,9 @@ These instructions assume that you are using Ubuntu 18.04.
 1. Install Docker, add the user you intend on using to the 'docker' group. For example:
    1. Add the current user to the 'docker' group: `sudo usermod -aG docker ${USER}`
    1. Apply the membership changes to the current session: `su - ${USER}`
-1. From the base directory of the repository, create container for the desird ROS distro,e.g. Noetic:
-   `./docker/run-build.sh -b noetic` 
+1. From the base directory of the repository, create container for the desired ROS architecture and distro, e.g. Noetic:  
+   `./docker/run.sh -r amd64 noetic`  
+   Note: only amd64 architecture is supported at this point.  
 1. From within your docker container (where the prompt from above should land), run `./build.sh -f`
 
 #### Option C: Build from source (local environment)
