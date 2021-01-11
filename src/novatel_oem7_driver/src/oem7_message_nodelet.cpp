@@ -26,18 +26,16 @@
 #include <nodelet/nodelet.h>
 #include <ros/callback_queue.h>
 
-#include <boost/thread/mutex.hpp>
-#include <boost/asio.hpp>
-#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <mutex>
+#include <condition_variable>
 #include <map>
+
+#include <boost/asio.hpp>
 
 #include "novatel_oem7_msgs/Oem7AbasciiCmd.h"
 #include "novatel_oem7_msgs/Oem7RawMsg.h"
 
-
 #include <pluginlib/class_loader.h>
-
-
 
 #include <novatel_oem7_driver/oem7_receiver_if.hpp>
 #include <novatel_oem7_driver/oem7_message_decoder_if.hpp>
@@ -60,7 +58,7 @@ namespace novatel_oem7_driver
       public Oem7MessageDecoderUserIf,
       public nodelet::Nodelet
   {
-    boost::mutex nodelet_mtx_; ///< Protects nodelet internal state
+    std::mutex nodelet_mtx_; ///< Protects nodelet internal state
 
     double publish_delay_sec_; ///< Delay after publishing each message; used to throttle output with static data sources.
 
@@ -71,7 +69,8 @@ namespace novatel_oem7_driver
     boost::shared_ptr<ros::AsyncSpinner> timer_spinner_; ///< 1 thread servicing the command queue.
 
     // Command service
-    boost::interprocess::interprocess_semaphore rsp_sem_; ///< Signaling between Oem7 commands / response handler
+    std::condition_variable rsp_ready_cond_; ///< Response ready, signaled from response handler to Oem7 Cmd Handler.
+    std::mutex              rsp_ready_mtx_; ///< Response condition guard
     std::string rsp_; ///< The latest response from Oem7 receiver.
     ros::CallbackQueue queue_; //< Dedicated queue for command requests.
     boost::shared_ptr<ros::AsyncSpinner> aspinner_; ///< 1 thread servicing the command queue.
@@ -127,7 +126,7 @@ namespace novatel_oem7_driver
       NODELET_INFO_STREAM(getName() << ": Oem7MessageNodelet v." << novatel_oem7_driver_VERSION << "; "
                                                                  << __DATE__ << " " << __TIME__);
 
-      boost::lock_guard<boost::mutex> guard(nodelet_mtx_);
+      std::lock_guard<std::mutex> guard(nodelet_mtx_);
 
 
       initializeOem7MessageUtil(getNodeHandle());
@@ -203,31 +202,31 @@ namespace novatel_oem7_driver
     {
       NODELET_DEBUG_STREAM("AACmd: cmd '" << req.cmd << "'");
 
-      // Protect this with semaphore vs race with init code
-      nodelet_mtx_.lock();
-      rsp_.clear();
-      nodelet_mtx_.unlock();
-
+      // Retry sending the commands. For configuration commands, there is no harm in duplicates.
       for(int attempt = 0;
               attempt < 10;
               attempt++)
       {
-         recvr_->write(boost::asio::buffer(req.cmd));
+        {
+          std::lock_guard<std::mutex> lk(rsp_ready_mtx_);
+    	  rsp_.clear();
+    	}
 
-         static const std::string NEWLINE("\n");
-         recvr_->write(boost::asio::buffer(NEWLINE));
- 
-         boost::system_time const timeout = boost::get_system_time() + boost::posix_time::milliseconds(3 * 1000);
-         if(rsp_sem_.timed_wait(timeout))
-         {
-            break;
-         }
-         NODELET_ERROR_STREAM("Attempt " << attempt << ": timed out waiting for response.");
+        recvr_->write(boost::asio::buffer(req.cmd));
+        static const std::string NEWLINE("\n");
+        recvr_->write(boost::asio::buffer(NEWLINE));
+
+        std::unique_lock<std::mutex> lk(rsp_ready_mtx_);
+        if(rsp_ready_cond_.wait_until(lk,
+                                      std::chrono::steady_clock::now() + std::chrono::seconds(3)
+                                      ) == std::cv_status::no_timeout)
+        {
+          rsp.rsp = rsp_;
+          break;
+        }
+
+        NODELET_ERROR_STREAM("Attempt " << attempt << ": timed out waiting for response.");
       }
-
-      nodelet_mtx_.lock();
-      rsp.rsp = rsp_;
-      nodelet_mtx_.unlock();
 
       if(rsp.rsp == "OK")
       {
@@ -336,12 +335,18 @@ namespace novatel_oem7_driver
         if(raw_msg->getMessageType() == Oem7RawMessageIf::OEM7MSGTYPE_RSP) // Response
         {
           std::string rsp(raw_msg->getMessageData(0), raw_msg->getMessageData(raw_msg->getMessageDataLength()));
-          if(rsp.find_first_not_of(" /t/r/n") != std::string::npos) // ignore all whitespace
+          if(rsp.find_first_not_of(" /t/r/n") != std::string::npos && // ignore all-whitespace responses
+             std::all_of(rsp.begin(), rsp.end(), [](char c){return std::isprint(c);})) // Ignore any corrupt responses
           {
-            nodelet_mtx_.lock();
-            rsp_ = rsp;
-            nodelet_mtx_.unlock();
-            rsp_sem_.post();
+            {
+              std::lock_guard<std::mutex> lk(rsp_ready_mtx_);
+              rsp_ = rsp;
+            }
+            rsp_ready_cond_.notify_one();
+          }
+          else
+          {
+            NODELET_ERROR_STREAM("Discarded corrupt ASCII response: '" << rsp_ << "'");
           }
         }
         else // Log
@@ -386,7 +391,6 @@ namespace novatel_oem7_driver
     Oem7MessageNodelet():
       recvr_loader_(          "novatel_oem7_driver", "novatel_oem7_driver::Oem7ReceiverIf"),
       oem7_msg_decoder_loader("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageDecoderIf"),
-      rsp_sem_(0),
       total_log_count_(0),
       unknown_msg_num_(0),
       discarded_msg_num_(0),
