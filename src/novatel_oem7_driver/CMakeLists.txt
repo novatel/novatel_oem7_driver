@@ -71,11 +71,14 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 
 message(STATUS "System Host Proc: '${CMAKE_HOST_SYSTEM_PROCESSOR}'")
 message(STATUS "System Proc: '${CMAKE_SYSTEM_PROCESSOR}'")
+message(STATUS "VOID_P: ${CMAKE_SIZEOF_VOID_P}")
 
-if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    find_library(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm64v8")
-elseif (CMAKE_SYSTEM_PROCESSOR  STREQUAL "armv7l")
-    find_library(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm32v7")
+if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm64v8") 
+    else ()
+        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm32v7")
+    endif ()
 else ()
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/amd64") 
