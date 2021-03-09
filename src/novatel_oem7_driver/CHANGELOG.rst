@@ -3,14 +3,14 @@ Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-2.2.0 (2021.02.03)
+2.2.0 (2021-02-03)
 ------------------
 * No feature changes
 
 * More robust support for compillation for 32 vs. 64 bit targets
 
 
-2.1.0 (2021.01.28)
+2.1.0 (2021-01-28)
 ------------------
 
 * Support for ARM builds: arm32v7, arm64v8 (`#1 <https://github.com/novatel/novatel_oem7_driver/issues/1>`_)
