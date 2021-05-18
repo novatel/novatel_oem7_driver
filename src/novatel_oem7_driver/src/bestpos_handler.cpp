@@ -281,7 +281,7 @@ namespace novatel_oem7_driver
     pt.z = hgt;
 
     std::string zone; //unused
-    gps_common::LLtoUTM(lat, lon, pt.x, pt.y, zone);
+    gps_common::LLtoUTM(lat, lon, pt.y, pt.x, zone);
   }
 
   /***
