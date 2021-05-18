@@ -616,11 +616,6 @@ namespace novatel_oem7_driver
         // INSPVA uses 'y-forward' ENU orientation;
         // ROS uses x-forward orientation.
 
-        odometry->twist.twist.linear.x = inspva_->north_velocity;
-        odometry->twist.twist.linear.y = inspva_->east_velocity;
-        odometry->twist.twist.linear.z = inspva_->up_velocity;
-
-
         tf2::Quaternion enu_orientation;
         enu_orientation.setRPY(
                           degreesToRadians(inspva_->roll),
@@ -629,7 +624,11 @@ namespace novatel_oem7_driver
 
         tf2::Quaternion ros_orientation = Z90_DEG_ROTATION * enu_orientation;
 
+        tf2::Transform velocity_transform(ros_orientation);
+        tf2::Vector3 local_frame_velocity = velocity_transform.inverse()(tf2::Vector3(inspva_->east_velocity, inspva_->north_velocity, inspva_->up_velocity));
+
         odometry->pose.pose.orientation = tf2::toMsg(ros_orientation);
+        tf2::convert(local_frame_velocity, odometry->twist.twist.linear);
       } // inspva_
 
 
