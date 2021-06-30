@@ -254,19 +254,58 @@ namespace novatel_oem7_driver
     }
   }
 
-
-  /*** Generates NavSatFix object from GpsFix
-   */
-  void GpsFixToNavSatFix(const gps_common::GPSFix::Ptr gpsfix, sensor_msgs::NavSatFix::Ptr navsatfix)
+  uint8_t GpsStatusToNavSatStatus(int16_t gps_status)
   {
-    navsatfix->latitude    = gpsfix->latitude;
-    navsatfix->longitude   = gpsfix->longitude;
-    navsatfix->altitude    = gpsfix->altitude;
+    // Keep this in sync with the return values of ToROSGPSStatus
+    switch(gps_status)
+    {
+      case gps_common::GPSStatus::STATUS_NO_FIX:
+        return sensor_msgs::NavSatStatus::STATUS_NO_FIX;
 
-    navsatfix->position_covariance[0]   = gpsfix->position_covariance[0];
-    navsatfix->position_covariance[4]   = gpsfix->position_covariance[4];
-    navsatfix->position_covariance[8]   = gpsfix->position_covariance[8];
-    navsatfix->position_covariance_type = GpsFixCovTypeToNavSatFixCovType(gpsfix->position_covariance_type);
+      case gps_common::GPSStatus::STATUS_FIX:
+        return sensor_msgs::NavSatStatus::STATUS_FIX;
+
+      case gps_common::GPSStatus::STATUS_SBAS_FIX:
+      case gps_common::GPSStatus::STATUS_WAAS_FIX:
+        return sensor_msgs::NavSatStatus::STATUS_SBAS_FIX;
+
+      case gps_common::GPSStatus::STATUS_DGPS_FIX:
+      case gps_common::GPSStatus::STATUS_GBAS_FIX:
+        return sensor_msgs::NavSatStatus::STATUS_GBAS_FIX;
+
+      default:
+        ROS_ERROR_STREAM("Unknown gps status: " << gps_status);
+        return gps_common::GPSStatus::STATUS_NO_FIX;
+    }
+  }
+
+
+  uint16_t
+  NavSatStatusService(novatel_oem7_msgs::BESTPOS::Ptr bestpos)
+  {
+    uint16_t service = 0;
+
+    if(bestpos->gps_glonass_sig_mask & 0x07)
+    {
+      service |= sensor_msgs::NavSatStatus::SERVICE_GPS;
+    }
+
+    if(bestpos->gps_glonass_sig_mask & 0x70)
+    {
+      service |= sensor_msgs::NavSatStatus::SERVICE_GLONASS;
+    }
+
+    if(bestpos->galileo_beidou_sig_mask & 0x0F)
+    {
+      service |= sensor_msgs::NavSatStatus::SERVICE_GALILEO;
+    }
+
+    if(bestpos->galileo_beidou_sig_mask & 0x70)
+    {
+      service |= sensor_msgs::NavSatStatus::SERVICE_COMPASS;
+    }
+
+    return service;
   }
 
   /**
@@ -587,11 +626,34 @@ namespace novatel_oem7_driver
 
       boost::shared_ptr<sensor_msgs::NavSatFix> navsatfix(new sensor_msgs::NavSatFix);
 
-      // Derive from GPSFix.
-      GpsFixToNavSatFix(gpsfix_, navsatfix);
+      GetNavSatFix(navsatfix);
 
       NavSatFix_pub_.publish(navsatfix);
     }
+    /*** Generates NavSatFix object from GpsFix and BESTPOS
+     */
+    void GetNavSatFix(sensor_msgs::NavSatFix::Ptr navsatfix)
+    {
+      navsatfix->latitude    = gpsfix_->latitude;
+      navsatfix->longitude   = gpsfix_->longitude;
+      navsatfix->altitude    = gpsfix_->altitude;
+
+      navsatfix->position_covariance[0]   = gpsfix_->position_covariance[0];
+      navsatfix->position_covariance[4]   = gpsfix_->position_covariance[4];
+      navsatfix->position_covariance[8]   = gpsfix_->position_covariance[8];
+      navsatfix->position_covariance_type = GpsFixCovTypeToNavSatFixCovType(gpsfix_->position_covariance_type);
+
+      navsatfix->status.status  = GpsStatusToNavSatStatus(gpsfix_->status.status);
+
+      if(bestpos_)
+      {
+        navsatfix->status.service = NavSatStatusService(bestpos_);
+      }
+      else
+      {
+        ROS_DEBUG_STREAM("No BESTPOS to produce NavSatFix 'service'. ");
+      }
+   }
 
     void publishOdometry()
     {
