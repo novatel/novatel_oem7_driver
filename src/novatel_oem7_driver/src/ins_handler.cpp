@@ -52,6 +52,8 @@ namespace
   typedef int imu_rate_t; ///< IMU message rate
 
   const imu_type_t IMU_TYPE_UNKNOWN = 0;
+
+  const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0; // Oem7: North=0, ROS: East=0
 }
 
 
@@ -90,6 +92,7 @@ namespace novatel_oem7_driver
     typedef std::map<std::string, std::string> imu_config_map_t;
     imu_config_map_t imu_config_map;
 
+    bool oem7_imu_reference_frame_; ///< Backwards compatibility: use OEM7 reference frame, not compliant with REP105.
 
     void getImuParam(imu_type_t imu_type, const std::string& name, std::string& param)
     {
@@ -159,6 +162,30 @@ namespace novatel_oem7_driver
 
       boost::shared_ptr<sensor_msgs::Imu> imu(new sensor_msgs::Imu);
 
+      if(oem7_imu_reference_frame_)
+      {
+        publishImuMsg_OEM7(imu);
+      }
+      else
+      {
+        publishImuMsg_ROS(imu);
+      }
+
+      if(insstdev_)
+      {
+        imu->orientation_covariance[0] = std::pow(insstdev_->roll_stdev,    2);
+        imu->orientation_covariance[4] = std::pow(insstdev_->pitch_stdev,   2);
+        imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
+      }
+
+      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
+      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
+
+      imu_pub_.publish(imu);
+    }
+
+    void publishImuMsg_OEM7(boost::shared_ptr<sensor_msgs::Imu>& imu)
+    {
       if(inspva_)
       {
         tf2::Quaternion tf_orientation;
@@ -174,41 +201,58 @@ namespace novatel_oem7_driver
         return;
       }
 
-      if(insstdev_)
+      if(corrimu_ && imu_rate_ > 0)
       {
-        imu->orientation_covariance[0] = std::pow(insstdev_->pitch_stdev,   2);
-        imu->orientation_covariance[4] = std::pow(insstdev_->roll_stdev,    2);
-        imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
+        double instantaneous_rate_factor = imu_rate_ / corrimu_->imu_data_count;
+
+        imu->angular_velocity.x = corrimu_->pitch_rate * instantaneous_rate_factor;
+        imu->angular_velocity.y = corrimu_->roll_rate  * instantaneous_rate_factor;
+        imu->angular_velocity.z = corrimu_->yaw_rate   * instantaneous_rate_factor;
+
+        imu->linear_acceleration.x = corrimu_->lateral_acc      * instantaneous_rate_factor;
+        imu->linear_acceleration.y = corrimu_->longitudinal_acc * instantaneous_rate_factor;
+        imu->linear_acceleration.z = corrimu_->vertical_acc     * instantaneous_rate_factor;
+      }
+    }
+
+    void publishImuMsg_ROS(boost::shared_ptr<sensor_msgs::Imu>& imu)
+    {
+      if(inspva_)
+      {
+        tf2::Quaternion tf_orientation;
+        double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
+        if(azimuth < -360.0) // Rollover
+        {
+          azimuth += 360.0;
+        }
+
+        tf_orientation.setRPY(
+                           degreesToRadians(inspva_->roll),
+                          -degreesToRadians(inspva_->pitch),
+                          -degreesToRadians(azimuth));
+
+        imu->orientation = tf2::toMsg(tf_orientation);
+      }
+      else
+      {
+        ROS_WARN_THROTTLE(10, "INSPVA not available; 'Imu' message not generated.");
+        return;
       }
 
       if(corrimu_ && imu_rate_ > 0)
       {
-        imu->angular_velocity.x = corrimu_->pitch_rate * imu_rate_;
-        imu->angular_velocity.y = corrimu_->roll_rate  * imu_rate_;
-        imu->angular_velocity.z = corrimu_->yaw_rate   * imu_rate_;
+        double instantaneous_rate_factor = imu_rate_ / corrimu_->imu_data_count;
 
-        imu->linear_acceleration.x = corrimu_->lateral_acc      * imu_rate_;
-        imu->linear_acceleration.y = corrimu_->longitudinal_acc * imu_rate_;
-        imu->linear_acceleration.z = corrimu_->vertical_acc     * imu_rate_;
+        imu->angular_velocity.x =  corrimu_->roll_rate  * instantaneous_rate_factor;
+        imu->angular_velocity.y = -corrimu_->pitch_rate * instantaneous_rate_factor;
+        imu->angular_velocity.z =  corrimu_->yaw_rate   * instantaneous_rate_factor;
 
-
-        imu->angular_velocity_covariance[0]    = 1e-3;
-        imu->angular_velocity_covariance[4]    = 1e-3;
-        imu->angular_velocity_covariance[8]    = 1e-3;
-
-
-        imu->linear_acceleration_covariance[0] = 1e-3;
-        imu->linear_acceleration_covariance[4] = 1e-3;
-        imu->linear_acceleration_covariance[8] = 1e-3;
+        imu->linear_acceleration.x =  corrimu_->longitudinal_acc * instantaneous_rate_factor;
+        imu->linear_acceleration.y = -corrimu_->lateral_acc      * instantaneous_rate_factor;
+        imu->linear_acceleration.z =  corrimu_->vertical_acc     * instantaneous_rate_factor;
       }
-      else
-      {
-        imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-        imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
-      }
-
-      imu_pub_.publish(imu);
     }
+
 
     void publishInsStDevMsg(Oem7RawMessageIf::ConstPtr msg)
     {
@@ -219,7 +263,8 @@ namespace novatel_oem7_driver
 
   public:
     INSHandler():
-      imu_rate_(0)
+      imu_rate_(0),
+      oem7_imu_reference_frame_(false)
     {
     }
 
@@ -241,6 +286,14 @@ namespace novatel_oem7_driver
       if(imu_rate_ > 0)
       {
         ROS_INFO_STREAM("INS: IMU rate overriden to " << imu_rate_);
+      }
+
+      if(!nh_.getParam("oem7_imu_reference_frame", oem7_imu_reference_frame_))
+      {
+        if(oem7_imu_reference_frame_)
+        {
+          ROS_WARN_STREAM("INS Reference Frame: using OEM7 (X-forward) instead of ROS REP105.");
+        }
       }
     }
 
