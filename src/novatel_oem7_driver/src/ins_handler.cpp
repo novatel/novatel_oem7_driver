@@ -52,8 +52,6 @@ namespace
   typedef int imu_rate_t; ///< IMU message rate
 
   const imu_type_t IMU_TYPE_UNKNOWN = 0;
-
-  const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0; // Oem7: North=0, ROS: East=0
 }
 
 
@@ -219,13 +217,17 @@ namespace novatel_oem7_driver
     {
       if(inspva_)
       {
-        tf2::Quaternion tf_orientation;
+	// Azimuth: Oem7 (North=0) to ROS (East=0), using Oem7 LH rule
+        static const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0;
         double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
-        if(azimuth < -360.0) // Rollover
+        
+	static const double AZIMUTH_ROLLOVER = 360 - ZERO_DEGREES_AZIMUTH_OFFSET;
+	if(azimuth < -AZIMUTH_ROLLOVER) // Rollover
         {
-          azimuth += 360.0;
+          azimuth += AZIMUTH_ROLLOVER;
         }
 
+        tf2::Quaternion tf_orientation;
         tf_orientation.setRPY(
                            degreesToRadians(inspva_->roll),
                           -degreesToRadians(inspva_->pitch),
