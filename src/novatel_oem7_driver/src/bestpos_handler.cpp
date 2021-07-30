@@ -323,6 +323,24 @@ namespace novatel_oem7_driver
     gps_common::LLtoUTM(lat, lon, pt.y, pt.x, zone);
   }
 
+  /**
+   * Returns true if INS Solution is available
+   */
+  bool IsINSSolutionAvailable(const novatel_oem7_msgs::InertialSolutionStatus& status)
+  {
+    switch(status.status)
+    {
+      case novatel_oem7_msgs::InertialSolutionStatus::INS_HIGH_VARIANCE:
+      case novatel_oem7_msgs::InertialSolutionStatus::INS_SOLUTION_GOOD:
+      case novatel_oem7_msgs::InertialSolutionStatus::INS_SOLUTION_FREE:
+      case novatel_oem7_msgs::InertialSolutionStatus::INS_ALIGNMENT_COMPLETE:
+            return true;
+
+      default:
+        return false;
+    }
+  }
+
   /***
    * Handler of position-related messages. Synthesizes ROS messages GPSFix and NavSatFix from native Oem7 Messages.
    */
@@ -521,7 +539,9 @@ namespace novatel_oem7_driver
         bool prefer_INS = position_source_INS_; // Init to override value
         if(!position_source_INS_ && !position_source_BESTPOS_) // Not overriden: determine source on-the-fly based on quality
         {
-          if(bestpos_ && inspvax_)
+          if( IsINSSolutionAvailable(inspva_->status) &&
+              bestpos_                                &&
+              inspvax_)
           {
             ValueRelation time_rel = GetOem7MessageTimeRelation(inspva_->nov_header, bestpos_->nov_header);
             if(time_rel == REL_GT || time_rel == REL_EQ)
