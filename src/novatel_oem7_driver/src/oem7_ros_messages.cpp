@@ -430,7 +430,7 @@ MakeROSMessage<novatel_oem7_msgs::CORRIMU>(
   {
     const IMURATECORRIMUSMem* raw =
         reinterpret_cast<const IMURATECORRIMUSMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
-    corrimu->imu_data_count   = 0; // FIXME
+    corrimu->imu_data_count   = 1;
     corrimu->pitch_rate       = raw->pitch_rate;
     corrimu->roll_rate        = raw->roll_rate;
     corrimu->yaw_rate         = raw->yaw_rate;
