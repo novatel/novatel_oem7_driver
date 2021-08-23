@@ -199,7 +199,7 @@ namespace novatel_oem7_driver
         return;
       }
 
-      if(corrimu_ && imu_rate_ > 0)
+      if(corrimu_ && corrimu_->imu_data_count && imu_rate_ > 0)
       {
         double instantaneous_rate_factor = imu_rate_ / corrimu_->imu_data_count;
 
