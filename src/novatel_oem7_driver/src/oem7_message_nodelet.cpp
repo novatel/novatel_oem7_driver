@@ -346,7 +346,7 @@ namespace novatel_oem7_driver
           }
           else
           {
-            NODELET_ERROR_STREAM("Discarded corrupt ASCII response: '" << rsp_ << "'");
+            NODELET_ERROR_STREAM("Discarded corrupt ASCII response: '" << rsp << "'");
           }
         }
         else // Log
