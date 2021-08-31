@@ -22,15 +22,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <ros/ros.h>
-#include <nodelet/nodelet.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <message_handler.hpp>
 
-#include "novatel_oem7_msgs/Oem7RawMsg.h"
+#include "novatel_oem7_msgs/msg/oem7_raw_msg.hpp"
 #include "novatel_oem7_driver/oem7_messages.h"
 
-#include <boost/scoped_ptr.hpp>
+
 
 namespace novatel_oem7_driver
 {
@@ -41,9 +40,9 @@ namespace novatel_oem7_driver
   class RawMsgAdapter: public Oem7RawMessageIf
   {
   public:
-    const novatel_oem7_msgs::Oem7RawMsg::ConstPtr msg_;
+    const novatel_oem7_msgs::msg::Oem7RawMsg::ConstSharedPtr msg_;
 
-    RawMsgAdapter(const novatel_oem7_msgs::Oem7RawMsg::ConstPtr& msg):
+    RawMsgAdapter(const novatel_oem7_msgs::msg::Oem7RawMsg::ConstSharedPtr& msg):
       msg_(msg)
     {
     }
@@ -78,41 +77,38 @@ namespace novatel_oem7_driver
     }
   };
   /*
-   * Nodelet responsible for decoding raw Oem7 messages and generating specific ROS and novatel_oem7_msg messages.
+   * Node responsible for decoding raw Oem7 messages and generating specific ROS and novatel_oem7_msg messages.
    * Subscribes to "oem7_raw_msg", and loads plugins which advertise specific messages.
    * Raw oem7 messages are dispatched to plugins for decoding.
    */
-  class Oem7LogNodelet : public nodelet::Nodelet
+  class Oem7LogNode : public rclcpp::Node
   {
-    boost::scoped_ptr<MessageHandler> msg_handler_;
+    std::unique_ptr<MessageHandler> msg_handler_;
 
-    ros::Subscriber oem7_raw_msg_sub_;
-
-
-    public:
-    Oem7LogNodelet()
+    rclcpp::Subscription<novatel_oem7_msgs::msg::Oem7RawMsg>::SharedPtr oem7_raw_msg_sub_;
+   
+  public:
+    Oem7LogNode(const rclcpp::NodeOptions& options): 
+       rclcpp::Node("Oem7Log", options)
     {
-    }
-
-    void onInit()
-    {
-      ros::NodeHandle nh = getNodeHandle();
-      ros::NodeHandle priv_nh = getPrivateNodeHandle();
-      msg_handler_.reset(new MessageHandler(priv_nh));
-
-      oem7_raw_msg_sub_ = nh.subscribe("oem7_raw_msg", 100, &Oem7LogNodelet::oem7RawMsgCb, this);
+       msg_handler_ = std::make_unique<MessageHandler>(*this);
+       oem7_raw_msg_sub_ = create_subscription<novatel_oem7_msgs::msg::Oem7RawMsg>(
+		       "oem7_raw_msg", 
+		       100, 
+		       std::bind(&Oem7LogNode::oem7RawMsgCb, this, std::placeholders::_1));
     }
 
     /**
      * Dispatches raw messages for handling
      */
-    void oem7RawMsgCb(const novatel_oem7_msgs::Oem7RawMsg::ConstPtr& msg)
+    void oem7RawMsgCb(const novatel_oem7_msgs::msg::Oem7RawMsg::ConstSharedPtr msg)
     {
-      boost::shared_ptr<RawMsgAdapter> raw_msg = boost::make_shared<RawMsgAdapter>(msg);
+      std::shared_ptr<RawMsgAdapter> raw_msg = std::make_shared<RawMsgAdapter>(msg);
       msg_handler_->handleMessage(raw_msg);
     }
   };
 }
 
 
-PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::Oem7LogNodelet, nodelet::Nodelet);
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7LogNode)

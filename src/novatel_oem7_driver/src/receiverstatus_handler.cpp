@@ -24,15 +24,14 @@
 #include <novatel_oem7_driver/oem7_message_handler_if.hpp>
 #include <oem7_ros_publisher.hpp>
 
-#include <ros/ros.h>
 
-
+#include <cassert>
 #include <vector>
 
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
 
-#include "novatel_oem7_msgs/RXSTATUS.h"
+#include "novatel_oem7_msgs/msg/rxstatus.hpp"
 
 
 namespace novatel_oem7_driver
@@ -41,7 +40,7 @@ namespace novatel_oem7_driver
 
 
   /*** Oem7 Receiver errors strings - refer to Oem7 manual */
-  const str_vector_t RECEIVER_ERROR_STRS
+  const str_vector_t RECEIVER_ERROR_STRS =
   {
       "DRAM",
       "Invalid FW",
@@ -240,8 +239,8 @@ namespace novatel_oem7_driver
     "",
     "Clock freewheeling due to bad position integrity",
     "",
-    "Usable RTK Corrections: < 60%",
-    "Usable RTK Corrections: < 15%",
+    "Usable RTK Corrections: <60%",
+    "Usable RTK Corrections: <15%",
     "Bad RTK Geometry",
     "",
     "",
@@ -261,24 +260,27 @@ namespace novatel_oem7_driver
   };
 
 
+  /**
+   * Populate a list of bits and their corresponding strings
+   * from a bitmask.
+   */
+  template <class T, class U>
   void
   get_status_info(
-      uint32_t bitmask,
-      const str_vector_t&       str_map,
-      str_vector_t&             str_list,
-      std::vector<uint8_t>&     bit_list)
+      uint32_t bitmask,                  /** Input bitmask */
+      const str_vector_t&  bit2str_map, /** Input strings, one for each bit */
+      T&                   str_list,/** Output: list of set bits */
+      U&                   bit_list /** Output: list of set bit strings */
+      )
   {
     for(int bit = 0;
             bit < (sizeof(bitmask) * 8);
             bit++)
     {
-      if(bitmask & (1 << bit))
+      if(bitmask & (1 << bit)) // Bit is set in bitmask
       {
-        bit_list.push_back(bit);
-        if(str_map[bit].length() > 0)
-        {
-          str_list.push_back(str_map[bit]);
-        }
+        bit_list.push_back(bit); // Add bit to list
+        str_list.push_back(bit2str_map[bit]); // Add the corresponding string, even it it's empty, to align with bits.
       }
     }
   }
@@ -287,28 +289,24 @@ namespace novatel_oem7_driver
   /*** Handles RXSTATUS messages */
   class ReceiverStatusHandler: public Oem7MessageHandlerIf
   {
-    Oem7RosPublisher RXSTATUS_pub_;
+    std::unique_ptr<Oem7RosPublisher<novatel_oem7_msgs::msg::RXSTATUS>> RXSTATUS_pub_;
 
     std::string frame_id_;
 
   public:
-    ReceiverStatusHandler()
+
+    void initialize(rclcpp::Node& node)
     {
       static const size_t NUM_BITS = sizeof(uint32_t) * 8;
+
       assert(RECEIVER_ERROR_STRS.size() == NUM_BITS);
       assert(AUX1_STATUS_STRS.size()    == NUM_BITS);
       assert(AUX2_STATUS_STRS.size()    == NUM_BITS);
       assert(AUX3_STATUS_STRS.size()    == NUM_BITS);
       assert(AUX4_STATUS_STRS.size()    == NUM_BITS);
-    }
 
-    ~ReceiverStatusHandler()
-    {
-    }
 
-    void initialize(ros::NodeHandle& nh)
-    {
-      RXSTATUS_pub_.setup<novatel_oem7_msgs::RXSTATUS>("RXSTATUS", nh);
+      RXSTATUS_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::RXSTATUS>>("RXSTATUS", node);
     }
 
     const std::vector<int>& getMessageIds()
@@ -319,18 +317,19 @@ namespace novatel_oem7_driver
 
     void handleMsg(Oem7RawMessageIf::ConstPtr msg)
     {
-      boost::shared_ptr<novatel_oem7_msgs::RXSTATUS> rxstatus;
+      std::shared_ptr<novatel_oem7_msgs::msg::RXSTATUS> rxstatus;
       MakeROSMessage(msg, rxstatus);
 
       // Populate status strings:
       get_status_info(rxstatus->error,     RECEIVER_ERROR_STRS,  rxstatus->error_strs,     rxstatus->error_bits);
+
       get_status_info(rxstatus->rxstat,    RECEIVER_STATUS_STRS, rxstatus->rxstat_strs,    rxstatus->rxstat_bits);
       get_status_info(rxstatus->aux1_stat, AUX1_STATUS_STRS,     rxstatus->aux1_stat_strs, rxstatus->aux1_stat_bits);
       get_status_info(rxstatus->aux2_stat, AUX2_STATUS_STRS,     rxstatus->aux2_stat_strs, rxstatus->aux2_stat_bits);
       get_status_info(rxstatus->aux3_stat, AUX3_STATUS_STRS,     rxstatus->aux3_stat_strs, rxstatus->aux3_stat_bits);
       get_status_info(rxstatus->aux4_stat, AUX4_STATUS_STRS,     rxstatus->aux4_stat_strs, rxstatus->aux4_stat_bits);
 
-      RXSTATUS_pub_.publish(rxstatus);
+      RXSTATUS_pub_->publish(rxstatus);
     }
   };
 
@@ -338,5 +337,5 @@ namespace novatel_oem7_driver
 
 }
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::ReceiverStatusHandler, novatel_oem7_driver::Oem7MessageHandlerIf)

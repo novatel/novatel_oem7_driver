@@ -1,30 +1,37 @@
 ARG ROS_DISTRO
 ARG ROS_ARCH
+
+
 from ${ROS_ARCH}/ros:${ROS_DISTRO}
 
+
 ARG ROS_DISTRO
-ARG ROS_ARCH
 ARG ROS=ros-${ROS_DISTRO}
 ARG USR
 
 SHELL ["/bin/bash", "-c"]
 
+RUN apt-get update && apt-get install -y sudo vim git nano curl 
 
 RUN if [ "$USR" == "build" ]; then \
-	apt-get update && apt-get install -y \
-           			${ROS}-rosdoc-lite \
-                                ${ROS}-tf2-geometry-msgs \
-                                ${ROS}-gps-common \
-                                ${ROS}-nav-msgs \
-                                ${ROS}-nmea-msgs \
-                                dh-make fakeroot python3-pip &&\
-                                pip3 install bloom \
+	apt-get install -y \
+        ${ROS}-tf2-geometry-msgs \
+        ${ROS}-gps-msgs \
+        ${ROS}-gps-tools \
+        ${ROS}-nav-msgs \
+        ${ROS}-nmea-msgs \
+        ${ROS}-ament-cmake-nose \
+        socat \
+        dh-make fakeroot python3-pip \
+        libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev &&\
+        pip3 install bloom \
 ;fi
 
-RUN apt-get update && apt-get install -y sudo vim nano
+RUN python3 -m pip install nose
 
 # Uncomment this to support building .debs for new ROS distros, where we are not in the index yet; add distro to yaml.
-# RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
+RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
+
 
 RUN groupadd -g 1000 ${USR}
 RUN useradd -u 1000 -g 1000 -G sudo,${USR},dialout -ms /bin/bash ${USR}

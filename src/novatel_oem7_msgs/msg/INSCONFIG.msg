@@ -1,4 +1,4 @@
-Header              header
+std_msgs/Header     header
 Oem7Header          nov_header
 uint32              imu_type
 uint8               mapping
@@ -7,7 +7,7 @@ uint16              heave_window
 uint32              profile
 uint8[4]            enabled_updates
 INSAlignmentMode    alignment_mode
-INSOutputFrame	    relative_ins_output_frame
+INSOutputFrame      relative_ins_output_frame
 bool                relative_ins_output_direction
 INSReceiverStatus   ins_receiver_status
 uint8               ins_seed_enabled

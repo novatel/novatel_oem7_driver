@@ -26,24 +26,22 @@
 
 #include <oem7_ros_publisher.hpp>
 
-#include <ros/ros.h>
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
 
-#include "novatel_oem7_msgs/TIME.h"
+#include "novatel_oem7_msgs/msg/time.hpp"
 
 namespace novatel_oem7_driver
 {
   class TimeHandler: public Oem7MessageHandlerIf
   {
-    Oem7RosPublisher TIME_pub_;
-
+    std::unique_ptr<Oem7RosPublisher<novatel_oem7_msgs::msg::TIME>> TIME_pub_;
 
     void publishTIME(Oem7RawMessageIf::ConstPtr msg)
     {
-      boost::shared_ptr<novatel_oem7_msgs::TIME> time;
+      std::shared_ptr<novatel_oem7_msgs::msg::TIME> time;
       MakeROSMessage(msg, time);
-      TIME_pub_.publish(time);
+      TIME_pub_->publish(time);
     }
 
   public:
@@ -55,9 +53,9 @@ namespace novatel_oem7_driver
     {
     }
 
-    void initialize(ros::NodeHandle& nh)
+    void initialize(rclcpp::Node& node)
     {
-      TIME_pub_.setup<novatel_oem7_msgs::TIME>("TIME", nh);
+      TIME_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::TIME>>("TIME", node);
     }
 
     const std::vector<int>& getMessageIds()
@@ -73,5 +71,5 @@ namespace novatel_oem7_driver
   };
 }
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::TimeHandler, novatel_oem7_driver::Oem7MessageHandlerIf)

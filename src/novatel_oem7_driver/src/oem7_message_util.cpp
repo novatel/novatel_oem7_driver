@@ -26,7 +26,6 @@
 
 #include "novatel_oem7_driver/oem7_messages.h"
 
-
 namespace
 {
   bool is_initialized = false;
@@ -44,30 +43,12 @@ namespace novatel_oem7_driver
     GPS_REFTIME_STATUS_UNKNOWN = 20 // Refer to Oem7 manual.
   };
 
-  void initializeOem7MessageUtil(ros::NodeHandle& nh)
+  void initializeOem7MessageUtil(rclcpp::Node& nh)
   {
     if(is_initialized)
       return;
 
-    const std::string ns(ros::this_node::getNamespace());
-    nh.getParam(ns + "/oem7_msgs", oem7_msg_id_map);
-    for(const auto& msg_itr : oem7_msg_id_map)
-    {
-      ROS_DEBUG_STREAM("Oem7 Message: " << msg_itr.first << ":" << msg_itr.second);
-      oem7_msg_name_map[msg_itr.second] = msg_itr.first;
-    }
-
     is_initialized = true;
-  }
-
-  int getOem7MessageId(const std::string& msg_name)
-  {
-    return oem7_msg_id_map[msg_name];
-  }
-
-  const std::string& getOem7MessageName(int msg_id)
-  {
-    return oem7_msg_name_map[msg_id];
   }
 
 
@@ -77,7 +58,7 @@ namespace novatel_oem7_driver
    */
   void getOem7Header(
       const Oem7RawMessageIf::ConstPtr& raw_msg,
-      novatel_oem7_msgs::Oem7Header::Type& hdr
+      novatel_oem7_msgs::msg::Oem7Header& hdr
       )
   {
     const Oem7MessageHeaderMem* hdr_mem = reinterpret_cast<const Oem7MessageHeaderMem*>(raw_msg->getMessageData(0));
@@ -92,13 +73,13 @@ namespace novatel_oem7_driver
 
   void getOem7ShortHeader(
       const Oem7RawMessageIf::ConstPtr& raw_msg,  ///< [in] Raw binary message
-      novatel_oem7_msgs::Oem7Header::Type& hdr     ///< [out] Oem7 Message Header
+      novatel_oem7_msgs::msg::Oem7Header& hdr     ///< [out] Oem7 Message Header
       )
   {
     const Oem7MessgeShortHeaderMem* hdr_mem = reinterpret_cast<const Oem7MessgeShortHeaderMem*>(raw_msg->getMessageData(0));
 
     hdr.message_id             = hdr_mem->message_id;
-    hdr.message_type           = novatel_oem7_msgs::Oem7Header::OEM7MSGTYPE_LOG; // Always log
+    hdr.message_type           = novatel_oem7_msgs::msg::Oem7Header::OEM7MSGTYPE_LOG; // Always log
     hdr.sequence_number        = 0; // Not available; assume it's a single log.
     hdr.time_status            = GPS_REFTIME_STATUS_UNKNOWN;
     hdr.gps_week_number        = hdr_mem->gps_week;

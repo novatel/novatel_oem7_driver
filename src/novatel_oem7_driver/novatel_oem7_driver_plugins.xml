@@ -1,5 +1,5 @@
-
-<library path="lib/libnovatel_oem7_driver">
+<class_libraries>
+<library path="novatel_oem7_driver">
     <class name="Oem7ReceiverTcp" type="novatel_oem7_driver::Oem7ReceiverTcp" base_class_type="novatel_oem7_driver::Oem7ReceiverIf">
         <description>
             Oem7 Receiver TCP interface.
@@ -71,3 +71,4 @@
 
 </library>
 
+</class_libraries>

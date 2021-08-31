@@ -24,10 +24,10 @@
 
 #include <novatel_oem7_driver/oem7_receiver_if.hpp>
 
-#include <ros/ros.h>
 
 #include <boost/asio.hpp>
 
+#include <rclcpp/rclcpp.hpp>
 
 
 namespace novatel_oem7_driver
@@ -48,7 +48,8 @@ namespace novatel_oem7_driver
 
 
   protected:
-    ros::NodeHandle nh_;
+
+    rclcpp::Node* node_;
 
     T endpoint_; ///<  boost::asio communication endoint; socket, serial port, etc.
 
@@ -59,7 +60,7 @@ namespace novatel_oem7_driver
     {
       if(num_io_errors_ >= max_num_io_errors_)
       {
-        ROS_ERROR_STREAM("Oem7Receiver: Max Num IO errors exceeded: " << max_num_io_errors_);
+        RCLCPP_ERROR_STREAM(node_->get_logger(), "Oem7Receiver: Max Num IO errors exceeded: " << max_num_io_errors_);
         return true;
       }
       else
@@ -92,12 +93,13 @@ namespace novatel_oem7_driver
     {
       boost::system::error_code err;
       endpoint_.close(err);
-      ROS_ERROR_STREAM("Oem7Receiver: close error: " <<  err.value());
+      RCLCPP_ERROR_STREAM(node_->get_logger(), "Oem7Receiver: close error: " <<  err.value());
       sleep(1.0);
     }
 
   public:
     Oem7Receiver():
+      node_(NULL),
       io_(),
       endpoint_(io_),
       max_num_io_errors_(DEFAULT_MAX_NUM_IO_ERRORS),
@@ -109,18 +111,19 @@ namespace novatel_oem7_driver
     {
     }
 
-    virtual bool initialize(ros::NodeHandle& h)
+    virtual bool initialize(rclcpp::Node& node)
     {
-      nh_ = h;
+      node_ = &node;
 
-      this->nh_.getParam("oem7_max_io_errors", max_num_io_errors_);
+      node_->declare_parameter("oem7_max_io_errors");
+      max_num_io_errors_ = node_->get_parameter("oem7_max_io_errors").as_int();
 
       return true;
     }
 
     virtual bool read( boost::asio::mutable_buffer buf, size_t& rlen)
     {
-      while(!ros::isShuttingDown() && !in_error_state())
+      while(rclcpp::ok() && !in_error_state())
       {
         endpoint_try_open();
 
@@ -138,10 +141,11 @@ namespace novatel_oem7_driver
 
         num_io_errors_++;
 
-        ROS_ERROR_STREAM("Oem7Receiver: read error: " <<  err.value()
-                                                      <<"; endpoint open: " << endpoint_.is_open()
-                                                      <<" errors/max: " << num_io_errors_
-                                                      <<"/"             << max_num_io_errors_);
+        RCLCPP_ERROR_STREAM(node_->get_logger(),
+              "Oem7Receiver: read error: " <<  err.value()
+                                           <<"; endpoint open: " << endpoint_.is_open()
+                                           <<" errors/max: " << num_io_errors_
+                                           <<"/"             << max_num_io_errors_);
         endpoint_close();
       }
 
@@ -150,7 +154,7 @@ namespace novatel_oem7_driver
 
     virtual bool write(boost::asio::const_buffer buf)
     {
-      if(in_error_state() || ros::isShuttingDown())
+      if(in_error_state() || !rclcpp::ok())
         return false;
 
       endpoint_try_open();
@@ -159,9 +163,10 @@ namespace novatel_oem7_driver
       endpoint_write(buf, err);
       if(err.value() != boost::system::errc::success)
       {
-        num_io_errors_++;
+         num_io_errors_++;
 
-         ROS_ERROR_STREAM("Oem7Receiver: write error: " << err.value() << "; endpoint open: " << endpoint_.is_open());
+         RCLCPP_ERROR_STREAM(node_->get_logger(),
+                             "Oem7Receiver: write error: " << err.value() << "; endpoint open: " << endpoint_.is_open());
          endpoint_close();
          return false;
       }

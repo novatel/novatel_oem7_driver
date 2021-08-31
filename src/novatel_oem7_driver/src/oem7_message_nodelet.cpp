@@ -22,33 +22,46 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <ros/ros.h>
-#include <nodelet/nodelet.h>
-#include <ros/callback_queue.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mutex>
 #include <condition_variable>
 #include <map>
+#include <algorithm>
 
 #include <boost/asio.hpp>
 
-#include "novatel_oem7_msgs/Oem7AbasciiCmd.h"
-#include "novatel_oem7_msgs/Oem7RawMsg.h"
+#include "novatel_oem7_msgs/srv/oem7_abascii_cmd.hpp"
+#include "novatel_oem7_msgs/msg/oem7_raw_msg.h"
 
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include <novatel_oem7_driver/oem7_receiver_if.hpp>
 #include <novatel_oem7_driver/oem7_message_decoder_if.hpp>
 
 #include <novatel_oem7_driver/oem7_message_util.hpp>
-#include <novatel_oem7_driver/ros_messages.hpp>
 #include <oem7_ros_publisher.hpp>
 
 #include <message_handler.hpp>
+#include <driver_parameter.hpp>
+
+#include "novatel_oem7_msgs/msg/oem7_header.hpp"
 
 
 namespace novatel_oem7_driver
 {
+  typedef std::vector<std::string> init_cmds_t; ///< List of initialization commands.
+
+  /**
+   * @return true if the string has the specified prefix
+   */
+  bool isPrefix(const std::string& prefix, const std::string& str)
+  {
+     auto const diff_pos = std::mismatch(prefix.begin(), prefix.end(), str.begin());
+     return diff_pos.first == prefix.end();
+  }
+
+
   /**
    * Nodelet publishing raw oem7 messages and issuing oem7 commands.
    * Loads plugins responsible for obtaining byte input from the Oem7 receiver, and decoding it into raw oem7 messages.
@@ -56,35 +69,38 @@ namespace novatel_oem7_driver
    */
   class Oem7MessageNodelet :
       public Oem7MessageDecoderUserIf,
-      public nodelet::Nodelet
+      public rclcpp::Node
   {
     std::mutex nodelet_mtx_; ///< Protects nodelet internal state
 
     double publish_delay_sec_; ///< Delay after publishing each message; used to throttle output with static data sources.
 
-    Oem7RosPublisher oem7rawmsg_pub_; ///< Publishes raw Oem7 messages.
+    Oem7RosPublisher<novatel_oem7_msgs::msg::Oem7RawMsg> oem7rawmsg_pub_; ///< Publishes raw Oem7 messages.
     bool publish_unknown_oem7raw_; ///< Publish all unknown messages to 'Oem7Raw'
 
-    ros::CallbackQueue timer_queue_; ///< Dedicated queue for command requests.
-    boost::shared_ptr<ros::AsyncSpinner> timer_spinner_; ///< 1 thread servicing the command queue.
+
+    rclcpp::callback_group::CallbackGroup::SharedPtr msg_service_cb_grp_; ///< Message service callbacks
+    rclcpp::callback_group::CallbackGroup::SharedPtr cmd_service_cb_grp_; ///< Command service callbacks
+
+    rclcpp::Service<novatel_oem7_msgs::srv::Oem7AbasciiCmd>::SharedPtr oem7_abascii_cmd_srv_;
 
     // Command service
+
+
     std::condition_variable rsp_ready_cond_; ///< Response ready, signaled from response handler to Oem7 Cmd Handler.
     std::mutex              rsp_ready_mtx_; ///< Response condition guard
     std::string rsp_; ///< The latest response from Oem7 receiver.
-    ros::CallbackQueue queue_; //< Dedicated queue for command requests.
-    boost::shared_ptr<ros::AsyncSpinner> aspinner_; ///< 1 thread servicing the command queue.
-    ros::ServiceServer oem7_cmd_srv_; ///< Oem7 command service.
 
 
-    ros::Timer timer_; ///< One time service callback.
+    rclcpp::TimerBase::SharedPtr timer_; ///< One time service callback.
+    rclcpp::TimerBase::SharedPtr recvr_init_timer_; ///< One time init callback.
 
     pluginlib::ClassLoader<novatel_oem7_driver::Oem7ReceiverIf> recvr_loader_;
     pluginlib::ClassLoader<novatel_oem7_driver::Oem7MessageDecoderIf> oem7_msg_decoder_loader;
 
-    std::set<int> raw_msg_pub_; ///< Set of raw messages to publish.
+    std::set<long> raw_msg_pub_; ///< Set of raw messages to publish.
 
-    boost::shared_ptr<MessageHandler> msg_handler_; ///< Dispatches individual messages for handling.
+    std::shared_ptr<MessageHandler> msg_handler_; ///< Dispatches individual messages for handling.
 
     // Log statistics
     long total_log_count_; ///< Total number of logs received
@@ -96,111 +112,123 @@ namespace novatel_oem7_driver
     long discarded_msg_num_; ///< Number of messages received and discarded by the driver.
 
 
-    boost::shared_ptr<novatel_oem7_driver::Oem7MessageDecoderIf> msg_decoder; ///< Message Decoder plugin
-    boost::shared_ptr<novatel_oem7_driver::Oem7ReceiverIf> recvr_; ///< Oem7 Receiver Interface plugin
+    std::shared_ptr<novatel_oem7_driver::Oem7MessageDecoderIf> msg_decoder; ///< Message Decoder plugin
+    std::shared_ptr<novatel_oem7_driver::Oem7ReceiverIf> recvr_; ///< Oem7 Receiver Interface plugin
 
 
+    bool rcvr_init_ok_; ///< Initialization of receiver has completed successfully.
+    bool rcvr_init_strict_; ///< When TRUE, publish messages other than oem7raw only after successful receiver initialization.
+                            ///< This prevents arbitrary (partial, stale) receiver configurations from generating messages.
 
-    /**
-     * Wraps actual initializating for exception handling.
-     */
-    void onInit()
-    {
-      try
-      {
-        onInitImpl();
-      }
-      catch(std::exception  const& ex)
-      {
-        NODELET_FATAL_STREAM("Fatal: " << ex.what());
+    int rcvr_init_num_errors_; ///< Error count during receiver initialization
 
-        ros::shutdown();
-      }
-    }
 
     /**
      * Loads plugins, sets up threading/callbacks, advertises messages and services.
      */
-    void onInitImpl()
+    void construct()
     {
-      NODELET_INFO_STREAM(getName() << ": Oem7MessageNodelet v." << novatel_oem7_driver_VERSION << "; "
-                                                                 << __DATE__ << " " << __TIME__);
+      //auto e  = rcutils_logging_set_logger_level(
+      //        get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG);
+
+      RCLCPP_INFO_STREAM(get_logger(), "Oem7MessageNodelet v." << novatel_oem7_driver_VERSION << "; "
+                                                                   << __DATE__ << " " << __TIME__);
 
       std::lock_guard<std::mutex> guard(nodelet_mtx_);
 
+      initializeOem7MessageUtil(*this);
 
-      initializeOem7MessageUtil(getNodeHandle());
 
-      getNodeHandle().setCallbackQueue(&timer_queue_);
+      declare_parameter<bool>("oem7_strict_receiver_init", true);
+      get_parameter("oem7_strict_receiver_init", rcvr_init_strict_);
+      
+      declare_parameter<bool>("oem7_publish_unknown_oem7raw", false);
+      get_parameter("oem7_publish_unknown_oem7raw", publish_unknown_oem7raw_);
 
-      getPrivateNodeHandle().getParam("oem7_publish_unknown_oem7raw", publish_unknown_oem7raw_);
-
-      getPrivateNodeHandle().getParam("oem7_publish_delay", publish_delay_sec_);
+      declare_parameter<double>("oem7_publish_delay", 0.0);
+      get_parameter("oem7_publish_delay", publish_delay_sec_);
       if(publish_delay_sec_ > 0)
       {
-        NODELET_WARN_STREAM("Publish Delay: " << publish_delay_sec_ << " seconds. Is this is a test?");
+        RCLCPP_WARN_STREAM(get_logger(), "Publish Delay: " << publish_delay_sec_ << " seconds. Is this is a test?");
       }
+
       // Load plugins
 
       // Load Oem7Receiver
-      std::string oem7_if_name;
-      getPrivateNodeHandle().getParam("oem7_if", oem7_if_name);
-      recvr_ = recvr_loader_.createInstance(oem7_if_name);
-      recvr_->initialize(getPrivateNodeHandle());
+      declare_parameter("oem7_if");
+      rclcpp::Parameter oem7_if_param = get_parameter("oem7_if");
+      recvr_ = recvr_loader_.createSharedInstance(oem7_if_param.as_string());
+      recvr_->initialize(*this);
 
       // Load Oem7 Message Decoder
-      std::string msg_decoder_name;
-      getPrivateNodeHandle().getParam("oem7_msg_decoder", msg_decoder_name);
-      msg_decoder = oem7_msg_decoder_loader.createInstance(msg_decoder_name);
-      msg_decoder->initialize(getPrivateNodeHandle(), recvr_.get(), this);
+      declare_parameter("oem7_msg_decoder");
+      rclcpp::Parameter msg_decoder_param = get_parameter("oem7_msg_decoder");
+      msg_decoder = oem7_msg_decoder_loader.createSharedInstance(msg_decoder_param.as_string());
+      msg_decoder->initialize(*this, recvr_.get(), this);
 
 
-      msg_handler_.reset(new MessageHandler(getPrivateNodeHandle()));
+      msg_handler_.reset(new MessageHandler(*this));
 
       // Oem7 raw messages to publish.
-      std::vector<std::string> oem7_raw_msgs;
-      bool ok = getPrivateNodeHandle().getParam("oem7_raw_msgs", oem7_raw_msgs);
-      for(const auto& msg : oem7_raw_msgs)
+      declare_parameter("oem7_raw_msgs");
+      rclcpp::Parameter oem7_raw_msgs_param = get_parameter("oem7_raw_msgs");
+
+      std::vector<long> raw_msg = oem7_raw_msgs_param.as_integer_array();
+      for(const auto& msg : raw_msg)
       {
-        int raw_msg_id = getOem7MessageId(msg);
-        if(raw_msg_id == 0)
+        if(raw_msg_pub_.find(msg) == raw_msg_pub_.end())
         {
-          NODELET_ERROR_STREAM("Unknown Oem7 message '" << msg );
+          raw_msg_pub_.insert(msg);
+
+          RCLCPP_INFO_STREAM(get_logger(), "Oem7 Raw message '" << msg << "' will be published." );
         }
         else
         {
-          NODELET_INFO_STREAM("Oem7 Raw message '" << msg << "' will be published." );
-          raw_msg_pub_.insert(raw_msg_id);
+          RCLCPP_WARN_STREAM(get_logger(), "Oem7 Raw message '" << msg << "' duplicate specified." );
         }
       }
 
-      oem7rawmsg_pub_.setup<novatel_oem7_msgs::Oem7RawMsg>("Oem7RawMsg", getPrivateNodeHandle());
+      msg_service_cb_grp_ = this->create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
+      cmd_service_cb_grp_ = this->create_callback_group(rclcpp::callback_group::CallbackGroupType::MutuallyExclusive);
 
-      timer_spinner_.reset(new ros::AsyncSpinner(1, &timer_queue_)); //< 1 thread servicing the command queue.
-      timer_spinner_->start();
 
-      timer_ =  getNodeHandle().createTimer(ros::Duration(0.0), &Oem7MessageNodelet::serviceLoopCb, this, true);
+      timer_ = create_wall_timer(
+                std::chrono::milliseconds(1),
+                std::bind(
+                    &Oem7MessageNodelet::serviceLoopCb,
+                    this),
+                    msg_service_cb_grp_);
 
-      aspinner_.reset(new ros::AsyncSpinner(1, &queue_));
-      aspinner_->start();
 
-      sleep(0.5); // Allow all threads to start
+      recvr_init_timer_ = create_wall_timer(
+                std::chrono::milliseconds(50),
+                std::bind(
+                    &Oem7MessageNodelet::initCb,
+                    this),
+                    cmd_service_cb_grp_);
 
-      ros::AdvertiseServiceOptions ops = ros::AdvertiseServiceOptions::create<novatel_oem7_msgs::Oem7AbasciiCmd>(
-                                                            "Oem7Cmd",
-                                                            boost::bind(&Oem7MessageNodelet::serviceOem7AbasciiCb, this, _1, _2),
-                                                            ros::VoidConstPtr(),
-                                                            &queue_);
-      oem7_cmd_srv_ = getPrivateNodeHandle().advertiseService(ops);
+
+      // CMD service is created in initCb(), after our own receiver initialization is complete.
+      // This ensure that external commands do not interfere.
     }
 
 
     /**
      * Called to request O7AbasciiCmd service
      */
-    bool serviceOem7AbasciiCb(novatel_oem7_msgs::Oem7AbasciiCmd::Request& req, novatel_oem7_msgs::Oem7AbasciiCmd::Response& rsp)
+    void
+    serviceOem7AbasciiCb(
+          const std::shared_ptr<novatel_oem7_msgs::srv::Oem7AbasciiCmd::Request>  req,
+                std::shared_ptr<novatel_oem7_msgs::srv::Oem7AbasciiCmd::Response> rsp)
     {
-      NODELET_DEBUG_STREAM("AACmd: cmd '" << req.cmd << "'");
+      issueOem7AbasciiCmd(req->cmd, rsp->rsp);
+    }
+
+    void issueOem7AbasciiCmd(
+        const std::string& cmd,
+        std::string& rsp)
+    {
+      RCLCPP_DEBUG_STREAM(get_logger(), "AACmd: cmd '" << cmd << "'");
 
       // Retry sending the commands. For configuration commands, there is no harm in duplicates.
       for(int attempt = 0;
@@ -212,7 +240,7 @@ namespace novatel_oem7_driver
     	  rsp_.clear();
     	}
 
-        recvr_->write(boost::asio::buffer(req.cmd));
+        recvr_->write(boost::asio::buffer(cmd));
         static const std::string NEWLINE("\n");
         recvr_->write(boost::asio::buffer(NEWLINE));
 
@@ -221,23 +249,23 @@ namespace novatel_oem7_driver
                                       std::chrono::steady_clock::now() + std::chrono::seconds(3)
                                       ) == std::cv_status::no_timeout)
         {
-          rsp.rsp = rsp_;
+          rsp = rsp_;
           break;
         }
 
-        NODELET_ERROR_STREAM("Attempt " << attempt << ": timed out waiting for response.");
+        RCLCPP_ERROR_STREAM(get_logger(), "AACmd '" << cmd << "': Attempt " << attempt << ": timed out waiting for response.");
       }
 
-      if(rsp.rsp == "OK")
+      if(rsp == "OK")
       {
-        NODELET_INFO_STREAM("AACmd '" << req.cmd << "' : " << "'" << rsp.rsp << "'");
+        RCLCPP_INFO_STREAM(get_logger(), "AACmd '" << cmd << "' : " << "'" << rsp << "'");
       }
       else
       {
-        NODELET_ERROR_STREAM("AACmd '" << req.cmd << "' : " << "'" << rsp.rsp << "'");
-      }
+        RCLCPP_ERROR_STREAM(get_logger(), "AACmd '" << cmd << "' : " << "'" << rsp << "'");
 
-      return true;
+        rcvr_init_num_errors_++;
+      }
     }
 
     /**
@@ -245,8 +273,8 @@ namespace novatel_oem7_driver
      */
     void outputLogStatistics()
     {
-      NODELET_INFO("Log Statistics:");
-      NODELET_INFO_STREAM("Logs: " << total_log_count_ << "; unknown: "   << unknown_msg_num_
+      RCLCPP_INFO_STREAM(get_logger(), "Log Statistics:");
+      RCLCPP_INFO_STREAM(get_logger(), "Logs: " << total_log_count_ << "; unknown: "   << unknown_msg_num_
                                                        << "; discarded: " << discarded_msg_num_);
 
       for(log_count_map_t::iterator itr = log_counts_.begin();
@@ -256,7 +284,7 @@ namespace novatel_oem7_driver
         int  id    = itr->first;
         long count = itr->second;
 
-        NODELET_INFO_STREAM("Log[" << getOem7MessageName(id) << "](" << id << "):" <<  count);
+        RCLCPP_INFO_STREAM(get_logger(), "Log[" << id << "]:" <<  count);
       }
     }
 
@@ -274,6 +302,7 @@ namespace novatel_oem7_driver
       log_counts_[raw_msg->getMessageId()]++;
 
 
+      assert(total_log_count_ > 0);
       if((total_log_count_ % 10000) == 0)
       {
         outputLogStatistics();
@@ -282,7 +311,7 @@ namespace novatel_oem7_driver
 
     void publishOem7RawMsg(Oem7RawMessageIf::ConstPtr raw_msg)
     {
-        novatel_oem7_msgs::Oem7RawMsg::Ptr oem7_raw_msg(new novatel_oem7_msgs::Oem7RawMsg);
+        novatel_oem7_msgs::msg::Oem7RawMsg::SharedPtr oem7_raw_msg = std::make_shared<novatel_oem7_msgs::msg::Oem7RawMsg>();
         oem7_raw_msg->message_data.insert(
                                         oem7_raw_msg->message_data.end(),
                                         raw_msg->getMessageData(0),
@@ -299,18 +328,18 @@ namespace novatel_oem7_driver
      */
     void onNewMessage(Oem7RawMessageIf::ConstPtr raw_msg)
     {
-      NODELET_DEBUG_STREAM("onNewMsg: fmt= " << raw_msg->getMessageFormat()
-                              <<   " type= " << raw_msg->getMessageType());
+      RCLCPP_DEBUG_STREAM(get_logger(),
+                           ">Raw[ID: " << raw_msg->getMessageId()         <<
+                                " T: " << raw_msg->getMessageType()       <<
+                                " F: " << raw_msg->getMessageFormat()     <<
+                                " L: " << raw_msg->getMessageDataLength() <<
+                                "]");
 
       // Discard all unknown messages; this is normally when dealing with responses to ASCII commands.
       if(raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_UNKNOWN)
       {
         ++unknown_msg_num_;
-        NODELET_DEBUG_STREAM("Unknown:    [ID: "   << raw_msg->getMessageId()          <<
-                                          "Type: " << raw_msg->getMessageType()        <<
-                                          "Fmt: "  << raw_msg->getMessageFormat()      <<
-                                          "Len: "  << raw_msg->getMessageDataLength()  <<
-                                          "]");
+
         if(publish_unknown_oem7raw_)
         {
             publishOem7RawMsg(raw_msg);
@@ -327,16 +356,17 @@ namespace novatel_oem7_driver
         {
           std::string msg(raw_msg->getMessageData(0), raw_msg->getMessageData(raw_msg->getMessageDataLength()));
 
-          NODELET_DEBUG_STREAM(">---------------------------" << std::endl
-                            << msg                            << std::endl
+          RCLCPP_DEBUG_STREAM(get_logger(),
+                            ">---------------------------" << std::endl
+                            << msg                         << std::endl
                             << "<---------------------------");
         }
 
         if(raw_msg->getMessageType() == Oem7RawMessageIf::OEM7MSGTYPE_RSP) // Response
         {
           std::string rsp(raw_msg->getMessageData(0), raw_msg->getMessageData(raw_msg->getMessageDataLength()));
-          if(rsp.find_first_not_of(" /t/r/n") != std::string::npos && // ignore all-whitespace responses
-             std::all_of(rsp.begin(), rsp.end(), [](char c){return std::isprint(c);})) // Ignore any corrupt responses
+          if(rsp.find_first_not_of(" /t/r/n") != std::string::npos /* && // ignore all-whitespace responses
+             std::all_of(rsp.begin(), rsp.end(), [](char c){ return std::isprint(c);} )*/) // Ignore any corrupt responses
           {
             {
               std::lock_guard<std::mutex> lk(rsp_ready_mtx_);
@@ -346,17 +376,24 @@ namespace novatel_oem7_driver
           }
           else
           {
-            NODELET_ERROR_STREAM("Discarded corrupt ASCII response: '" << rsp << "'");
+            RCLCPP_ERROR_STREAM(get_logger(), "Discarded corrupt ASCII response: '" << rsp << "'");
           }
         }
         else // Log
         {
-          if( raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY  || // binary
+          if( raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_SHORTBINARY ||
+              raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY       ||
              (raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_ASCII && isNMEAMessage(raw_msg)))
           {
-            updateLogStatistics(raw_msg);
+            if(rcvr_init_ok_ || !rcvr_init_strict_)
+            {
+              updateLogStatistics(raw_msg);
 
-            msg_handler_->handleMessage(raw_msg);
+              msg_handler_->handleMessage(raw_msg);
+            }
+
+
+            // Publish raw messages regardless; they are all for debugging.
 
             // Publish Oem7RawMsg if specified
             if(raw_msg_pub_.find(raw_msg->getMessageId()) != raw_msg_pub_.end())
@@ -377,35 +414,156 @@ namespace novatel_oem7_driver
     /**
      * Service loop; drives Oem7 message decoder. onNewMessage is called on this thread.
      */
-    void serviceLoopCb(const ros::TimerEvent& event)
+
+    void serviceLoopCb()
     {
+      RCLCPP_DEBUG_STREAM(get_logger(), "Service" );
+
+      timer_->cancel(); // One-time entry into service loop.
+
       msg_decoder->service();
 
       outputLogStatistics();
 
-      NODELET_WARN("No more input from Decoder; Oem7MessageNodelet finished.");
+      RCLCPP_WARN_STREAM(get_logger(), "No more input from Decoder; Oem7MessageNodelet finished." );
     }
 
+    void initCb()
+    {
+      RCLCPP_INFO_STREAM(get_logger(), "Standard Receiver Initialization:" );
 
-  public:
-    Oem7MessageNodelet():
+      recvr_init_timer_->cancel();
+
+      DriverParameter<init_cmds_t> init_cmds_p(    "receiver_init_commands", init_cmds_t(), *this);
+      DriverParameter<init_cmds_t> ext_init_cmds_p("receiver_ext_init_commands", init_cmds_t(), *this);
+
+      for(const auto& cmd : init_cmds_p.value())
+      {
+        issueConfigCmd(cmd);
+      }
+
+      RCLCPP_INFO_STREAM(get_logger(), "Extended Receiver Initialization:" );
+      for(const auto& cmd : ext_init_cmds_p.value())
+      {
+        issueConfigCmd(cmd);
+      }
+
+      RCLCPP_INFO_STREAM(get_logger(), "Receiver Initialization completed, errors= " << rcvr_init_num_errors_ );
+
+      if(rcvr_init_num_errors_ == 0)
+      {
+        rcvr_init_ok_ = true;
+      }
+      else if(rcvr_init_strict_)
+      {
+        RCLCPP_INFO_STREAM(get_logger(),
+                           "Receiver Initialization completed with errors; 'Strict' mode is on; Only Oem7Raw messages will be published." );
+      }
+
+      // Allow command entry via service for diagnostics, regardless of init status.
+
+      // Now that all internal init commands have been issued, allow external commands:
+      static rmw_qos_profile_t qos = rmw_qos_profile_default;
+      qos.depth = 20;
+      oem7_abascii_cmd_srv_ = create_service<novatel_oem7_msgs::srv::Oem7AbasciiCmd>(
+                               "Oem7Cmd",
+                               std::bind(
+                                      &Oem7MessageNodelet::serviceOem7AbasciiCb,
+                                     this,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2),
+                                     qos,
+                               cmd_service_cb_grp_);
+    }
+
+     /**
+     * Executes Driver-specific command, like PAUSE.
+     *
+     * @return true when the provided command is a recongized internal command.
+     */
+      bool executeInternalCommand(const std::string& cmd)
+      {
+        static const std::string CMD_PAUSE("!PAUSE");
+        if(isPrefix(CMD_PAUSE, cmd))
+        {
+           std::stringstream ss(cmd);
+           std::string token;
+           ss >> token; // Prefix
+           ss >> token; // Period
+           int pause_period_sec = 0;
+           if(std::stringstream(token) >> pause_period_sec)
+           {
+              RCLCPP_INFO_STREAM(get_logger(), "Sleeping for " << pause_period_sec << " seconds....");
+              std::chrono::seconds sleep_dur( pause_period_sec );
+              std::this_thread::sleep_for( sleep_dur );
+              RCLCPP_INFO_STREAM(get_logger(), "... done sleeping.");
+           }
+           else
+           {
+              RCLCPP_ERROR_STREAM(get_logger(), "Invalid Driver command syntax: '" << cmd << "'");
+           }
+
+           return true;
+        }
+        else // Not a recognized internal command
+        {
+           return false;
+        }
+      }
+
+      /**
+       * Issues Oem7 configuration command
+       */
+      void issueConfigCmd(const std::string& cmd /**< The command to issue */)
+      {
+        if(executeInternalCommand(cmd))
+        {
+          return;
+        }
+
+        std::string rsp;
+        issueOem7AbasciiCmd(cmd, rsp);
+        // FIXME: check for response and signal diagnostics
+      }
+
+ public:
+
+    Oem7MessageNodelet(const rclcpp::NodeOptions& options):
+      rclcpp::Node("Oem7Message", options),
+      oem7rawmsg_pub_("Oem7RawMsg", *this),
       recvr_loader_(          "novatel_oem7_driver", "novatel_oem7_driver::Oem7ReceiverIf"),
       oem7_msg_decoder_loader("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageDecoderIf"),
       total_log_count_(0),
       unknown_msg_num_(0),
       discarded_msg_num_(0),
       publish_delay_sec_(0),
-      publish_unknown_oem7raw_(false)
+      publish_unknown_oem7raw_(false),
+      rcvr_init_ok_(false),
+      rcvr_init_strict_(true),
+      rcvr_init_num_errors_(0)
     {
-    }
-
-    ~Oem7MessageNodelet()
-    {
-      NODELET_DEBUG("~Oem7MessageNodelet");
+      construct();
     }
   };
 }
 
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::Oem7MessageNodelet, nodelet::Nodelet)
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7MessageNodelet)
+
+
+
+int main(int argc, char* argv[])
+{
+  rclcpp::init(argc, argv);
+
+  rclcpp::NodeOptions options;
+  auto oem7 = std::make_shared<novatel_oem7_driver::Oem7MessageNodelet>(options);
+
+  static const size_t THREAD_NUM = 2; // Receive and blocking command service.
+  rclcpp::executors::MultiThreadedExecutor executor(rclcpp::executor::ExecutorArgs(), THREAD_NUM);
+  executor.add_node(oem7);
+  executor.spin();
+  rclcpp::shutdown();
+  return 0;
+}

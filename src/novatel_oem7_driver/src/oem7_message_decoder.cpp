@@ -25,14 +25,12 @@
 #include <novatel_oem7_driver/oem7_message_decoder_if.hpp>
 #include <novatel_oem7_driver/oem7_receiver_if.hpp>
 
-#include <ros/console.h>
 
-
-#include <boost/scoped_ptr.hpp>
 #include "oem7_message_decoder_lib.hpp"
 
 #include "oem7_debug_file.hpp"
 
+#include <driver_parameter.hpp>
 
 
 namespace novatel_oem7_driver
@@ -43,17 +41,17 @@ namespace novatel_oem7_driver
    */
   class Oem7MessageDecoder: public Oem7MessageDecoderIf, public novatel_oem7::Oem7MessageDecoderLibUserIf
   {
-    ros::NodeHandle nh_; // ROS Node Handle.
+    rclcpp::Node* node_; // ROS Node Handle.
 
-    Oem7DebugFile decoder_dbg_file_;
-    Oem7DebugFile receiver_dbg_file_;
+    std::unique_ptr<Oem7DebugFile> decoder_dbg_file_;
+    std::unique_ptr<Oem7DebugFile> receiver_dbg_file_;
  
 
     Oem7MessageDecoderUserIf* user_; //< Parser user callback interface
 
     Oem7ReceiverIf* recvr_;
 
-    boost::shared_ptr<novatel_oem7::Oem7MessageDecoderLibIf> decoder_; //< NovAtel message decoder
+    std::shared_ptr<novatel_oem7::Oem7MessageDecoderLibIf> decoder_; //< NovAtel message decoder
 
 
   public:
@@ -62,29 +60,26 @@ namespace novatel_oem7_driver
      * Initializes the decoder
      */
     bool initialize(
-        ros::NodeHandle& nh,
+        rclcpp::Node& node,
         Oem7ReceiverIf* recvr,
         Oem7MessageDecoderUserIf* user)
     {
-      nh_    = nh;
+      node_    = &node;
       user_  = user;
       recvr_ = recvr;
 
-      novatel_oem7::version_element_t major, minor, build;
-      novatel_oem7::GetOem7MessageDecoderLibVersion(major, minor, build);
+      novatel_oem7::version_element_t major, minor, special;
+      novatel_oem7::GetOem7MessageDecoderLibVersion(major, minor, special);
 
-      ROS_INFO_STREAM("Oem7MessageDecoderLib version: " << major << "." << minor << "." << build);
+      RCLCPP_INFO_STREAM(node_->get_logger(), "Oem7MessageDecoderLib version: " << major << "." << minor << "." << special);
 
       decoder_ = novatel_oem7::GetOem7MessageDecoder(this);
 
-      std::string decoder_dbg_file_name;
-      std::string receiver_dbg_file_name;
-      nh_.getParam("oem7_receiver_log_file", receiver_dbg_file_name);
-      nh_.getParam("oem7_decoder_log_file",  decoder_dbg_file_name);
+      DriverParameter<std::string> rcvr_log_file("oem7_receiver_log_file", "", node);
+      DriverParameter<std::string> dcdr_log_file("oem7_decoder_log_file",  "", node);
       
-      decoder_dbg_file_.initialize( decoder_dbg_file_name);
-      receiver_dbg_file_.initialize(receiver_dbg_file_name);
- 
+      decoder_dbg_file_  = std::make_unique<Oem7DebugFile>(dcdr_log_file.value(), node_->get_logger());
+      receiver_dbg_file_ = std::make_unique<Oem7DebugFile>(rcvr_log_file.value(), node_->get_logger());
 
       return true;
     }
@@ -94,7 +89,7 @@ namespace novatel_oem7_driver
       bool ok = recvr_->read(buf, s);
       if(ok)
       {
-        receiver_dbg_file_.write(boost::asio::buffer_cast<unsigned char*>(buf), s);
+        receiver_dbg_file_->write(boost::asio::buffer_cast<unsigned char*>(buf), s);
       }
 
       return ok;
@@ -110,16 +105,17 @@ namespace novatel_oem7_driver
      */
     void service()
     {
-      try
-      {
-        while(!ros::isShuttingDown())
+
+    //  try
+    //  {
+        while(rclcpp::ok())
         {
-          boost::shared_ptr<novatel_oem7::Oem7RawMessageIf> msg;
+          std::shared_ptr<novatel_oem7::Oem7RawMessageIf> msg;
           if(decoder_->readMessage(msg))
           {
             if(msg)
             {
-              decoder_dbg_file_.write(msg->getMessageData(0), msg->getMessageDataLength());
+              decoder_dbg_file_->write(msg->getMessageData(0), msg->getMessageDataLength());
 
               user_->onNewMessage(msg);
             }
@@ -127,19 +123,20 @@ namespace novatel_oem7_driver
           }
           else
           {
-            ROS_WARN("Decoder: no more messages available.");
+            RCLCPP_WARN_STREAM(node_->get_logger(), "Decoder: no more messages available.");
             break;
           }
         }
-      }
-      catch(std::exception const& ex)
-      {
-        ROS_ERROR_STREAM("Decoder exception: " << ex.what());
-      }
+
+     // }
+     // catch(std::exception const& ex)
+     // {
+     //   RCLCPP_ERROR_STREAM(node_->get_logger(), "Decoder exception: " << ex.what());
+     // }
     }
   };
 
 }
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::Oem7MessageDecoder, novatel_oem7_driver::Oem7MessageDecoderIf)

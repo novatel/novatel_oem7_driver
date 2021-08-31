@@ -24,11 +24,11 @@
 
 #include <novatel_oem7_driver/oem7_receiver_if.hpp>
 #include <oem7_receiver.hpp>
-
-#include <ros/ros.h>
+#include <driver_parameter.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <boost/asio.hpp>
-
+#include <boost/array.hpp>
 
 namespace novatel_oem7_driver
 {
@@ -37,6 +37,8 @@ namespace novatel_oem7_driver
    */
   class Oem7ReceiverPort: public Oem7Receiver<boost::asio::serial_port>
   {
+    using Oem7Receiver<boost::asio::serial_port>::node_;
+
     void endpoint_try_open()
     {
       if(endpoint_.is_open())
@@ -44,12 +46,9 @@ namespace novatel_oem7_driver
         return;
       }
 
-      std::string recvr_tty_name;
-      nh_.getParam("oem7_tty_name", recvr_tty_name);
-
-      int baud_rate = 0; // Optional parameter
-      nh_.getParam("oem7_tty_baud", baud_rate);
-      ROS_INFO_STREAM("Oem7SerialPort['" << recvr_tty_name << "' : " << baud_rate << "]");
+      static DriverParameter<std::string> port_name("oem7_port_name",  "", *node_);
+      static DriverParameter<int>         port_baud("oem7_port_baud",  0,  *node_);
+      RCLCPP_INFO_STREAM(node_->get_logger(), "Oem7SerialPort['" << port_name.value() << "' : " << port_baud.value() << "]");
 
 
       boost::system::error_code err;
@@ -58,14 +57,14 @@ namespace novatel_oem7_driver
       // Attempting operations on closed ports is harmless.
 
       endpoint_.close(err);
-      endpoint_.open(recvr_tty_name, err);
-      ROS_INFO_STREAM("Oem7SerialPort open: '" << endpoint_.is_open() << "; err: " << err);
+      endpoint_.open(port_name.value(), err);
+      RCLCPP_INFO_STREAM(node_->get_logger(),"Oem7SerialPort open: '" << endpoint_.is_open() << "; err: " << err);
 
-      if(baud_rate > 0)
+      if(port_baud.value() > 0)
       {
-        boost::asio::serial_port_base::baud_rate baud_option(baud_rate);
+        boost::asio::serial_port_base::baud_rate baud_option(port_baud.value());
         endpoint_.set_option(baud_option, err);
-        ROS_INFO_STREAM("Oem7SerialPort set_option baud_rate: '" << baud_option.value() << " : " << err);
+        RCLCPP_INFO_STREAM(node_->get_logger(), "Oem7SerialPort set_option baud_rate: '" << baud_option.value() << " : " << err);
       }
     }
 
@@ -85,6 +84,6 @@ namespace novatel_oem7_driver
 }
 
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(novatel_oem7_driver::Oem7ReceiverPort,     novatel_oem7_driver::Oem7ReceiverIf)
 

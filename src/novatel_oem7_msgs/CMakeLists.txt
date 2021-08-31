@@ -1,53 +1,57 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.10)
 project(novatel_oem7_msgs)
 
-set(MSG_DEPS 
-  std_msgs)
 
-find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  ${MSG_DEPS}
+set(CMAKE_CXX_STANDARD 14)
+
+set(MSG_DEPS std_msgs)
+
+
+find_package(ament_cmake 		REQUIRED)
+find_package(rosidl_default_generators 	REQUIRED)
+find_package(std_msgs 			REQUIRED)
+
+
+set(MSG_FILES
+  srv/Oem7AbasciiCmd.srv
+  msg/Oem7RawMsg.msg
+  msg/Oem7Header.msg
+  msg/BESTPOS.msg
+  msg/BESTUTM.msg
+  msg/BESTVEL.msg
+  msg/HEADING2.msg
+  msg/INSCONFIG.msg
+  msg/INSPVA.msg
+  msg/INSPVAX.msg
+  msg/INSSTDEV.msg
+  msg/CORRIMU.msg
+  msg/IMURATECORRIMU.msg
+  msg/RXSTATUS.msg
+  msg/TIME.msg
+  msg/INSExtendedSolutionStatus.msg
+  msg/INSFrame.msg
+  msg/INSReceiverStatus.msg
+  msg/INSResetType.msg
+  msg/INSSourceStatus.msg
+  msg/INSUpdate.msg
+  msg/BestExtendedSolutionStatus.msg
+  msg/InertialSolutionStatus.msg
+  msg/INSAlignmentMode.msg
+  msg/INSOutputFrame.msg
+  msg/PositionOrVelocityType.msg
+  msg/Rotation.msg
+  msg/RotationalOffset.msg
+  msg/SolutionStatus.msg
+  msg/SolutionSource.msg
+  msg/Translation.msg
+  msg/TranslationOffset.msg
 )
 
-add_service_files(
-  FILES
-  Oem7AbasciiCmd.srv
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${MSG_FILES}
+  DEPENDENCIES ${MSG_DEPS}
 )
 
-add_message_files(DIRECTORY msg FILES
-  Oem7RawMsg.msg
-  Oem7Header.msg
-  BESTPOS.msg
-  BESTUTM.msg
-  BESTVEL.msg
-  HEADING2.msg
-  INSCONFIG.msg
-  INSPVA.msg
-  INSPVAX.msg
-  INSSTDEV.msg
-  CORRIMU.msg
-  IMURATECORRIMU.msg
-  RXSTATUS.msg
-  TIME.msg
-  INSExtendedSolutionStatus.msg
-  INSFrame.msg
-  INSReceiverStatus.msg
-  INSResetType.msg
-  INSSourceStatus.msg
-  INSUpdate.msg
-  BestExtendedSolutionStatus.msg
-  InertialSolutionStatus.msg
-  INSAlignmentMode.msg
-  INSOutputFrame.msg
-  PositionOrVelocityType.msg
-  Rotation.msg
-  RotationalOffset.msg
-  SolutionStatus.msg
-  SolutionSource.msg
-  Translation.msg
-  TranslationOffset.msg
-)
-generate_messages(DEPENDENCIES ${MSG_DEPS})
-catkin_package(
-  CATKIN_DEPENDS message_runtime ${MSG_DEPS}
-)
+
+ament_export_dependencies(rosidl_default_runtime)
+ament_package()

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>novatel_oem7_driver</name>
-  <version>2.3.0</version>
+  <version>10.0.0</version>
   <description>NovAtel Oem7 ROS Driver</description>
 
   <maintainer email="support.novatel@hexagon.com">NovAtel Support</maintainer>
@@ -10,21 +10,22 @@
 
   <url type="website">http://www.novatel.com</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   
   <depend>boost</depend>
-  <depend>nodelet</depend>
-  <depend>roscpp</depend>
-  <depend>gps_common</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>gps_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>nmea_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>novatel_oem7_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
-  <test_depend>rostest</test_depend>
-  <test_depend>rosbag</test_depend>
+  <depend>gps_tools</depend>
   
   <export>
+    <build_type>ament_cmake</build_type>
+
     <nodelet             plugin="${prefix}/novatel_oem7_driver_nodelets.xml" />
     <novatel_oem7_driver plugin="${prefix}/novatel_oem7_driver_plugins.xml" />
   </export>

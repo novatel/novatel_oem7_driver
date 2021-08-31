@@ -1,17 +1,16 @@
 oem7_raw_msgs:
-- BESTPOS
-- BESTVEL                     
-- INSPVAX                    
-- INSUPDATESTATUS
-- RAWIMUSX
-- RAWEPHEM                  
-- GLOEPHEMERIS              
-- BDSEPHEMERIS
-- GALFNAVEPHEMERIS
-- GALINAVEPHEMERIS
-- RANGE            
-- HEADING2                
-- TIME                   
-- RXSTATUS
-- INSCONFIG                 
-                   
+- 42    # BESTPOS
+- 99    # BESTVEL                  
+- 1465  # INSPVAX                  
+- 1825  # INSUPDATESTATUS
+- 1462  # RAWIMUSX
+- 41    # RAWEPHEM    
+- 723   # GLOEPHEMERIS            
+- 1696  # BDSEPHEMERIS
+- 1310  # GALFNAVEPHEMERIS     
+- 1309  # GALINAVEPHEMERIS
+- 43    # RANGE            
+- 1335  # HEADING2                
+- 101   # TIME                   
+- 93    # RXSTATUS
+- 1945  # INSCONFIG

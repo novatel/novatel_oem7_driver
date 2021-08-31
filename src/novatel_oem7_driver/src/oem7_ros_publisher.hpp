@@ -26,7 +26,9 @@
 #define __OEM7_ROS_PUBLISHER_HPP__
 
 
-#include <novatel_oem7_driver/ros_messages.hpp>
+#include <rclcpp/rclcpp.hpp>
+
+#include <driver_parameter.hpp>
 
 
 namespace novatel_oem7_driver
@@ -35,46 +37,42 @@ namespace novatel_oem7_driver
 /**
  * Encapsulates ROS message publisher, configured and enabled based on ROS parameters.
  */
+template <typename M>
 class Oem7RosPublisher
 {
-  ros::Publisher  ros_pub_; ///< ROS publisher
+  rclcpp::Node& node_; ///< publishing Node.
+
+  std::shared_ptr<rclcpp::Publisher<M>>  ros_pub_; ///< ROS publisher
 
   std::string frame_id_; ///< Configurable frame ID.
 
+  std::string topic_; ///< ROS topic name
+
 public:
 
-  template<typename M>
-  void setup(const std::string& name, ros::NodeHandle& nh)
+  Oem7RosPublisher(const std::string& name, rclcpp::Node& node):
+    node_(node)
   {
-    typedef std::map<std::string, std::string> message_config_map_t;
+    DriverParameter<std::string> topic_p(   name + ".topic",      "",    node_);
+    DriverParameter<std::string> frame_id_p(name + ".frame_id",   "gps", node_);
+    DriverParameter<int>         qsize_p(   name + ".queue_size", 100,   node_);
 
-    message_config_map_t message_config_map;
-    nh.getParam(name, message_config_map);
+    topic_    = topic_p.value();
+    frame_id_ = frame_id_p.value();
 
-    message_config_map_t::iterator topic_itr = message_config_map.find("topic");
-    if(topic_itr == message_config_map.end())
+    if(!isEnabled())
     {
-      ROS_WARN_STREAM("Message '" << name << "' will not be published.");
+      RCLCPP_WARN_STREAM(node.get_logger(), "Message '" << name << "' will not be published.");
       return;
     }
 
-    int queue_size = 100; // default size
-
-    message_config_map_t::iterator q_size_itr  = message_config_map.find("queue_size");
-    if(q_size_itr != message_config_map.end())
-    {
-      std::stringstream ss(q_size_itr->second);
-      ss >> queue_size;
-    }
-
-    message_config_map_t::iterator frame_id_itr  = message_config_map.find("frame_id");
-    if(frame_id_itr != message_config_map.end())
-    {
-      frame_id_ = frame_id_itr->second;
-    }
-
-    ROS_INFO_STREAM("topic [" << topic_itr->second << "]: frame_id: '" << frame_id_ << "'; q size: " << queue_size);
-    ros_pub_ = nh.advertise<M>(topic_itr->second, queue_size);
+    RCLCPP_INFO_STREAM(node.get_logger(), name << ":  topic ["
+                                               << topic_
+                                               << "]: frame_id: '"
+                                               << frame_id_
+                                               << "'; q size: "
+                                               << qsize_p.value());
+    ros_pub_ = node_.create_publisher<M>(topic_, qsize_p.value());
   }
 
   /**
@@ -82,22 +80,23 @@ public:
    */
   bool isEnabled()
   {
-    return !ros_pub_.getTopic().empty();
+    return !topic_.empty();
   }
 
   /**
    * Publish a message on this publisher. The message is ignored when the publisher is disabled.
    */
-  template <typename M>
-  void publish(boost::shared_ptr<M>& msg)
+  void publish(std::shared_ptr<M> msg)
   {
     if(!isEnabled())
     {
       return;
     }
 
-    SetROSHeader(frame_id_, msg);
-    ros_pub_.publish(msg);
+    msg->header.frame_id = frame_id_;
+    msg->header.stamp    = node_.now();
+
+    ros_pub_->publish(*msg);
   }
 
 };

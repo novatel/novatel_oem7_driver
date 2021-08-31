@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdint.h>
-#include "novatel_oem7_msgs/Oem7Header.h"
+#include "novatel_oem7_msgs/msg/oem7_header.hpp"
 
 
 namespace novatel_oem7_driver
@@ -41,7 +41,7 @@ namespace novatel_oem7_driver
    * Covers GPSTime obtained from header to milliseconds.
    * @return milliseconds
    */
-  static inline int64_t GPSTimeToMsec(const novatel_oem7_msgs::Oem7Header& hdr)
+  static inline int64_t GPSTimeToMsec(const novatel_oem7_msgs::msg::Oem7Header& hdr)
   {
     return GPSTimeToMsec(hdr.gps_week_number, hdr.gps_week_milliseconds);
   }

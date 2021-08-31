@@ -1,4 +1,4 @@
-Header                      header
+std_msgs/Header             header
 Oem7Header                  nov_header
 float32                     latitude_stdev
 float32                     longitude_stdev  

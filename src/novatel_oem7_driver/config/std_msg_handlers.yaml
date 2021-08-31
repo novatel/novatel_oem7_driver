@@ -1,8 +1,8 @@
 oem7_msg_handlers:
-- "BESTPOSHandler"
-- "INSHandler"
-- "ALIGNHandler"
-- "RXSTATUSHandler"
-- "TimeHandler"
-- "NMEAHandler"
+    - BESTPOSHandler
+    - INSHandler
+    - ALIGNHandler
+    - RXSTATUSHandler
+    - TimeHandler
+    - NMEAHandler
             

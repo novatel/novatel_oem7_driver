@@ -1,4 +1,4 @@
-Header                      header
+std_msgs/Header             header
 Oem7Header                  nov_header
 SolutionStatus              sol_status
 PositionOrVelocityType      pos_type
@@ -8,8 +8,8 @@ float32                     pitch
 float32                     reserved
 float32                     heading_stdev
 float32                     pitch_stdev
-string                      rover_stn_id
-string                      master_stn_id
+int8[4]                     rover_stn_id
+int8[4]                     master_stn_id
 uint8                       num_sv_tracked
 uint8                       num_sv_in_sol
 uint8                       num_sv_obs

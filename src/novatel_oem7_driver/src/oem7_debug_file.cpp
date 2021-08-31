@@ -23,37 +23,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include <ros/ros.h>
-
 #include "oem7_debug_file.hpp"
+
+
+#include <rclcpp/rclcpp.hpp>
 
 namespace novatel_oem7_driver
 {
-    Oem7DebugFile::Oem7DebugFile()
+    Oem7DebugFile::Oem7DebugFile(const std::string& file_name, const rclcpp::Logger& logger):
+        file_name_(file_name),
+        logger_(logger)
     {
-    }
-
-    bool Oem7DebugFile::initialize(std::string& file_name)
-    {
-      file_name_ = file_name;
-
       if(file_name_.size() == 0)
       {
-        return true; // Null initialization
+        return; // Null initialization
       }
 
       oem7_file_.open(file_name_, std::ios::out | std::ios::binary | std::ios::trunc);
       int errno_value = errno; // Cache errno locally, in case any ROS calls /macros affect it.
       if(!oem7_file_)
       {
-        ROS_ERROR_STREAM("Oem7DebugFile['" << file_name_ << "']: could not open; error= " << errno_value << " '"
+        RCLCPP_ERROR_STREAM(logger, "Oem7DebugFile['" << file_name_ << "']: could not open; error= " << errno_value << " '"
                                             << strerror(errno_value) << "'");
-        return false;
       }
 
-      ROS_INFO_STREAM("Oem7DebugFile['" << file_name_ << "'] opened.");
-          
-      return true;
+      RCLCPP_INFO_STREAM(logger, "Oem7DebugFile['" << file_name_ << "'] opened.");
     }
 
     /**
@@ -65,15 +59,17 @@ namespace novatel_oem7_driver
       if(file_name_.size() == 0)
         return true;
 
-      if(ros::isShuttingDown())
+      if(!rclcpp::ok())
+      {
         return false;
+      }
 
       oem7_file_.write(reinterpret_cast<const char*>(buf), len);
       int errno_value = errno; // Cache errno locally, in case any ROS calls /macros affect it.
      
       if(!oem7_file_)
       {
-        ROS_ERROR_STREAM("Oem7DebugFile[" << file_name_ << "]: errno= " << errno_value << " '" << strerror(errno_value) << "'");
+        RCLCPP_ERROR_STREAM(logger_, "Oem7DebugFile[" << file_name_ << "]: errno= " << errno_value << " '" << strerror(errno_value) << "'");
         return false;
       }
 

@@ -25,12 +25,10 @@
 #ifndef __OEM7_ROS_MESSAGES_HPP__
 #define __OEM7_ROS_MESSAGES_HPP__
 
-#include <ros/ros.h>
 
 #include "oem7_raw_message_if.hpp"
 using novatel_oem7::Oem7RawMessageIf;
 
-#include "novatel_oem7_driver/ros_messages.hpp"
 #include "novatel_oem7_driver/oem7_message_ids.h"
 
 namespace novatel_oem7_driver
@@ -38,7 +36,7 @@ namespace novatel_oem7_driver
 
   template <class T>
   void
-  MakeROSMessage(const Oem7RawMessageIf::ConstPtr& msg, boost::shared_ptr<T>& rosmsg);
+  MakeROSMessage(const Oem7RawMessageIf::ConstPtr& msg, std::shared_ptr<T>& rosmsg);
 
   void
   GetDOPFromPSRDOP2(

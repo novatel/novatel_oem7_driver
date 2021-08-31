@@ -24,7 +24,6 @@ print_usage()
 }
 
 
-
 build_deb_pkg()
 {
    ./create-$ROS_DISTRO-package.sh
@@ -34,6 +33,11 @@ on_invalid_args()
 {
     print_usage
     exit 1
+}
+
+build()
+{
+    colcon build $DEBUG_FLAG  
 }
 
 INSTALL=
@@ -53,7 +57,7 @@ while getopts "hcdrpft" OPT; do
             print_usage
             exit 0
             ;;
-            
+ 
         c )
             CLEAN=clean
             ;;
@@ -64,6 +68,7 @@ while getopts "hcdrpft" OPT; do
             ;;
             
         r )
+	    BUILD=build
             INSTALL=install
             DEBUG_FLAG=
         	;;
@@ -98,7 +103,7 @@ $NO_ARGS
 if [[ $CLEAN ]];
 then
 	# Remove all intermediate and temporary files.
-	rm -rf  .ros devel build doc install  
+	rm -rf  .ros  build doc install  
 	rm -rf *.deb src/*.ddeb 
 	rm -rf src/novatel_oem7_driver/debian src/novatel_oem7_driver/obj-*
 	rm -rf src/novatel_oem7_msgs/debian src/novatel_oem7_msgs/obj-*
@@ -111,17 +116,22 @@ then
 
 fi
 
+
+#-----------------------------------------------------------
+
 set -e
 
-# Build local artifacts
-source /opt/ros/$ROS_DISTRO/setup.bash
 
-catkin_make $DEBUG_FLAG $CLEAN $INSTALL $RUN_TESTS
+source /opt/ros/$ROS_DISTRO/setup.sh
+
+$BUILD
+
+
 
 $CATKIN_TEST_RESULTS
 
 if [[ $INSTALL ]];
 then
-	rosdoc_lite src/novatel_oem7_driver -o doc
+	#rosdoc_lite src/novatel_oem7_driver -o doc
 	$BUILD_DEB_PKG
 fi
