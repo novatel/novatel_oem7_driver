@@ -80,7 +80,7 @@ add_library(${PROJECT_NAME} SHARED
 
 ## All components are plugins
 add_executable(${PROJECT_NAME}_exe
-   src/oem7_message_nodelet.cpp
+   src/oem7_message_node.cpp
    src/oem7_message_util.cpp
    src/oem7_ros_messages.cpp
    src/message_handler.cpp

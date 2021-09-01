@@ -63,15 +63,15 @@ namespace novatel_oem7_driver
 
 
   /**
-   * Nodelet publishing raw oem7 messages and issuing oem7 commands.
+   * Node publishing raw oem7 messages and issuing oem7 commands.
    * Loads plugins responsible for obtaining byte input from the Oem7 receiver, and decoding it into raw oem7 messages.
    * Implements a service allowing Oem7 Abbreviated ASCII commands to be sent to the receiver.
    */
-  class Oem7MessageNodelet :
+  class Oem7MessageNode :
       public Oem7MessageDecoderUserIf,
       public rclcpp::Node
   {
-    std::mutex nodelet_mtx_; ///< Protects nodelet internal state
+    std::mutex node_mtx_; ///< Protects node internal state
 
     double publish_delay_sec_; ///< Delay after publishing each message; used to throttle output with static data sources.
 
@@ -131,10 +131,10 @@ namespace novatel_oem7_driver
       //auto e  = rcutils_logging_set_logger_level(
       //        get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG);
 
-      RCLCPP_INFO_STREAM(get_logger(), "Oem7MessageNodelet v." << novatel_oem7_driver_VERSION << "; "
-                                                                   << __DATE__ << " " << __TIME__);
+      RCLCPP_INFO_STREAM(get_logger(), "Oem7MessageNode v." << novatel_oem7_driver_VERSION << "; "
+                                                            << __DATE__ << " " << __TIME__);
 
-      std::lock_guard<std::mutex> guard(nodelet_mtx_);
+      std::lock_guard<std::mutex> guard(node_mtx_);
 
       initializeOem7MessageUtil(*this);
 
@@ -195,7 +195,7 @@ namespace novatel_oem7_driver
       timer_ = create_wall_timer(
                 std::chrono::milliseconds(1),
                 std::bind(
-                    &Oem7MessageNodelet::serviceLoopCb,
+                    &Oem7MessageNode::serviceLoopCb,
                     this),
                     msg_service_cb_grp_);
 
@@ -203,7 +203,7 @@ namespace novatel_oem7_driver
       recvr_init_timer_ = create_wall_timer(
                 std::chrono::milliseconds(50),
                 std::bind(
-                    &Oem7MessageNodelet::initCb,
+                    &Oem7MessageNode::initCb,
                     this),
                     cmd_service_cb_grp_);
 
@@ -425,7 +425,7 @@ namespace novatel_oem7_driver
 
       outputLogStatistics();
 
-      RCLCPP_WARN_STREAM(get_logger(), "No more input from Decoder; Oem7MessageNodelet finished." );
+      RCLCPP_WARN_STREAM(get_logger(), "No more input from Decoder; Oem7MessageNode finished." );
     }
 
     void initCb()
@@ -468,7 +468,7 @@ namespace novatel_oem7_driver
       oem7_abascii_cmd_srv_ = create_service<novatel_oem7_msgs::srv::Oem7AbasciiCmd>(
                                "Oem7Cmd",
                                std::bind(
-                                      &Oem7MessageNodelet::serviceOem7AbasciiCb,
+                                      &Oem7MessageNode::serviceOem7AbasciiCb,
                                      this,
                                      std::placeholders::_1,
                                      std::placeholders::_2),
@@ -528,7 +528,7 @@ namespace novatel_oem7_driver
 
  public:
 
-    Oem7MessageNodelet(const rclcpp::NodeOptions& options):
+    Oem7MessageNode(const rclcpp::NodeOptions& options):
       rclcpp::Node("Oem7Message", options),
       oem7rawmsg_pub_("Oem7RawMsg", *this),
       recvr_loader_(          "novatel_oem7_driver", "novatel_oem7_driver::Oem7ReceiverIf"),
@@ -549,7 +549,7 @@ namespace novatel_oem7_driver
 
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7MessageNodelet)
+RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7MessageNode)
 
 
 
@@ -558,7 +558,7 @@ int main(int argc, char* argv[])
   rclcpp::init(argc, argv);
 
   rclcpp::NodeOptions options;
-  auto oem7 = std::make_shared<novatel_oem7_driver::Oem7MessageNodelet>(options);
+  auto oem7 = std::make_shared<novatel_oem7_driver::Oem7MessageNode>(options);
 
   static const size_t THREAD_NUM = 2; // Receive and blocking command service.
   rclcpp::executors::MultiThreadedExecutor executor(rclcpp::executor::ExecutorArgs(), THREAD_NUM);
