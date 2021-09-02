@@ -76,9 +76,9 @@ namespace novatel_oem7_driver
     uint8_t     time_status;
     uint16_t    gps_week;
     int32_t     gps_milliseconds;
-    uint32_t    recevier_status;
+    uint32_t    receiver_status;
     uint16_t    reserved;
-    uint16_t    recevier_version;
+    uint16_t    receiver_version;
   };
 
   struct __attribute__((packed))

@@ -8,5 +8,6 @@ uint32 sequence_number
 uint8  time_status
 uint16 gps_week_number
 uint32 gps_week_milliseconds
+uint32 receiver_status
 uint8  idle_time
 

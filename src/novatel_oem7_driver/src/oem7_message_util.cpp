@@ -69,6 +69,8 @@ namespace novatel_oem7_driver
     hdr.time_status            = hdr_mem->time_status;
     hdr.gps_week_number        = hdr_mem->gps_week;
     hdr.gps_week_milliseconds  = hdr_mem->gps_milliseconds;
+    hdr.receiver_status        = hdr_mem->receiver_status;
+    hdr.idle_time              = hdr_mem->idle_time;
   }
 
   void getOem7ShortHeader(
@@ -84,6 +86,7 @@ namespace novatel_oem7_driver
     hdr.time_status            = GPS_REFTIME_STATUS_UNKNOWN;
     hdr.gps_week_number        = hdr_mem->gps_week;
     hdr.gps_week_milliseconds  = hdr_mem->gps_milliseconds;
+    hdr.idle_time              = 255; // max uchar, clearly invalid value.
   }
 
 
