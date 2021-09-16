@@ -12,6 +12,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   
+  <depend>pluginlib</depend>
   <depend>boost</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
