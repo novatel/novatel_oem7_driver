@@ -407,6 +407,22 @@ namespace novatel_oem7_driver
     float    tdop;
   };
 
+  struct __attribute__((packed))
+  RAWIMUSXMem
+  {
+    oem7_hex_t  imu_info;
+    uint8_t     imu_type;
+    uint16_t    gnss_week;
+    double      gnss_week_seconds;
+    oem7_hex_t  imu_status[4];
+    int32_t     z_acc;
+    int32_t     y_acc;
+    int32_t     x_acc;
+    int32_t     z_gyro;
+    int32_t     y_gyro;
+    int32_t     x_gyro;
+  };
+  static_assert(sizeof(RAWIMUSXMem) == 40, ASSERT_MSG);
 
   const std::size_t OEM7_BINARY_MSG_HDR_LEN       = sizeof(Oem7MessageHeaderMem);
   const std::size_t OEM7_BINARY_MSG_SHORT_HDR_LEN = sizeof(Oem7MessgeShortHeaderMem);

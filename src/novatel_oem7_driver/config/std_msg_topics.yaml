@@ -1,5 +1,6 @@
 # ROS-standard
 IMU:        {topic: /gps/imu,                 frame_id: imu_link}
+RAWIMU:     {topic: /imu/data_raw,            frame_id: imu_link}
 GPSFix:     {topic: /gps/gps,                 frame_id: gps}
 NavSatFix:  {topic: /gps/fix,                 frame_id: gps} 
 Odometry:   {topic: /novatel/oem7/odom,       frame_id: odom} 
