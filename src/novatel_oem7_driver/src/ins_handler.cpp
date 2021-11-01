@@ -29,6 +29,7 @@
 
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
+#include "novatel_oem7_driver/oem7_messages.h"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "sensor_msgs/msg/imu.hpp"
@@ -75,6 +76,7 @@ namespace novatel_oem7_driver
     rclcpp::Node* node_;
 
     std::unique_ptr<Oem7RosPublisher<sensor_msgs::msg::Imu>>                   imu_pub_;
+    std::unique_ptr<Oem7RosPublisher<sensor_msgs::msg::Imu>>                   raw_imu_pub_;
     std::unique_ptr<Oem7RosPublisher<novatel_oem7_msgs::msg::CORRIMU>>         corrimu_pub_;
     std::unique_ptr<Oem7RosPublisher<novatel_oem7_msgs::msg::INSSTDEV>>        insstdev_pub_;
     std::unique_ptr<Oem7RosPublisher<novatel_oem7_msgs::msg::INSPVAX>>         inspvax_pub_;
@@ -187,14 +189,11 @@ namespace novatel_oem7_driver
       }
 
       if(insstdev_)
-      {
+        {
         imu->orientation_covariance[0] = std::pow(insstdev_->pitch_stdev,   2);
         imu->orientation_covariance[4] = std::pow(insstdev_->roll_stdev,    2);
         imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
       }
-
-      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
 
       imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
       imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
@@ -206,6 +205,30 @@ namespace novatel_oem7_driver
     {
       MakeROSMessage(msg, insstdev_);
       insstdev_pub_->publish(insstdev_);
+    }
+
+    void processRawImuMsg(Oem7RawMessageIf::ConstPtr msg)
+    {
+      if(!raw_imu_pub_->isEnabled())
+      {
+        return;
+      }
+
+      const RAWIMUSXMem* raw = reinterpret_cast<const RAWIMUSXMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
+
+      std::shared_ptr<sensor_msgs::msg::Imu> imu = std::make_shared<sensor_msgs::msg::Imu>();
+      imu->angular_velocity.x = -raw->y_gyro;
+      imu->angular_velocity.y = -raw->x_gyro;
+      imu->angular_velocity.z =  raw->z_gyro;
+
+      imu->linear_acceleration.x = -raw->y_acc;
+      imu->linear_acceleration.y = -raw->x_acc;
+      imu->linear_acceleration.z =  raw->z_acc;
+
+      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
+      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
+
+      raw_imu_pub_->publish(imu);
     }
 
 
@@ -224,6 +247,7 @@ namespace novatel_oem7_driver
       node_ = &node;
 
       imu_pub_       = std::make_unique<Oem7RosPublisher<sensor_msgs::msg::Imu>>(            "IMU",       node);
+      raw_imu_pub_   = std::make_unique<Oem7RosPublisher<sensor_msgs::msg::Imu>>(            "RAWIMU",    node);
       corrimu_pub_   = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::CORRIMU>>(  "CORRIMU",   node);
       insstdev_pub_  = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::INSSTDEV>>( "INSSTDEV",  node);
       inspvax_pub_   = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::INSPVAX>>(  "INSPVAX",   node);
@@ -241,6 +265,7 @@ namespace novatel_oem7_driver
     {
       static const std::vector<int> MSG_IDS(
                                       {
+                                        RAWIMUSX_OEM7_MSGID,
                                         CORRIMUS_OEM7_MSGID,
                                         IMURATECORRIMUS_OEM7_MSGID,
                                         INSPVAS_OEM7_MSGID,
@@ -276,6 +301,10 @@ namespace novatel_oem7_driver
       else if(msg->getMessageId() == INSPVAX_OEM7_MSGID)
       {
         publishInsPVAXMsg(msg);
+      }
+      else if(msg->getMessageId() == RAWIMUSX_OEM7_MSGID)
+      {
+        processRawImuMsg(msg);
       }
       else
       {

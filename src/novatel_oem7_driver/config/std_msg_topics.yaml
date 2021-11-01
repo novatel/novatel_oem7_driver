@@ -1,8 +1,9 @@
 # ROS-standard
-GPSFix:     {topic: gps,        frame_id: gps}
-NavSatFix:  {topic: fix,        frame_id: gps} 
-IMU:        {topic: imu/data,   frame_id: imu_link}
-Odometry:   {topic: odom,       frame_id: odom} 
+GPSFix:     {topic: gps,            frame_id: gps}
+NavSatFix:  {topic: fix,            frame_id: gps} 
+IMU:        {topic: imu/data,       frame_id: imu_link}
+RAWIMU:     {topic: imu/data_raw,   frame_id: imu_link}
+Odometry:   {topic: odom,           frame_id: odom} 
 
 
 # Oem7-specific 

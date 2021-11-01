@@ -385,7 +385,7 @@ namespace novatel_oem7_driver
               raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY       ||
              (raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_ASCII && isNMEAMessage(raw_msg)))
           {
-            if(rcvr_init_ok_ || !rcvr_init_strict_)
+            if(rcvr_init_ok_ || !rcvr_init_strict_ || raw_msg->getMessageId() == INSCONFIG_OEM7_MSGID)
             {
               updateLogStatistics(raw_msg);
 
