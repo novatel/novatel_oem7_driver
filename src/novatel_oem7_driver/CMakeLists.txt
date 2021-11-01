@@ -118,10 +118,23 @@ ament_target_dependencies(${PROJECT_NAME}_exe
 	novatel_oem7_msgs 
 )
 
+
 install(TARGETS
   ${PROJECT_NAME}_exe
   DESTINATION lib/${PROJECT_NAME}
 )
+
+if(BUILD_TESTING)
+	SET(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+	find_package(launch_testing_ament_cmake)
+
+ 	add_launch_test(
+		test/align.test.py
+		ARGS "test_name:=align"
+	 	ARGS "test_dir:=${TEST_DIR}" 
+	 	ARGS "oem7_file_name:=${TEST_DIR}/align.gps"
+	 	)
+endif()
 
 
 #############
@@ -144,6 +157,8 @@ install(DIRECTORY config DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTER
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.py")
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.launch")
 
+
+ament_python_install_package(${PROJECT_NAME})
 
 ament_package()
 
