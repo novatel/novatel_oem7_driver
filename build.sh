@@ -40,6 +40,12 @@ build()
     colcon build $DEBUG_FLAG  
 }
 
+run_tests()
+{
+   colcon test
+   colcon test-result
+}
+
 INSTALL=
 CLEAN=
 DEBUG_FLAG=
@@ -80,7 +86,6 @@ while getopts "hcdrpft" OPT; do
             
         t ) 
             RUN_TESTS=run_tests
-            CATKIN_TEST_RESULTS=catkin_test_results
             ;;
 	    	
         f ) 
@@ -88,7 +93,6 @@ while getopts "hcdrpft" OPT; do
             INSTALL=install
             BUILD_DEB_PKG=build_deb_pkg
             RUN_TESTS=run_tests
-            CATKIN_TEST_RESULTS=catkin_test_results
      	    ;;
      	    
         * ) 		
@@ -125,10 +129,7 @@ set -e
 source /opt/ros/$ROS_DISTRO/setup.sh
 
 $BUILD
-
-
-
-$CATKIN_TEST_RESULTS
+$RUN_TESTS
 
 if [[ $INSTALL ]];
 then
