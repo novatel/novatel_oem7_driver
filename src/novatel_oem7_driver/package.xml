@@ -27,7 +27,9 @@
   <test_depend>launch_testing</test_depend>
   <test_depend>launch_testing_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend> 
-
+  <test_depend>rosidl_runtime_py</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>rosbag2</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
