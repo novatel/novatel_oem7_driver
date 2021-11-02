@@ -126,9 +126,8 @@ fi
 set -e
 
 
-source /opt/ros/$ROS_DISTRO/setup.sh
-
 $BUILD
+source install/setup.sh
 $RUN_TESTS
 
 if [[ $INSTALL ]];
