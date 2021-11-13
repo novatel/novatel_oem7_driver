@@ -38,10 +38,12 @@ on_invalid_args()
 build()
 {
     colcon build $DEBUG_FLAG  
+    source install/setup.sh
 }
 
 run_tests()
 {
+   source install/setup.sh
    colcon test
    colcon test-result
 }
@@ -127,7 +129,6 @@ set -e
 
 
 $BUILD
-source install/setup.sh
 $RUN_TESTS
 
 if [[ $INSTALL ]];
