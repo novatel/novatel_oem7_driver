@@ -272,13 +272,15 @@ namespace novatel_oem7_driver
 
       const RAWIMUSXMem* raw = reinterpret_cast<const RAWIMUSXMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
 
+      // All measurements are in sensor frame, uncorrected for gravity. There is no up, forward, left;
+      // x, y, z are nominal references to enclosure housing.
       boost::shared_ptr<sensor_msgs::Imu> imu = boost::make_shared<sensor_msgs::Imu>();
-      imu->angular_velocity.x = -raw->y_gyro;
-      imu->angular_velocity.y = -raw->x_gyro;
+      imu->angular_velocity.x =  raw->x_gyro;
+      imu->angular_velocity.y = -raw->y_gyro; // Refer to RAWIMUSX documentation
       imu->angular_velocity.z =  raw->z_gyro;
 
-      imu->linear_acceleration.x = -raw->y_acc;
-      imu->linear_acceleration.y = -raw->x_acc;
+      imu->linear_acceleration.x =  raw->x_acc;
+      imu->linear_acceleration.y = -raw->y_acc; // Refer to RASIMUSX documentation
       imu->linear_acceleration.z =  raw->z_acc;
 
       imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
