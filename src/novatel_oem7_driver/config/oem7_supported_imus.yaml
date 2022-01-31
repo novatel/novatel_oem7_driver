@@ -1,12 +1,12 @@
 supported_imus:
    "0"  : { name:  "Unknown",                                      rate:   "0"   }
-   "1"  : { name:  "Honeywell HG1700 AG1",                         rate: "100"   }
+   "1"  : { name:  "Honeywell HG1700 AG11",                        rate: "100"   }
    "4"  : { name:  "Honeywell HG1700 AG17",                        rate: "100"   }
    "5"  : { name:  "Honeywell HG1700 CA29",                        rate: "100"   }
    "8"  : { name:  "Northrop Grumman LN-200/LN-200C",              rate: "200"   } 
    "11" : { name:  "Honeywell HG1700 AG58",                        rate: "100"   } 
    "12" : { name:  "Honeywell HG1700 AG62",                        rate: "100"   }
-   "13" : { name:  "iMAR ilMU-FSAS",                               rate: "200"   }
+   "13" : { name:  "iMAR iIMU-FSAS",                               rate: "200"   }
    "16" : { name:  "KVH CPT IMU",                                  rate: "200"   }
    "19" : { name:  "Northrop Grumman Litef LCI-1",                 rate: "200"   }
    "20" : { name:  "Honeywell HG1930 AA99",                        rate: "100"   }
