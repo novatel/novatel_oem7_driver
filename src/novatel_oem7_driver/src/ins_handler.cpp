@@ -30,7 +30,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
-#include "novatel_oem7_driver/oem7_messages.h"
+#include <novatel_oem7_driver/oem7_messages.h>
+#include <novatel_oem7_driver/oem7_imu.hpp>
 
 #include "sensor_msgs/Imu.h"
 #include "novatel_oem7_msgs/CORRIMU.h"
@@ -45,14 +46,6 @@
 
 #include <math.h>
 #include <map>
-
-namespace
-{
-  typedef unsigned int imu_type_t; ///< Type of IMU used
-  typedef int imu_rate_t; ///< IMU message rate
-
-  const imu_type_t IMU_TYPE_UNKNOWN = 0;
-}
 
 
 
@@ -85,7 +78,10 @@ namespace novatel_oem7_driver
     boost::shared_ptr<novatel_oem7_msgs::CORRIMU>  corrimu_;
     boost::shared_ptr<novatel_oem7_msgs::INSSTDEV> insstdev_;
 
-    int imu_rate_;
+    imu_rate_t imu_rate_; ///< IMU output rate
+    double     imu_raw_gyro_scale_factor_;   ///< IMU-specific raw gyroscope scaling
+    double     imu_raw_accel_scale_factor_;  ///< IMU-specific raw acceleration scaling.
+
     std::string frame_id_;
 
     typedef std::map<std::string, std::string> imu_config_map_t;
@@ -93,7 +89,7 @@ namespace novatel_oem7_driver
 
     bool oem7_imu_reference_frame_; ///< Backwards compatibility: use OEM7 reference frame, not compliant with REP105.
 
-    void getImuParam(imu_type_t imu_type, const std::string& name, std::string& param)
+    void getImuParam(oem7_imu_type_t imu_type, const std::string& name, std::string& param)
     {
       std::string ns = ros::this_node::getNamespace();
       std::string param_name = ns + "/supported_imus/" + std::to_string(imu_type) + "/" + name;
@@ -103,7 +99,7 @@ namespace novatel_oem7_driver
       }
     }
 
-    int getImuRate(imu_type_t imu_type)
+    int getImuRate(oem7_imu_type_t imu_type)
     {
       std::string rate;
       getImuParam(imu_type, "rate", rate);
@@ -111,7 +107,7 @@ namespace novatel_oem7_driver
       return std::stoi(rate);
     }
 
-    void getImuDescription(imu_type_t imu_type, std::string& desc)
+    void getImuDescription(oem7_imu_type_t imu_type, std::string& desc)
     {
       getImuParam(imu_type, "name", desc);
     }
@@ -123,18 +119,37 @@ namespace novatel_oem7_driver
       MakeROSMessage(msg, insconfig);
       insconfig_pub_.publish(insconfig);
 
+      oem7_imu_type_t imu_type = static_cast<oem7_imu_type_t>(insconfig->imu_type);
+
+      std::string imu_desc;
+      getImuDescription(imu_type, imu_desc);
+
       if(imu_rate_ == 0)
       {
-        std::string imu_desc;
-        getImuDescription(insconfig->imu_type, imu_desc);
-
-        imu_rate_ = getImuRate(insconfig->imu_type);
-
-        ROS_LOG_STREAM(imu_rate_ == 0 ? ::ros::console::levels::Error :
-                                        ::ros::console::levels::Info,
-                       ROSCONSOLE_DEFAULT_NAME,
-                       "IMU: '" << imu_desc << "', rate= " << imu_rate_);
+        imu_rate_ = getImuRate(imu_type);
       }
+
+      if(imu_raw_gyro_scale_factor_  == 0.0 &&
+         imu_raw_accel_scale_factor_ == 0.0)
+      {
+          if(!getImuRawScaleFactors(
+              imu_type,
+              imu_rate_,
+              imu_raw_gyro_scale_factor_,
+              imu_raw_accel_scale_factor_))
+
+        {
+          ROS_ERROR_STREAM("Scale factors not supported for IMU '" << insconfig->imu_type << "'; raw IMU output disabled.");
+        }
+      }
+
+      ROS_LOG_STREAM(imu_rate_ == 0 ? ::ros::console::levels::Error :
+                                      ::ros::console::levels::Info,
+                     ROSCONSOLE_DEFAULT_NAME,
+                     "IMU: " << imu_type  << " '"  << imu_desc << "'"
+                                          << " rate= "         << imu_rate_
+                                          << " gyro scale= "   << imu_raw_gyro_scale_factor_
+                                          << " accel scale= "  << imu_raw_accel_scale_factor_);
     }
 
     void publishInsPVAXMsg(Oem7RawMessageIf::ConstPtr msg)
@@ -263,6 +278,24 @@ namespace novatel_oem7_driver
       insstdev_pub_.publish(insstdev_);
     }
 
+
+    /**
+     * @return angular velocity, rad / sec
+     */
+    inline double computeAngularVelocityFromRaw(double raw_gyro)
+    {
+      return raw_gyro * imu_raw_gyro_scale_factor_ * imu_rate_;
+    }
+
+    /**
+     * @return linear acceleration, m / sec^2
+     */
+    inline double computeLinearAccelerationFromRaw(double raw_acc)
+    {
+      return raw_acc * imu_raw_accel_scale_factor_ * imu_rate_;
+    }
+
+
     void processRawImuMsg(Oem7RawMessageIf::ConstPtr msg)
     {
       if(!raw_imu_pub_.isEnabled())
@@ -270,18 +303,28 @@ namespace novatel_oem7_driver
         return;
       }
 
+      if(imu_rate_ == 0                     ||
+         imu_raw_gyro_scale_factor_  == 0.0 ||
+         imu_raw_accel_scale_factor_ == 0.0)
+      {
+        ROS_WARN_THROTTLE(10, "Unavailable or Invalid IMU rate and/or raw scale factors: %i %f %f",
+                          imu_rate_, imu_raw_gyro_scale_factor_, imu_raw_accel_scale_factor_);
+
+        return;
+      }
+
       const RAWIMUSXMem* raw = reinterpret_cast<const RAWIMUSXMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
-
-      // All measurements are in sensor frame, uncorrected for gravity. There is no up, forward, left;
+      // All measurements are in sensor frame, uncorrected for gravity and Earth rotation. There is no up, forward, left;
       // x, y, z are nominal references to enclosure housing.
-      boost::shared_ptr<sensor_msgs::Imu> imu = boost::make_shared<sensor_msgs::Imu>();
-      imu->angular_velocity.x =  raw->x_gyro;
-      imu->angular_velocity.y = -raw->y_gyro; // Refer to RAWIMUSX documentation
-      imu->angular_velocity.z =  raw->z_gyro;
 
-      imu->linear_acceleration.x =  raw->x_acc;
-      imu->linear_acceleration.y = -raw->y_acc; // Refer to RASIMUSX documentation
-      imu->linear_acceleration.z =  raw->z_acc;
+      boost::shared_ptr<sensor_msgs::Imu> imu = boost::make_shared<sensor_msgs::Imu>();
+      imu->angular_velocity.x =  computeAngularVelocityFromRaw(raw->x_gyro);
+      imu->angular_velocity.y = -computeAngularVelocityFromRaw(raw->y_gyro); // Refer to RAWIMUSX documentation
+      imu->angular_velocity.z =  computeAngularVelocityFromRaw(raw->z_gyro);
+
+      imu->linear_acceleration.x =  computeLinearAccelerationFromRaw(raw->x_acc);
+      imu->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RASIMUSX documentation
+      imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
       imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
       imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
@@ -293,6 +336,8 @@ namespace novatel_oem7_driver
   public:
     INSHandler():
       imu_rate_(0),
+      imu_raw_gyro_scale_factor_(0.0),
+      imu_raw_accel_scale_factor_(0.0),
       oem7_imu_reference_frame_(false)
     {
     }
@@ -312,11 +357,21 @@ namespace novatel_oem7_driver
       inspvax_pub_.setup<  novatel_oem7_msgs::INSPVAX>(  "INSPVAX",    nh);
       insconfig_pub_.setup<novatel_oem7_msgs::INSCONFIG>("INSCONFIG",  nh);
 
-      nh.getParam("imu_rate", imu_rate_); // User rate override
-      if(imu_rate_ > 0)
+      // User overrides for IMU
+      nh.getParam("imu_rate",               imu_rate_);
+      nh.getParam("imu_gyro_scale_factor",  imu_raw_gyro_scale_factor_);
+      nh.getParam("imu_accel_scale_factor", imu_raw_accel_scale_factor_);
+      if(imu_rate_ != 0                     ||
+         imu_raw_gyro_scale_factor_  != 0.0 ||
+         imu_raw_accel_scale_factor_ != 0.0)
       {
-        ROS_INFO_STREAM("INS: IMU rate overriden to " << imu_rate_);
+        ROS_INFO_STREAM("INS: IMU config overrides to rate= " << imu_rate_
+                          << " gyro scale factor= "           << imu_raw_gyro_scale_factor_
+                          << " accel scale factor= "          << imu_raw_accel_scale_factor_);
       }
+
+
+
 
       if(!nh_.getParam("oem7_imu_reference_frame", oem7_imu_reference_frame_))
       {
