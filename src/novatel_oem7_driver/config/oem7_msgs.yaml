@@ -23,4 +23,6 @@ oem7_msgs:
    INSUPDATESTATUS:            1825
    INSCONFIG:                  1945
    PSRDOP2:                    1163
+   BESTGNSSPOS:                1429
+   TERRASTARINFO:              1719
    # More messages may be added in order to process Oem7 'raw' messages.

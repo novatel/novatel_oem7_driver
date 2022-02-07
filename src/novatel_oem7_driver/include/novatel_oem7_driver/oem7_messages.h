@@ -96,6 +96,34 @@ namespace novatel_oem7_driver
 
 
   struct __attribute__((packed))
+  BESTGNSSPOSMem
+  {
+    oem7_enum_t        sol_stat;
+    oem7_enum_t        pos_type;
+    double             lat;
+    double             lon;
+    double             hgt;
+    float              undulation;
+    oem7_enum_t        datum_id;
+    float              lat_stdev;
+    float              lon_stdev;
+    float              hgt_stdev;
+    oem7_char_t        stn_id[4];
+    float              diff_age;
+    float              sol_age;
+    uint8_t            num_svs;
+    uint8_t            num_sol_svs;
+    uint8_t            num_sol_l1_svs;
+    uint8_t            num_sol_multi_svs;
+    oem7_hex_t         reserved;
+    oem7_hex_t         ext_sol_stat;
+    uint8_t            galileo_beidou_sig_mask;
+    uint8_t            gps_glonass_sig_mask;
+   };
+   static_assert(sizeof(BESTGNSSPOSMem) == 72, ASSERT_MSG);
+
+
+  struct __attribute__((packed))
   BESTPOSMem
   {
     oem7_enum_t        sol_stat;
@@ -370,6 +398,23 @@ namespace novatel_oem7_driver
     uint32_t           aux4_stat_clr;
   };
   static_assert(sizeof(RXSTATUSMem) == 88, ASSERT_MSG);
+
+
+  struct __attribute__((packed))
+  TERRASTARINFOMem
+  {
+    oem7_char_t        product_activation_code[16];
+    oem7_enum_t        subs_type;
+    uint32_t           subs_permissions;
+    uint32_t           service_end_day;
+    uint32_t           service_end_year;
+    uint32_t          reserved;
+    oem7_enum_t        region_restriction;
+    float              center_point_latitude;
+    float              center_point_longitude;
+    uint32_t           radius;
+  };
+  static_assert(sizeof(TERRASTARINFOMem) == 52 , ASSERT_MSG);
 
 
   struct __attribute__((packed))

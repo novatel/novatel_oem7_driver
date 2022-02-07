@@ -1,0 +1,7 @@
+uint8 UNASSIGNED = 0
+uint8 TERM = 1
+uint8 MODEL = 5
+uint8 BUBBLE = 100
+uint8 INCOMPATIBLE_SUBSCRIPTION = 104
+
+uint8 type

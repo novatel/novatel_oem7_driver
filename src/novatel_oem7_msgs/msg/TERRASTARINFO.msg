@@ -1,0 +1,12 @@
+Header header
+Oem7Header nov_header
+string product_activation_code
+SubscriptionType subs_type
+uint8 subs_permissions
+uint32 service_end_day
+uint32 service_end_year
+uint8 reserved
+RegionRestriction region_restriction
+float32 center_point_latitude
+float32 center_point_longitude
+uint32 radius

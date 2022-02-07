@@ -34,6 +34,7 @@
 
 #include "novatel_oem7_msgs/SolutionStatus.h"
 #include "novatel_oem7_msgs/PositionOrVelocityType.h"
+#include "novatel_oem7_msgs/BESTGNSSPOS.h"
 #include "novatel_oem7_msgs/BESTPOS.h"
 #include "novatel_oem7_msgs/BESTUTM.h"
 #include "novatel_oem7_msgs/BESTVEL.h"
@@ -346,6 +347,7 @@ namespace novatel_oem7_driver
    */
   class BESTPOSHandler: public Oem7MessageHandlerIf
   {
+    Oem7RosPublisher BESTGNSSPOS_pub_;
     Oem7RosPublisher BESTPOS_pub_;
     Oem7RosPublisher BESTUTM_pub_;
     Oem7RosPublisher BESTVEL_pub_;
@@ -355,6 +357,7 @@ namespace novatel_oem7_driver
     Oem7RosPublisher NavSatFix_pub_;
     Oem7RosPublisher Odometry_pub_;
 
+    boost::shared_ptr<novatel_oem7_msgs::BESTGNSSPOS> bestgnsspos_;
     boost::shared_ptr<novatel_oem7_msgs::BESTPOS> bestpos_;
     boost::shared_ptr<novatel_oem7_msgs::BESTVEL> bestvel_;
     boost::shared_ptr<novatel_oem7_msgs::INSPVA>  inspva_;
@@ -414,6 +417,14 @@ namespace novatel_oem7_driver
       }
 
       last_msg_msec = cur_msg_msec;
+    }
+
+    void publishBESTGNSSPOS(Oem7RawMessageIf::ConstPtr msg)
+    {
+      MakeROSMessage(msg, bestgnsspos_);
+
+
+      BESTGNSSPOS_pub_.publish(bestgnsspos_);
     }
 
     void publishBESTPOS(Oem7RawMessageIf::ConstPtr msg)
@@ -759,6 +770,7 @@ namespace novatel_oem7_driver
 
     void initialize(ros::NodeHandle& nh)
     {
+      BESTGNSSPOS_pub_.setup<novatel_oem7_msgs::BESTGNSSPOS>("BESTGNSSPOS",   nh);
       BESTPOS_pub_.setup<novatel_oem7_msgs::BESTPOS>("BESTPOS",   nh);
       BESTVEL_pub_.setup<novatel_oem7_msgs::BESTVEL>("BESTVEL",   nh);
       BESTUTM_pub_.setup<novatel_oem7_msgs::BESTUTM>("BESTUTM",   nh);
@@ -791,6 +803,7 @@ namespace novatel_oem7_driver
     {
       static const std::vector<int> MSG_IDS(
                                     {
+                                      BESTGNSSPOS_OEM7_MSGID,
                                       BESTPOS_OEM7_MSGID,
                                       BESTVEL_OEM7_MSGID,
                                       BESTUTM_OEM7_MSGID,
@@ -856,6 +869,11 @@ namespace novatel_oem7_driver
       if(msg->getMessageId() == PSRDOP2_OEM7_MSGID)
       {
         psrdop2_ = msg;
+      }
+
+      if(msg->getMessageId() == BESTGNSSPOS_OEM7_MSGID)
+      {
+        publishBESTGNSSPOS(msg);
       }
     }
   };

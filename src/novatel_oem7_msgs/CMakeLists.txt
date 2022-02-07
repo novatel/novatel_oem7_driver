@@ -17,6 +17,7 @@ add_service_files(
 add_message_files(DIRECTORY msg FILES
   Oem7RawMsg.msg
   Oem7Header.msg
+  BESTGNSSPOS.msg
   BESTPOS.msg
   BESTUTM.msg
   BESTVEL.msg
@@ -27,6 +28,7 @@ add_message_files(DIRECTORY msg FILES
   INSSTDEV.msg
   CORRIMU.msg
   IMURATECORRIMU.msg
+  RegionRestriction.msg
   RXSTATUS.msg
   TIME.msg
   INSExtendedSolutionStatus.msg
@@ -44,6 +46,8 @@ add_message_files(DIRECTORY msg FILES
   RotationalOffset.msg
   SolutionStatus.msg
   SolutionSource.msg
+  SubscriptionType.msg
+  TERRASTARINFO.msg
   Translation.msg
   TranslationOffset.msg
 )
