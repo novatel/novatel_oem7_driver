@@ -35,6 +35,9 @@ namespace novatel_oem7_driver
   const int BESTPOS_OEM7_MSGID            =   42;
   const int BESTUTM_OEM7_MSGID            =  726;
   const int BESTVEL_OEM7_MSGID            =   99;
+  const int PPPPOS_OEM7_MSGID             = 1538;
+  const int TERRASTARINFO_OEM7_MSGID      = 1719;
+  const int TERRASTARSTATUS_OEM7_MSGID    = 1729;
   const int CORRIMUS_OEM7_MSGID           = 2264;
   const int HEADING2_OEM7_MSGID           = 1335;
   const int IMURATECORRIMUS_OEM7_MSGID    = 1362;
