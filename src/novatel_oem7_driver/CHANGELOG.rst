@@ -1,7 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2021-11-04)
+------------------
+* Adding new messages
 
+* Support PPPPOS, TERRASTARSTATUS, TERRASTARINFO log topic publish
 
 2.2.0 (2021-02-03)
 ------------------

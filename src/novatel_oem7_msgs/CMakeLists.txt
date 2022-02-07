@@ -19,6 +19,9 @@ add_message_files(DIRECTORY msg FILES
   Oem7Header.msg
   BESTPOS.msg
   BESTUTM.msg
+  PPPPOS.msg
+  TERRASTARSTATUS.msg
+  TERRASTARINFO.msg
   BESTVEL.msg
   HEADING2.msg
   INSCONFIG.msg
@@ -35,6 +38,13 @@ add_message_files(DIRECTORY msg FILES
   INSResetType.msg
   INSSourceStatus.msg
   INSUpdate.msg
+  SubscriptionPermission.msg
+  SubscriptionType.msg
+  SyncState.msg
+  RegionRestriction.msg
+  LocalAreaStatus.msg
+  AccessStatus.msg
+  GeogatingStatus.msg
   BestExtendedSolutionStatus.msg
   InertialSolutionStatus.msg
   INSAlignmentMode.msg

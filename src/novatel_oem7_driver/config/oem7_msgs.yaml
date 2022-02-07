@@ -5,6 +5,9 @@ oem7_msgs:
    BESTPOS:                      42
    BESTVEL:                      99
    BESTUTM:                     726
+   PPPPOS:                     1538
+   TERRASTARINFO:              1719
+   TERRASTARSTATUS:            1729
    INSPVAS:                     508
    INSPVAX:                    1465
    INSSTDEV:                   2051

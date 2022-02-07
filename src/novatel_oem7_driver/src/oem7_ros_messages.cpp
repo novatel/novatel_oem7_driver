@@ -37,6 +37,9 @@
 #include "novatel_oem7_msgs/BESTPOS.h"
 #include "novatel_oem7_msgs/BESTVEL.h"
 #include "novatel_oem7_msgs/BESTUTM.h"
+#include "novatel_oem7_msgs/PPPPOS.h"
+#include "novatel_oem7_msgs/TERRASTARINFO.h"
+#include "novatel_oem7_msgs/TERRASTARSTATUS.h"
 #include "novatel_oem7_msgs/INSPVA.h"
 #include "novatel_oem7_msgs/INSPVAX.h"
 #include "novatel_oem7_msgs/INSCONFIG.h"
@@ -225,6 +228,90 @@ MakeROSMessage<novatel_oem7_msgs::BESTUTM>(
     static const std::string name = "BESTUTM";
     SetOem7Header(msg, name, bestutm->nov_header);
   }
+
+template<>
+void
+MakeROSMessage<novatel_oem7_msgs::PPPPOS>(
+    const Oem7RawMessageIf::ConstPtr& msg,
+    boost::shared_ptr<novatel_oem7_msgs::PPPPOS>& ppppos)
+{
+  assert(msg->getMessageId() == PPPPOS_OEM7_MSGID);
+
+  const PPPPOSMem* pp = reinterpret_cast<const PPPPOSMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
+  ppppos.reset(new novatel_oem7_msgs::PPPPOS);
+
+  ppppos->sol_status.status      = pp->sol_stat;
+  ppppos->pos_type.type          = pp->pos_type;
+  ppppos->lat                    = pp->lat;
+  ppppos->lon                    = pp->lon;
+  ppppos->hgt                    = pp->hgt;
+  ppppos->undulation             = pp->undulation;
+  ppppos->datum_id               = pp->datum_id;
+  ppppos->lat_stdev              = pp->lat_stdev;
+  ppppos->lon_stdev              = pp->lon_stdev;
+  ppppos->hgt_stdev              = pp->hgt_stdev;
+  ppppos->stn_id.assign(           pp->stn_id, arr_size(pp->stn_id));
+  ppppos->diff_age               = pp->diff_age;
+  ppppos->sol_age                = pp->sol_age;
+  ppppos->num_svs                = pp->num_svs;
+  ppppos->num_sol_svs            = pp->num_sol_svs;
+  ppppos->num_sol_l1_svs         = pp->num_sol_l1_svs;
+  ppppos->num_sol_multi_svs      = pp->num_sol_multi_svs;
+  ppppos->reserved               = pp->reserved;
+  ppppos->ext_sol_stat.status    = pp->ext_sol_stat;
+  ppppos->reserved2              = pp->reserved2;
+  ppppos->gps_glonass_sig_mask   = pp->gps_glonass_sig_mask;
+
+  static const std::string name = "PPPPOS";
+  SetOem7Header(msg, name, ppppos->nov_header);
+}
+
+template<>
+void
+MakeROSMessage<novatel_oem7_msgs::TERRASTARINFO>(
+    const Oem7RawMessageIf::ConstPtr& msg,
+    boost::shared_ptr<novatel_oem7_msgs::TERRASTARINFO>& terrastarinfo)
+{
+  assert(msg->getMessageId() == TERRASTARINFO_OEM7_MSGID);
+
+  const TERRASTARINFOMem* tsi = reinterpret_cast<const TERRASTARINFOMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
+  terrastarinfo.reset(new novatel_oem7_msgs::TERRASTARINFO);
+
+  terrastarinfo->product_activation_code        = tsi->product_activation_code;
+  terrastarinfo->sub_type.type                  = tsi->sub_type;
+  terrastarinfo->sub_permission.permission      = tsi->sub_permission;
+  terrastarinfo->service_end_day_of_year        = tsi->service_end_day_of_year;
+  terrastarinfo->service_end_year               = tsi->service_end_year;
+  terrastarinfo->reserved                       = tsi->reserved;
+  terrastarinfo->region_restriction.restriction = tsi->region_restriction;
+  terrastarinfo->center_point_latitude          = tsi->center_point_latitude;
+  terrastarinfo->center_point_longitude         = tsi->center_point_longitude;
+  terrastarinfo->radius                         = tsi->radius;
+
+  static const std::string name = "TERRASTARINFO";
+  SetOem7Header(msg, name, terrastarinfo->nov_header);
+}
+
+template<>
+void
+MakeROSMessage<novatel_oem7_msgs::TERRASTARSTATUS>(
+    const Oem7RawMessageIf::ConstPtr& msg,
+    boost::shared_ptr<novatel_oem7_msgs::TERRASTARSTATUS>& terrastarstatus)
+{
+  assert(msg->getMessageId() == TERRASTARSTATUS_OEM7_MSGID);
+
+  const TERRASTARSTATUSMem* tss = reinterpret_cast<const TERRASTARSTATUSMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
+  terrastarstatus.reset(new novatel_oem7_msgs::TERRASTARSTATUS);
+
+  terrastarstatus->access_status.status      = tss->access_status;
+  terrastarstatus->sync_state.state          = tss->sync_state;
+  terrastarstatus->reserved                  = tss->reserved;
+  terrastarstatus->local_area_status.status  = tss->local_area_status;
+  terrastarstatus->geo_status.status         = tss->geo_status;
+
+  static const std::string name = "TERRASTARSTATUS";
+  SetOem7Header(msg, name, terrastarstatus->nov_header);
+}
 
 template<>
 void
@@ -526,6 +613,18 @@ MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  boost::shared_ptr<novatel_oem
 template
 void
 MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  boost::shared_ptr<novatel_oem7_msgs::BESTUTM>&);
+
+template
+void
+MakeROSMessage(const Oem7RawMessageIf::ConstPtr&, boost::shared_ptr<novatel_oem7_msgs::PPPPOS>&);
+
+template
+void
+MakeROSMessage(const Oem7RawMessageIf::ConstPtr&, boost::shared_ptr<novatel_oem7_msgs::TERRASTARINFO>&);
+
+template
+void
+MakeROSMessage(const Oem7RawMessageIf::ConstPtr&, boost::shared_ptr<novatel_oem7_msgs::TERRASTARSTATUS>&);
 
 template
 void

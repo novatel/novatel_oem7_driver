@@ -1,5 +1,6 @@
 # ROS-standard
 IMU:        {topic: /gps/imu,                 frame_id: imu_link}
+RAWIMU:     {topic: /imu/data_raw,            frame_id: imu_link}
 GPSFix:     {topic: /gps/gps,                 frame_id: gps}
 NavSatFix:  {topic: /gps/fix,                 frame_id: gps} 
 Odometry:   {topic: /novatel/oem7/odom,       frame_id: odom} 
@@ -9,6 +10,9 @@ Oem7RawMsg: {topic: /novatel/oem7/oem7raw,    frame_id: gps, queue_size: "200"}
 BESTPOS:    {topic: /novatel/oem7/bestpos,    frame_id: gps}
 BESTUTM:    {topic: /novatel/oem7/bestutm,    frame_id: gps}
 BESTVEL:    {topic: /novatel/oem7/bestvel,    frame_id: gps}
+PPPPOS:     {topic: /novatel/oem7/ppppos,     frame_id: gps}
+TERRASTARINFO:   {topic: /novatel/oem7/terrastarinfo,    frame_id: gps}
+TERRASTARSTATUS: {topic: /novatel/oem7/terrastarstatus,  frame_id: gps}
 CORRIMU:    {topic: /novatel/oem7/corrimu,    frame_id: gps}
 HEADING2:   {topic: /novatel/oem7/heading2,   frame_id: gps}
 INSPVA:     {topic: /novatel/oem7/inspva,     frame_id: gps}

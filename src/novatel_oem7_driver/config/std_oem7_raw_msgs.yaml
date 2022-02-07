@@ -1,6 +1,9 @@
 oem7_raw_msgs:
 - BESTPOS
-- BESTVEL                     
+- BESTVEL
+- PPPPOS
+- TERRASTARINFO
+- TERRASTARSTATUS                     
 - INSPVAX                    
 - INSUPDATESTATUS
 - RAWIMUSX
