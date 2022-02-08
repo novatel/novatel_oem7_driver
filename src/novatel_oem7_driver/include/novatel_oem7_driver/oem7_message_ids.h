@@ -45,7 +45,6 @@ namespace novatel_oem7_driver
   const int INSSTDEV_OEM7_MSGID           = 2051;
   const int PSRDOP2_OEM7_MSGID            = 1163;
   const int RXSTATUS_OEM7_MSGID           =   93;
-  const int TERRASTARINFO_OEM7_MSGID      = 1719;
   const int TIME_OEM7_MSGID               =  101;
 
   // NMEA0183

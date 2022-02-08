@@ -83,7 +83,6 @@ receiver_init_commands:
 - "LOG INSPVAXB ONTIME 1"
 - "LOG CORRIMUSB ONTIME 0.01"
 - "LOG INSSTDEVB ONTIME 1"
-- "LOG TERRASTARINFOB ONTIME 1"
 - "LOG BESTGNSSPOSB ONTIME 0.1"
 #----------------------------------------------------------------------------------------------------------
 

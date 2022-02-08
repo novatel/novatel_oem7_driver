@@ -401,23 +401,6 @@ namespace novatel_oem7_driver
 
 
   struct __attribute__((packed))
-  TERRASTARINFOMem
-  {
-    oem7_char_t        product_activation_code[16];
-    oem7_enum_t        subs_type;
-    uint32_t           subs_permissions;
-    uint32_t           service_end_day;
-    uint32_t           service_end_year;
-    uint32_t          reserved;
-    oem7_enum_t        region_restriction;
-    float              center_point_latitude;
-    float              center_point_longitude;
-    uint32_t           radius;
-  };
-  static_assert(sizeof(TERRASTARINFOMem) == 52 , ASSERT_MSG);
-
-
-  struct __attribute__((packed))
   TIMEMem
   {
     uint32_t           clock_status;

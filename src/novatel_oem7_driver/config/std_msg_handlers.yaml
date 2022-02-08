@@ -3,7 +3,6 @@ oem7_msg_handlers:
 - "INSHandler"
 - "ALIGNHandler"
 - "RXSTATUSHandler"
-- "TERRASTARINFOHandler"
 - "TimeHandler"
 - "NMEAHandler"
             

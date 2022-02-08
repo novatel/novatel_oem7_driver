@@ -50,12 +50,6 @@
         </description>
     </class>
     
-    <class name="TERRASTARINFOHandler" type="novatel_oem7_driver::TERRASTARINFOHandler" base_class_type="novatel_oem7_driver::Oem7MessageHandlerIf">
-        <description>
-            TERRASTARINFO Status messages. 
-        </description>
-    </class>
-    
     <class name="TimeHandler" type="novatel_oem7_driver::TimeHandler" base_class_type="novatel_oem7_driver::Oem7MessageHandlerIf">
         <description>
             Time-related messages. 

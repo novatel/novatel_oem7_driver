@@ -64,7 +64,6 @@ add_library(${PROJECT_NAME}
    src/time_handler.cpp
    src/receiverstatus_handler.cpp
    src/nmea_handler.cpp
-   src/terrastarinfo_handler.cpp
 )
 
 

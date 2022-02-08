@@ -14,5 +14,4 @@ oem7_raw_msgs:
 - HEADING2                
 - TIME                   
 - RXSTATUS
-- INSCONFIG                 
-- TERRASTARINFO                   
+- INSCONFIG                                  

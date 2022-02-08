@@ -44,7 +44,6 @@
 #include "novatel_oem7_msgs/INSSTDEV.h"
 #include "novatel_oem7_msgs/CORRIMU.h"
 #include "novatel_oem7_msgs/RXSTATUS.h"
-#include "novatel_oem7_msgs/TERRASTARINFO.h"
 #include "novatel_oem7_msgs/TIME.h"
 
 
@@ -488,32 +487,6 @@ MakeROSMessage<novatel_oem7_msgs::CORRIMU>(
 
 template<>
 void
-MakeROSMessage<novatel_oem7_msgs::TERRASTARINFO>(
-    const Oem7RawMessageIf::ConstPtr& msg,
-    boost::shared_ptr<novatel_oem7_msgs::TERRASTARINFO>& terrastarinfo)
-{
-  assert(msg->getMessageId() == TERRASTARINFO_OEM7_MSGID);
-
-  const TERRASTARINFOMem* ti = reinterpret_cast<const TERRASTARINFOMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
-  terrastarinfo.reset(new novatel_oem7_msgs::TERRASTARINFO);
-
-  terrastarinfo->product_activation_code                = ti->product_activation_code;
-  terrastarinfo->subs_type.type                         = ti->subs_type;
-  terrastarinfo->subs_permissions                       = ti->subs_permissions;
-  terrastarinfo->service_end_day                        = ti->service_end_day;
-  terrastarinfo->service_end_year                       = ti->service_end_year;
-  terrastarinfo->reserved                               = ti->reserved;
-  terrastarinfo->region_restriction.region_restriction  = ti->region_restriction;
-  terrastarinfo->center_point_latitude                  = ti->center_point_latitude;
-  terrastarinfo->center_point_longitude                 = ti->center_point_longitude;
-  terrastarinfo->radius                                 = ti->radius;
-
-  static const std::string name = "TERRASTARINFO";
-  SetOem7Header(msg, name, terrastarinfo->nov_header);
-}
-
-template<>
-void
 MakeROSMessage<novatel_oem7_msgs::TIME>(
     const Oem7RawMessageIf::ConstPtr& msg,
     boost::shared_ptr<novatel_oem7_msgs::TIME>& time)
@@ -615,10 +588,6 @@ MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  boost::shared_ptr<novatel_oem
 template
 void
 MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  boost::shared_ptr<novatel_oem7_msgs::CORRIMU>&);
-
-template
-void
-MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  boost::shared_ptr<novatel_oem7_msgs::TERRASTARINFO>&);
 
 template
 void
