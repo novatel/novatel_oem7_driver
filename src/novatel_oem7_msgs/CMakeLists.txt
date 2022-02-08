@@ -17,6 +17,7 @@ add_service_files(
 add_message_files(DIRECTORY msg FILES
   Oem7RawMsg.msg
   Oem7Header.msg
+  BESTGNSSPOS.msg
   BESTPOS.msg
   BESTUTM.msg
   PPPPOS.msg

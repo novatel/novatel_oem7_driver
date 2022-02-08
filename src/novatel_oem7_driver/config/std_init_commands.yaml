@@ -86,7 +86,9 @@ receiver_init_commands:
 - "LOG INSPVAXB ONTIME 1"
 - "LOG CORRIMUSB ONTIME 0.01"
 - "LOG INSSTDEVB ONTIME 1"
+- "LOG BESTGNSSPOSB ONTIME 0.1"
 - "LOG RAWIMUSXB ONNEW"
+
 #----------------------------------------------------------------------------------------------------------
 
 - "LOG TIMEB ONTIME 1" # Can be used as a 'heartbeat' message.

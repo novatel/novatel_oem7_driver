@@ -6,7 +6,8 @@ NavSatFix:  {topic: /gps/fix,                 frame_id: gps}
 Odometry:   {topic: /novatel/oem7/odom,       frame_id: odom} 
 
 # Oem7-specific 
-Oem7RawMsg: {topic: /novatel/oem7/oem7raw,    frame_id: gps, queue_size: "200"}
+Oem7RawMsg:    {topic: /novatel/oem7/oem7raw,    frame_id: gps, queue_size: "200"}
+BESTGNSSPOS:   {topic: /novatel/oem7/bestgnsspos,    frame_id: gps}
 BESTPOS:    {topic: /novatel/oem7/bestpos,    frame_id: gps}
 BESTUTM:    {topic: /novatel/oem7/bestutm,    frame_id: gps}
 BESTVEL:    {topic: /novatel/oem7/bestvel,    frame_id: gps}
