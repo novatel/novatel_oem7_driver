@@ -167,6 +167,63 @@ namespace novatel_oem7_driver
 
 
   struct __attribute__((packed))
+  PPPPOSMem
+  {
+    oem7_enum_t        sol_stat;
+    oem7_enum_t        pos_type;
+    double             lat;
+    double             lon;
+    double             hgt;
+    float              undulation;
+    oem7_enum_t        datum_id;
+    float              lat_stdev;
+    float              lon_stdev;
+    float              hgt_stdev;
+    oem7_char_t        stn_id[4];
+    float              diff_age;
+    float              sol_age;
+    uint8_t            num_svs;
+    uint8_t            num_sol_svs;
+    uint8_t            num_sol_l1_svs;
+    uint8_t            num_sol_multi_svs;
+    oem7_hex_t         reserved;
+    oem7_hex_t         ext_sol_stat;
+    uint8_t            reserved2;
+    uint8_t            gps_glonass_sig_mask;
+  };
+  static_assert(sizeof(PPPPOSMem) == 72, ASSERT_MSG);
+
+
+  struct __attribute__((packed))
+  TERRASTARINFOMem
+  {
+    oem7_char_t        product_activation_code[16];
+    oem7_enum_t        sub_type;
+    uint32_t           sub_permission;
+    uint32_t           service_end_day_of_year;
+    uint32_t           service_end_year;
+    uint32_t           reserved;
+    oem7_enum_t        region_restriction;
+    float              center_point_latitude;
+    float              center_point_longitude;
+    uint32_t           radius;
+  };
+  static_assert(sizeof(TERRASTARINFOMem) == 52, ASSERT_MSG);
+
+
+  struct __attribute__((packed))
+  TERRASTARSTATUSMem
+  {
+    oem7_enum_t        access_status;
+    oem7_enum_t        sync_state;
+    uint32_t           reserved;
+    oem7_enum_t        local_area_status;
+    oem7_enum_t        geo_status;
+  };
+  static_assert(sizeof(TERRASTARSTATUSMem) == 20, ASSERT_MSG);
+
+
+  struct __attribute__((packed))
   INSPVASmem
   {
     uint32_t gnss_week;
@@ -435,6 +492,22 @@ namespace novatel_oem7_driver
     float    tdop;
   };
 
+  struct __attribute__((packed))
+  RAWIMUSXMem
+  {
+    oem7_hex_t  imu_info;
+    uint8_t     imu_type;
+    uint16_t    gnss_week;
+    double      gnss_week_seconds;
+    oem7_hex_t  imu_status[4];
+    int32_t     z_acc;
+    int32_t     y_acc;
+    int32_t     x_acc;
+    int32_t     z_gyro;
+    int32_t     y_gyro;
+    int32_t     x_gyro;
+  };
+  static_assert(sizeof(RAWIMUSXMem) == 40, ASSERT_MSG);
 
   const std::size_t OEM7_BINARY_MSG_HDR_LEN       = sizeof(Oem7MessageHeaderMem);
   const std::size_t OEM7_BINARY_MSG_SHORT_HDR_LEN = sizeof(Oem7MessgeShortHeaderMem);

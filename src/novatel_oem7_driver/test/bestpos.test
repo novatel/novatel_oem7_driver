@@ -4,7 +4,10 @@
 	    <arg name="oem7_test_name"  value="bestpos"/>
 		<arg name="oem7_topic_list" value="/novatel/oem7/bestpos 
 		                                   /novatel/oem7/bestvel 
-		                                   /novatel/oem7/bestutm 
+		                                   /novatel/oem7/bestutm
+										   /novatel/oem7/ppppos
+										   /novatel/oem7/terrastarinfo
+										   /novatel/oem7/terrastarstatus 
 		                                   /novatel/oem7/inspva
                                                    /novatel/oem7/odom 
 		                                   /gps/gps 

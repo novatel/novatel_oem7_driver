@@ -38,6 +38,16 @@
 #include "novatel_oem7_msgs/BESTPOS.h"
 #include "novatel_oem7_msgs/BESTUTM.h"
 #include "novatel_oem7_msgs/BESTVEL.h"
+#include "novatel_oem7_msgs/PPPPOS.h"
+#include "novatel_oem7_msgs/AccessStatus.h"
+#include "novatel_oem7_msgs/GeogatingStatus.h"
+#include "novatel_oem7_msgs/LocalAreaStatus.h"
+#include "novatel_oem7_msgs/RegionRestriction.h"
+#include "novatel_oem7_msgs/SubscriptionPermission.h"
+#include "novatel_oem7_msgs/SubscriptionType.h"
+#include "novatel_oem7_msgs/SyncState.h"
+#include "novatel_oem7_msgs/TERRASTARINFO.h"
+#include "novatel_oem7_msgs/TERRASTARSTATUS.h"
 #include "novatel_oem7_msgs/INSPVA.h"
 #include "novatel_oem7_msgs/INSPVAX.h"
 
@@ -351,6 +361,9 @@ namespace novatel_oem7_driver
     Oem7RosPublisher BESTPOS_pub_;
     Oem7RosPublisher BESTUTM_pub_;
     Oem7RosPublisher BESTVEL_pub_;
+    Oem7RosPublisher PPPPOS_pub_;
+    Oem7RosPublisher TERRASTARINFO_pub_;
+    Oem7RosPublisher TERRASTARSTATUS_pub_;
     Oem7RosPublisher INSPVA_pub_;
 
     Oem7RosPublisher GPSFix_pub_;
@@ -448,6 +461,27 @@ namespace novatel_oem7_driver
         boost::shared_ptr<novatel_oem7_msgs::BESTUTM> bestutm;
         MakeROSMessage(msg, bestutm);
         BESTUTM_pub_.publish(bestutm);
+    }
+
+    void publishPPPPOS(Oem7RawMessageIf::ConstPtr msg)
+    {
+        boost::shared_ptr<novatel_oem7_msgs::PPPPOS> ppppos;
+        MakeROSMessage(msg, ppppos);
+        PPPPOS_pub_.publish(ppppos);
+    }
+
+    void publishTERRASTARINFO(Oem7RawMessageIf::ConstPtr msg)
+    {
+        boost::shared_ptr<novatel_oem7_msgs::TERRASTARINFO> terrastarinfo;
+        MakeROSMessage(msg, terrastarinfo);
+        TERRASTARINFO_pub_.publish(terrastarinfo);
+    }
+
+    void publishTERRASTARSTATUS(Oem7RawMessageIf::ConstPtr msg)
+    {
+        boost::shared_ptr<novatel_oem7_msgs::TERRASTARSTATUS> terrastarstatus;
+        MakeROSMessage(msg, terrastarstatus);
+        TERRASTARSTATUS_pub_.publish(terrastarstatus);
     }
 
     void publishINSVPA(Oem7RawMessageIf::ConstPtr msg)
@@ -774,6 +808,9 @@ namespace novatel_oem7_driver
       BESTPOS_pub_.setup<novatel_oem7_msgs::BESTPOS>("BESTPOS",   nh);
       BESTVEL_pub_.setup<novatel_oem7_msgs::BESTVEL>("BESTVEL",   nh);
       BESTUTM_pub_.setup<novatel_oem7_msgs::BESTUTM>("BESTUTM",   nh);
+      PPPPOS_pub_.setup<novatel_oem7_msgs::PPPPOS>(   "PPPPOS",   nh);
+      TERRASTARINFO_pub_.setup<novatel_oem7_msgs::TERRASTARINFO>(     "TERRASTARINFO",  nh);
+      TERRASTARSTATUS_pub_.setup<novatel_oem7_msgs::TERRASTARSTATUS>("TERRASTARSTATUS", nh);
       INSPVA_pub_.setup<novatel_oem7_msgs::INSPVA>(  "INSPVA",    nh);
       GPSFix_pub_.setup<gps_common::GPSFix>(         "GPSFix",    nh);
       NavSatFix_pub_.setup<sensor_msgs::NavSatFix>(  "NavSatFix", nh);
@@ -807,6 +844,9 @@ namespace novatel_oem7_driver
                                       BESTPOS_OEM7_MSGID,
                                       BESTVEL_OEM7_MSGID,
                                       BESTUTM_OEM7_MSGID,
+                                      PPPPOS_OEM7_MSGID,
+                                      TERRASTARINFO_OEM7_MSGID,
+                                      TERRASTARSTATUS_OEM7_MSGID,
                                       INSPVAS_OEM7_MSGID,
                                       INSPVAX_OEM7_MSGID,
                                       PSRDOP2_OEM7_MSGID
@@ -851,6 +891,21 @@ namespace novatel_oem7_driver
         publishBESTUTM(msg);
       }
 
+      if(msg->getMessageId() == PPPPOS_OEM7_MSGID)
+      {
+        publishPPPPOS(msg);
+      }
+
+      if(msg->getMessageId() == TERRASTARINFO_OEM7_MSGID)
+      {
+        publishTERRASTARINFO(msg);
+      }
+
+      if(msg->getMessageId() == TERRASTARSTATUS_OEM7_MSGID)
+      {
+        publishTERRASTARSTATUS(msg);
+      }
+      
       if(msg->getMessageId() == INSPVAS_OEM7_MSGID)
       {
         publishINSVPA(msg);
