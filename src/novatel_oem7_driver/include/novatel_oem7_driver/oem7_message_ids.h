@@ -32,6 +32,7 @@
 
 namespace novatel_oem7_driver
 {
+  const int BESTGNSSPOS_OEM7_MSGID        = 1429;
   const int BESTPOS_OEM7_MSGID            =   42;
   const int BESTUTM_OEM7_MSGID            =  726;
   const int BESTVEL_OEM7_MSGID            =   99;
