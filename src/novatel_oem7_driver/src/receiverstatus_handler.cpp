@@ -80,6 +80,7 @@ namespace novatel_oem7_driver
   /** Oem7 receiver status strings  - refer to Oem7 manual */
   const str_vector_t RECEIVER_STATUS_STRS
   {
+      "Receiver Error Flag",
       "Temperature",
       "Voltage Supply",
       "Primary antenna not powered",
