@@ -1,12 +1,12 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 4.0.0 (2022-03-04)
 ------------------
 * Adding new messages
 
 * Support BESTGNSSPOS log topic publish
-
 
 3.0.0 (2022-02-23)
 ------------------
