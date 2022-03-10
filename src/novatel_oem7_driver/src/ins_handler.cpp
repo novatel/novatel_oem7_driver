@@ -237,12 +237,8 @@ namespace novatel_oem7_driver
         static const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0;
         double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
         
-        static const double AZIMUTH_ROLLOVER = 360 - ZERO_DEGREES_AZIMUTH_OFFSET;
-        if(azimuth < -AZIMUTH_ROLLOVER) // Rollover
-        {
-          azimuth += AZIMUTH_ROLLOVER;
-        }
-
+        // Conversion to quaternion addresses rollover.
+        // Pitch and azimuth are adjusted from Y-forward, LH to X-forward, RH.
         tf2::Quaternion tf_orientation;
         tf_orientation.setRPY(
                            degreesToRadians(inspva_->roll),
@@ -377,7 +373,7 @@ namespace novatel_oem7_driver
       {
         if(oem7_imu_reference_frame_)
         {
-          ROS_WARN_STREAM("INS Reference Frame: using OEM7 (X-forward) instead of ROS REP105.");
+          ROS_WARN_STREAM("INS Reference Frame: using OEM7 (Y-forward) instead of REP105 (X-forward).");
         }
       }
     }
