@@ -192,9 +192,6 @@ namespace novatel_oem7_driver
         imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
       }
 
-      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
-
       imu_pub_.publish(imu);
     }
 
@@ -322,8 +319,7 @@ namespace novatel_oem7_driver
       imu->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RASIMUSX documentation
       imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
-      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
+      imu->orientation_covariance[0] = DATA_NOT_AVAILABLE;
 
       raw_imu_pub_.publish(imu);
     }
