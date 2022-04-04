@@ -92,7 +92,7 @@ namespace novatel_oem7_driver
     void getImuParam(oem7_imu_type_t imu_type, const std::string& name, std::string& param)
     {
       std::string ns = ros::this_node::getNamespace();
-      std::string param_name = ns + "/supported_imus/" + std::to_string(imu_type) + "/" + name;
+      std::string param_name = ns + "/oem7_supported_imus/" + std::to_string(imu_type) + "/" + name;
       if(!nh_.getParam(param_name, param))
       {
         ROS_FATAL_STREAM("INS: IMU type= " << imu_type << " is not supported.");

@@ -1,0 +1,35 @@
+<launch>
+
+	<!-- Example of running two driver instances under different namespaces.
+	     For simplicity, we connect to two ports on the same receiver -->
+	
+	
+	<!-- Example of remapping specific topics-->
+	<remap from="gps" to="gps/gps"/>
+	<remap from="fix" to="gps/fix"/>
+
+	
+	<!-- ICOM connection to the receiver; you need to determine receiver's IP address -->
+	<arg name="oem7_if"        default="Oem7ReceiverTcp" />
+	<arg name="oem7_ip_addr"                             /> <!--  E.g. "10.128.224.1"  -->
+	
+	<group ns="one/oem7">
+		<param name="oem7_msg/oem7_if"        value="$(arg oem7_if)"      type="string" />
+		<param name="oem7_msg/oem7_ip_addr"   value="$(arg oem7_ip_addr)" type="string" />
+		<param name="oem7_msg/oem7_port"      value="3001"                type="int" />
+	
+		<include file="$(find novatel_oem7_driver)/config/std_driver_config_2.xml"/> 
+	</group>
+
+	<group ns="two/oem7">
+		<param name="oem7_msg/oem7_if"        value="$(arg oem7_if)"      type="string" />
+		<param name="oem7_msg/oem7_ip_addr"   value="$(arg oem7_ip_addr)" type="string" />
+		<param name="oem7_msg/oem7_port"      value="3002"                type="int" />
+	
+		<include file="$(find novatel_oem7_driver)/config/std_driver_config_2.xml"/> 
+	</group>
+
+
+</launch>
+
+

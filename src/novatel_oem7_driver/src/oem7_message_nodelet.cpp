@@ -152,7 +152,7 @@ namespace novatel_oem7_driver
       std::string msg_decoder_name;
       getPrivateNodeHandle().getParam("oem7_msg_decoder", msg_decoder_name);
       msg_decoder = oem7_msg_decoder_loader.createInstance(msg_decoder_name);
-      msg_decoder->initialize(getPrivateNodeHandle(), recvr_.get(), this);
+      msg_decoder->initialize(getNodeHandle(), recvr_.get(), this);
 
 
       msg_handler_.reset(new MessageHandler(getPrivateNodeHandle()));

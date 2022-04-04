@@ -65,7 +65,13 @@ namespace novatel_oem7_driver
         NODELET_INFO_STREAM(getName() << ": Oem7ConfigNodelet v." << novatel_oem7_driver_VERSION << "; "
                                       << __DATE__ << " " << __TIME__);
 
-        client_ = getNodeHandle().serviceClient<novatel_oem7_msgs::Oem7AbasciiCmd>("Oem7Cmd");
+        std::string oem7CmdServiceNS;
+        if(getPrivateNodeHandle().getParam("oem7_msg_node_name", oem7CmdServiceNS))
+        {
+          oem7CmdServiceNS += "/";
+        }
+
+        client_ = getNodeHandle().serviceClient<novatel_oem7_msgs::Oem7AbasciiCmd>(oem7CmdServiceNS + "Oem7Cmd");
 
         serviceCbTimer_ = getNodeHandle().createTimer(ros::Duration(0.0), &Oem7ConfigNodelet::serviceLoopCb, this, true);
       }

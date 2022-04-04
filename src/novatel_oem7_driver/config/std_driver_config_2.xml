@@ -1,0 +1,49 @@
+<launch>
+
+	<!--  Supported Oem7 messages - refer to Oem7 user manual. -->
+	<rosparam file="$(find novatel_oem7_driver)/config/oem7_msgs.yaml" command="load"/>	
+
+   	<!-- Supported IMUs - refer to Oem7 user manual-->
+	<rosparam file="$(find novatel_oem7_driver)/config/oem7_supported_imus.yaml" command="load"/>
+
+
+	<!-- Nodelet Manager, hosting the nodelets comprising the driver --> 
+	<node pkg="nodelet" type="nodelet" args="manager" name="oem7_driver" output="screen" />
+	
+	<!-- Nodelet interfacing with receiver to handle Oem7 Logs and publish ROS messages.  -->
+	<node pkg="nodelet" type="nodelet" name="oem7_msg" 
+	      args="load novatel_oem7_driver/Oem7MessageNodelet oem7_driver" output="screen">
+
+	    <!-- Message Handler Plugins -->
+	    <rosparam file="$(find novatel_oem7_driver)/config/std_msg_handlers.yaml" />
+	
+	    <param name="oem7_msg_decoder"   value="Oem7MessageDecoder"    type="string" />
+
+        <!-- All unknown fragments are published to oem7raw topic -->
+        <param name="oem7_publish_unknown_oem7raw" value="true" type="bool" />
+
+		<!-- Standard Messages / Topics to publish -->
+		<rosparam file="$(find novatel_oem7_driver)/config/std_msg_topics_2.yaml"/> 
+	</node>
+	
+	<!-- Nodelet sending receiver configuration commands. -->
+	<node pkg="nodelet" type="nodelet" name="oem7_cfg" 
+	      args="load novatel_oem7_driver/Oem7ConfigNodelet oem7_driver" output="screen">
+	      <param name="oem7_msg_node_name" value="oem7_msg" type="string" />
+	</node>
+	
+	<!-- Standard receiver initialization commands. -->
+	<rosparam file="$(find novatel_oem7_driver)/config/std_init_commands.yaml"/>
+
+    
+	<!-- Standard Oem7 raw messages to publish -->
+	<rosparam file="$(find novatel_oem7_driver)/config/std_oem7_raw_msgs.yaml"/> 
+	
+	
+
+
+	
+	
+	
+</launch>
+

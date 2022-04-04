@@ -74,7 +74,8 @@ public:
     }
 
     ROS_INFO_STREAM("topic [" << topic_itr->second << "]: frame_id: '" << frame_id_ << "'; q size: " << queue_size);
-    ros_pub_ = nh.advertise<M>(topic_itr->second, queue_size);
+    ros::NodeHandle handle;
+    ros_pub_ = handle.advertise<M>(topic_itr->second, queue_size);
   }
 
   /**

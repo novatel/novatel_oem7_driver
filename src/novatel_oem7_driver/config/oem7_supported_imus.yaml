@@ -1,4 +1,4 @@
-supported_imus:
+oem7_supported_imus:
    "0"  : { name:  "Unknown",                                      rate:   "0"   }
    "1"  : { name:  "Honeywell HG1700 AG11",                        rate: "100"   }
    "4"  : { name:  "Honeywell HG1700 AG17",                        rate: "100"   }
