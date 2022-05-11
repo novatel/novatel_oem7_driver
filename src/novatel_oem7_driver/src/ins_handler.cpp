@@ -192,9 +192,6 @@ namespace novatel_oem7_driver
         imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
       }
 
-      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
-
       imu_pub_.publish(imu);
     }
 
@@ -237,12 +234,8 @@ namespace novatel_oem7_driver
         static const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0;
         double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
         
-        static const double AZIMUTH_ROLLOVER = 360 - ZERO_DEGREES_AZIMUTH_OFFSET;
-        if(azimuth < -AZIMUTH_ROLLOVER) // Rollover
-        {
-          azimuth += AZIMUTH_ROLLOVER;
-        }
-
+        // Conversion to quaternion addresses rollover.
+        // Pitch and azimuth are adjusted from Y-forward, LH to X-forward, RH.
         tf2::Quaternion tf_orientation;
         tf_orientation.setRPY(
                            degreesToRadians(inspva_->roll),
@@ -326,8 +319,7 @@ namespace novatel_oem7_driver
       imu->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RASIMUSX documentation
       imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
-      imu->angular_velocity_covariance[0]    = DATA_NOT_AVAILABLE;
-      imu->linear_acceleration_covariance[0] = DATA_NOT_AVAILABLE;
+      imu->orientation_covariance[0] = DATA_NOT_AVAILABLE;
 
       raw_imu_pub_.publish(imu);
     }
@@ -377,7 +369,7 @@ namespace novatel_oem7_driver
       {
         if(oem7_imu_reference_frame_)
         {
-          ROS_WARN_STREAM("INS Reference Frame: using OEM7 (X-forward) instead of ROS REP105.");
+          ROS_WARN_STREAM("INS Reference Frame: using OEM7 (Y-forward) instead of REP105 (X-forward).");
         }
       }
     }

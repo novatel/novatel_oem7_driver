@@ -557,8 +557,6 @@ namespace novatel_oem7_driver
 
       if(inspva_ )
       {
-        double undulation = 0;
-
         // Populate INS data
         gpsfix_->pitch  = -inspva_->pitch;
         gpsfix_->roll   =  inspva_->roll;
@@ -623,14 +621,22 @@ namespace novatel_oem7_driver
         {
           gpsfix_->latitude   = inspva_->latitude;
           gpsfix_->longitude  = inspva_->longitude;
-          gpsfix_->altitude   = inspva_->height;
-
-          gpsfix_->status.position_source |= (gps_common::GPSStatus::SOURCE_GYRO | gps_common::GPSStatus::SOURCE_ACCEL);
 
           if(bestpos_)
           {
             gpsfix_->altitude = inspva_->height - bestpos_->undulation;
           }
+          else if(inspvax_)
+          {
+            gpsfix_->altitude = inspva_->height - inspvax_->undulation;
+          }
+          else
+          {
+            ROS_WARN_THROTTLE(10, "No BESTPOS or INSPVAX to get undulation.");
+            return;
+          }
+
+          gpsfix_->status.position_source |= (gps_common::GPSStatus::SOURCE_GYRO | gps_common::GPSStatus::SOURCE_ACCEL);
 
           if(inspvax_)
           {
@@ -639,11 +645,6 @@ namespace novatel_oem7_driver
             gpsfix_->position_covariance[4] = std::pow(inspvax_->latitude_stdev,  2);
             gpsfix_->position_covariance[8] = std::pow(inspvax_->height_stdev,    2);
             gpsfix_->position_covariance_type = gps_common::GPSFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
-
-            if(!bestpos_)
-            {
-              gpsfix_->altitude = inspva_->height - inspvax_->undulation;
-            }
           }
         }
 
@@ -682,26 +683,22 @@ namespace novatel_oem7_driver
       GPSFix_pub_.publish(gpsfix_);
     }
 
+    /*** Generates NavSatFix object from GpsFix and BESTPOS
+     *   Height: gpsfix is orthometric, navsatfix is ellipsoid.
+     */
     void publishNavSatFix()
     {
-      if(!gpsfix_)
+      if(!gpsfix_ || !bestpos_)
       {
+        // bestpos is needed to get service status and undulation
         return;
       }
 
       boost::shared_ptr<sensor_msgs::NavSatFix> navsatfix(new sensor_msgs::NavSatFix);
 
-      GetNavSatFix(navsatfix);
-
-      NavSatFix_pub_.publish(navsatfix);
-    }
-    /*** Generates NavSatFix object from GpsFix and BESTPOS
-     */
-    void GetNavSatFix(sensor_msgs::NavSatFix::Ptr navsatfix)
-    {
-      navsatfix->latitude    = gpsfix_->latitude;
-      navsatfix->longitude   = gpsfix_->longitude;
-      navsatfix->altitude    = gpsfix_->altitude;
+      navsatfix->latitude  = gpsfix_->latitude;
+      navsatfix->longitude = gpsfix_->longitude;
+      navsatfix->altitude  = gpsfix_->altitude + bestpos_->undulation;
 
       navsatfix->position_covariance[0]   = gpsfix_->position_covariance[0];
       navsatfix->position_covariance[4]   = gpsfix_->position_covariance[4];
@@ -709,16 +706,10 @@ namespace novatel_oem7_driver
       navsatfix->position_covariance_type = GpsFixCovTypeToNavSatFixCovType(gpsfix_->position_covariance_type);
 
       navsatfix->status.status  = GpsStatusToNavSatStatus(gpsfix_->status.status);
+      navsatfix->status.service = NavSatStatusService(bestpos_);
 
-      if(bestpos_)
-      {
-        navsatfix->status.service = NavSatStatusService(bestpos_);
-      }
-      else
-      {
-        ROS_DEBUG_STREAM("No BESTPOS to produce NavSatFix 'service'. ");
-      }
-   }
+      NavSatFix_pub_.publish(navsatfix);
+    }
 
     void publishOdometry()
     {
