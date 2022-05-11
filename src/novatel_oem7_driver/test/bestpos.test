@@ -5,6 +5,7 @@
 		<arg name="oem7_topic_list" value="/novatel/oem7/bestpos 
 		                                   /novatel/oem7/bestvel 
 		                                   /novatel/oem7/bestutm
+										   /novatel/oem7/bestgnsspos
 										   /novatel/oem7/ppppos
 										   /novatel/oem7/terrastarinfo
 										   /novatel/oem7/terrastarstatus 
