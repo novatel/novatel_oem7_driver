@@ -1,16 +1,3 @@
-
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction, EmitEvent
-from launch.actions import LogInfo
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import ThisLaunchFileDir
-
-from ament_index_python.packages import get_package_share_directory
-
-
-from launch.actions import OpaqueFunction
-import launch.substitutions
-import launch
 ################################################################################
 # Copyright (c) 2021 NovAtel Inc.
 #
@@ -34,6 +21,17 @@ import launch
 #
 #################################################################################
 
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, TimerAction, EmitEvent
+from launch.actions import LogInfo
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import ThisLaunchFileDir
+
+from ament_index_python.packages import get_package_share_directory
+
+from launch.actions import OpaqueFunction
+import launch.substitutions
+import launch
 
 import launch_testing
 import launch_testing.actions
@@ -78,7 +76,7 @@ def generate_test_description(name, topics):
         )
     
     rosbag_desc = launch.actions.ExecuteProcess(
-            cmd=['ros2', 'bag', 'record', '-o', name, topics],
+            cmd= ['ros2', 'bag', 'record', '-o', name] + topics,
             output='screen')
     
     
@@ -95,7 +93,7 @@ def generate_test_description(name, topics):
 class ConcurrentTestWorkaround(unittest.TestCase):
     def test_logging_output(self, proc_info, proc_output):
         print("Dummy concurrent test to supress spurious launch error")
-        time.sleep(30)
+        time.sleep(45)
         print("Dummy concurrent test finished")
         
 

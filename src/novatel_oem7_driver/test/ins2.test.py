@@ -25,15 +25,19 @@
 from novatel_oem7_driver import testutil
 import launch_testing
 
+
 #@pytest.mark.launc_test
 def generate_test_description():
-    return testutil.generate_test_description('align', ['/novatel/oem7/heading2'])
-
-    
+    return testutil.generate_test_description('ins2', 
+                                              ['/novatel/oem7/corrimu',
+                                               '/novatel/oem7/inspvax',   
+                                               '/gps/imu'
+                                               ]
+                                              )
+       
 class ConcurrentTestWorkaround(testutil.ConcurrentTestWorkaround):
     pass
 
 @launch_testing.post_shutdown_test()
-class AlignBagEquivalencyTest(testutil.BagEquivalencyTest):
+class Ins2BagEquivalencyTest(testutil.BagEquivalencyTest):
     pass
-

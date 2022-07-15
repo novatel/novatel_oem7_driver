@@ -27,13 +27,21 @@ import launch_testing
 
 #@pytest.mark.launc_test
 def generate_test_description():
-    return testutil.generate_test_description('align', ['/novatel/oem7/heading2'])
+    return testutil.generate_test_description('bestpos', 
+                                              ['/novatel/oem7/bestpos',
+                                               '/novatel/oem7/bestvel', 
+                                               '/novatel/oem7/bestutm', 
+                                               '/novatel/oem7/inspva',
+                                               '/novatel/oem7/odom', 
+                                               '/gps/gps', 
+                                               '/gps/fix']
+                                              )
 
     
 class ConcurrentTestWorkaround(testutil.ConcurrentTestWorkaround):
     pass
 
 @launch_testing.post_shutdown_test()
-class AlignBagEquivalencyTest(testutil.BagEquivalencyTest):
+class BestposBagEquivalencyTest(testutil.BagEquivalencyTest):
     pass
 

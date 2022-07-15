@@ -134,6 +134,42 @@ if(BUILD_TESTING)
 	 	ARGS "test_dir:=${TEST_DIR}" 
 	 	ARGS "oem7_file_name:=${TEST_DIR}/align.gps"
 	 	)
+	 	
+ 	add_launch_test(
+		test/bestpos.test.py
+		ARGS "test_name:=bestpos"
+ 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "oem7_file_name:=${TEST_DIR}/bestpos.gps"
+ 	)
+ 	
+ 	add_launch_test(
+		test/ins1.test.py
+		ARGS "test_name:=ins1"
+ 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "oem7_file_name:=${TEST_DIR}/ins1.gps"
+ 	)
+ 	
+ 	add_launch_test(
+		test/ins2.test.py
+		ARGS "test_name:=ins2"
+ 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "oem7_file_name:=${TEST_DIR}/ins2.gps"
+ 	)
+
+ 	add_launch_test(
+		test/rxstatus.test.py
+		ARGS "test_name:=rxstatus"
+ 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "oem7_file_name:=${TEST_DIR}/rxstatus.gps"
+ 	)
+ 	
+ 	add_launch_test(
+		test/time.test.py
+		ARGS "test_name:=time"
+ 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "oem7_file_name:=${TEST_DIR}/time.gps"
+ 	)
+	 	
 endif()
 
 
