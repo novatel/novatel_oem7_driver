@@ -1,9 +1,10 @@
 # ROS-standard
-IMU:        {topic: /gps/imu,                 frame_id: imu_link}
-RAWIMU:     {topic: /imu/data_raw,            frame_id: imu_link}
-GPSFix:     {topic: /gps/gps,                 frame_id: gps}
-NavSatFix:  {topic: /gps/fix,                 frame_id: gps} 
-Odometry:   {topic: /novatel/oem7/odom,       frame_id: odom} 
+IMU:          {topic: /gps/imu,                 frame_id: imu_link}
+RAWIMUOEM7:   {topic: /imu/data_raw/oem7,       frame_id: imu_link}
+RAWIMUREP105: {topic: /imu/data_raw/rep105,       frame_id: imu_link}
+GPSFix:       {topic: /gps/gps,                 frame_id: gps}
+NavSatFix:    {topic: /gps/fix,                 frame_id: gps} 
+Odometry:     {topic: /novatel/oem7/odom,       frame_id: odom} 
 
 # Oem7-specific 
 Oem7RawMsg:    {topic: /novatel/oem7/oem7raw,    frame_id: gps, queue_size: "200"}

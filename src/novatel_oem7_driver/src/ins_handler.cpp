@@ -68,7 +68,8 @@ namespace novatel_oem7_driver
     ros::NodeHandle nh_;
 
     Oem7RosPublisher       imu_pub_;
-    Oem7RosPublisher       raw_imu_pub_;
+    Oem7RosPublisher       raw_imu_rep105_pub_;
+    Oem7RosPublisher       raw_imu_oem7_pub_;
     Oem7RosPublisher       corrimu_pub_;
     Oem7RosPublisher       insstdev_pub_;
     Oem7RosPublisher       inspvax_pub_;
@@ -87,7 +88,10 @@ namespace novatel_oem7_driver
     typedef std::map<std::string, std::string> imu_config_map_t;
     imu_config_map_t imu_config_map;
 
-    bool oem7_imu_reference_frame_; ///< Backwards compatibility: use OEM7 reference frame, not compliant with REP105.
+    // For Backwards compatibility: 
+    // (true) use OEM7 reference frame, not compliant with REP105. x->right, y->forward, z->up
+    // (false, default via constructor initialization) use REP105 reference frame, x->forward, y->left, z->up
+    bool oem7_imu_reference_frame_; 
 
     void getImuParam(oem7_imu_type_t imu_type, const std::string& name, std::string& param)
     {
@@ -291,7 +295,7 @@ namespace novatel_oem7_driver
 
     void processRawImuMsg(Oem7RawMessageIf::ConstPtr msg)
     {
-      if(!raw_imu_pub_.isEnabled())
+      if(!raw_imu_oem7_pub_.isEnabled())
       {
         return;
       }
@@ -310,18 +314,35 @@ namespace novatel_oem7_driver
       // All measurements are in sensor frame, uncorrected for gravity and Earth rotation. There is no up, forward, left;
       // x, y, z are nominal references to enclosure housing.
 
-      boost::shared_ptr<sensor_msgs::Imu> imu = boost::make_shared<sensor_msgs::Imu>();
-      imu->angular_velocity.x =  computeAngularVelocityFromRaw(raw->x_gyro);
-      imu->angular_velocity.y = -computeAngularVelocityFromRaw(raw->y_gyro); // Refer to RAWIMUSX documentation
-      imu->angular_velocity.z =  computeAngularVelocityFromRaw(raw->z_gyro);
+      boost::shared_ptr<sensor_msgs::Imu> imu_oem7 = boost::make_shared<sensor_msgs::Imu>();
+      imu_oem7->angular_velocity.x =  computeAngularVelocityFromRaw(raw->x_gyro);
+      imu_oem7->angular_velocity.y = -computeAngularVelocityFromRaw(raw->y_gyro); // Refer to RAWIMUSX documentation
+      imu_oem7->angular_velocity.z =  computeAngularVelocityFromRaw(raw->z_gyro);
 
-      imu->linear_acceleration.x =  computeLinearAccelerationFromRaw(raw->x_acc);
-      imu->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RASIMUSX documentation
-      imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
+      imu_oem7->linear_acceleration.x =  computeLinearAccelerationFromRaw(raw->x_acc);
+      imu_oem7->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RASIMUSX documentation
+      imu_oem7->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
-      imu->orientation_covariance[0] = DATA_NOT_AVAILABLE;
+      imu_oem7->orientation_covariance[0] = DATA_NOT_AVAILABLE;
 
-      raw_imu_pub_.publish(imu);
+      raw_imu_oem7_pub_.publish(imu_oem7);
+
+      // OEM7 is referenced to enclosure housing... but nominally y-forward and x-right
+      // REP105 is x-forward, y-left; so we want to remap the gyros for REP105-compliant raw data
+      // Note, this does also not include INSSETROTATION RBV/USER adjustments!
+      // Rotate and pub so we also have REP105 raw data
+      boost::shared_ptr<sensor_msgs::Imu> imu_rep105 = boost::make_shared<sensor_msgs::Imu>();
+      imu_rep105->angular_velocity.x = -computeAngularVelocityFromRaw(raw->y_gyro);
+      imu_rep105->angular_velocity.y = -computeAngularVelocityFromRaw(raw->x_gyro);
+      imu_rep105->angular_velocity.z =  computeAngularVelocityFromRaw(raw->z_gyro);
+
+      imu_rep105->linear_acceleration.x = -computeLinearAccelerationFromRaw(raw->y_acc);
+      imu_rep105->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->x_acc);
+      imu_rep105->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
+
+      imu_rep105->orientation_covariance[0] = DATA_NOT_AVAILABLE;
+
+      raw_imu_rep105_pub_.publish(imu_rep105);
     }
 
 
@@ -342,12 +363,13 @@ namespace novatel_oem7_driver
     {
       nh_ = nh;
 
-      imu_pub_.setup<sensor_msgs::Imu>(                  "IMU",        nh);
-      raw_imu_pub_.setup<sensor_msgs::Imu>(              "RAWIMU",        nh);
-      corrimu_pub_.setup<  novatel_oem7_msgs::CORRIMU>(  "CORRIMU",    nh);
-      insstdev_pub_.setup< novatel_oem7_msgs::INSSTDEV>( "INSSTDEV",   nh);
-      inspvax_pub_.setup<  novatel_oem7_msgs::INSPVAX>(  "INSPVAX",    nh);
-      insconfig_pub_.setup<novatel_oem7_msgs::INSCONFIG>("INSCONFIG",  nh);
+      imu_pub_.setup<sensor_msgs::Imu>(                  "IMU",           nh);
+      raw_imu_oem7_pub_.setup<sensor_msgs::Imu>(         "RAWIMUOEM7",    nh);
+      raw_imu_rep105_pub_.setup<sensor_msgs::Imu>(       "RAWIMUREP105",  nh);
+      corrimu_pub_.setup<  novatel_oem7_msgs::CORRIMU>(  "CORRIMU",       nh);
+      insstdev_pub_.setup< novatel_oem7_msgs::INSSTDEV>( "INSSTDEV",      nh);
+      inspvax_pub_.setup<  novatel_oem7_msgs::INSPVAX>(  "INSPVAX",       nh);
+      insconfig_pub_.setup<novatel_oem7_msgs::INSCONFIG>("INSCONFIG",     nh);
 
       // User overrides for IMU
       nh.getParam("imu_rate",               imu_rate_);
