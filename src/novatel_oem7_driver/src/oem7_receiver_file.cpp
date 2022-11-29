@@ -60,7 +60,7 @@ namespace novatel_oem7_driver
     {
       node_ = &nh;
 
-      node_->declare_parameter("oem7_file_name");
+      node_->declare_parameter("oem7_file_name", "");
       std::string oem7_file_name = node_->get_parameter("oem7_file_name").as_string();
 
       RCLCPP_INFO_STREAM(node_->get_logger(), "Oem7File['" << oem7_file_name << "']");

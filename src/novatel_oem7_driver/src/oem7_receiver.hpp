@@ -115,7 +115,7 @@ namespace novatel_oem7_driver
     {
       node_ = &node;
 
-      node_->declare_parameter("oem7_max_io_errors");
+      node_->declare_parameter("oem7_max_io_errors", 0);
       max_num_io_errors_ = node_->get_parameter("oem7_max_io_errors").as_int();
 
       return true;

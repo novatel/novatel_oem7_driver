@@ -14,4 +14,5 @@ src/CMakeLists.txt
 *.deb
 *.ddeb
 debian
-obj-*
+.obj-*
+

@@ -92,6 +92,7 @@ while getopts "hcdrpft" OPT; do
 	    	
         f ) 
             CLEAN=clean
+            BUILD=build
             INSTALL=install
             BUILD_DEB_PKG=build_deb_pkg
             RUN_TESTS=run_tests

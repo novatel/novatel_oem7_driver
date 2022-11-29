@@ -31,7 +31,7 @@
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
 #include "novatel_oem7_driver/oem7_messages.h"
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "sensor_msgs/msg/imu.hpp"
 
 #include "novatel_oem7_msgs/msg/corrimu.hpp"

@@ -32,7 +32,6 @@ import traceback
 from docutils.nodes import topic
 
 
-
 def get_topic_list(bag_name):
     """ Return a list of topics stored in this bag """
     bag = rosbag.Bag(bag_name, 'r')
@@ -43,10 +42,40 @@ def make_msg_gen(bag_name, topic):
     bag = rosbag.Bag(bag_name, 'r')
     for top, msg, t in bag.read_messages():
         if top == topic:
-            yield msg 
+            yield msg
 
-    
-    
+""" The functions below check for type of class objects in nested ROS messages """
+primitive_types  = (int, float, bool, str)
+collection_types = (list, tuple)
+float_type = (float)
+def is_primitive(item):  return isinstance(item, primitive_types)
+def is_collection(item): return isinstance(item, collection_types)
+def is_float_type(item): return isinstance(item, float_type)
+
+def is_close(a, b, rel_tol=1e-9, abs_tol=0.0):
+    """ Checks equivalency between two float numbers - Following rules of Python PEP485 - https://peps.python.org/pep-0485/#proposed-implementation"""
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+def item_gen(item):
+    """ Generates values of various types (int, bool, str, float) from a nested bag object """
+    for member in dir(item):
+        if member.startswith("_"):  # exclude private stuff, it's irrelevant and blows up getattr.
+            continue
+        value = getattr(item, member)
+        if (is_primitive(value)):
+            yield value
+        elif (repr(type(value)).startswith("<class")):
+            for c in item_gen(value):
+                yield c
+        elif (is_collection(value)):
+            for elt in value:
+                if is_primitive(elt):
+                    continue
+                else:
+                    for c in item_gen(value):
+                        yield c
+            pass  # methods, classmethods, etc.
+
 def compare(ref_msg, uut_msg):
     """
     Compares contents of two bags; fails if the contents are not identical (except for ROS seqno, timestamp).
@@ -54,18 +83,27 @@ def compare(ref_msg, uut_msg):
     # Supress seqno, timestamp
     ref_msg.header.seq = 0
     uut_msg.header.seq = 0
-    
     ref_msg.header.stamp = None
     uut_msg.header.stamp = None
-    
-    if(ref_msg != uut_msg):
-        rospy.logerr("Messages do not match:")
-        rospy.logerr("Ref:\r\n" + str(ref_msg))
-        rospy.logerr("UUT:\r\n" + str(uut_msg))
-        return False;
-    
+
+    if (ref_msg != uut_msg):
+        ref_value_gen = item_gen(ref_msg)
+        uut_value_gen = item_gen(uut_msg)
+        for ref_value in ref_value_gen:
+            uut_value = next(uut_value_gen)
+            if is_float_type(ref_value):
+                if not is_close(ref_value, uut_value):
+                    rospy.logerr("Messages do not match:")
+                    rospy.logerr("Ref:\r\n" + str(ref_msg))
+                    rospy.logerr("UUT:\r\n" + str(uut_msg))
+                    return False;
+            else:
+                if not(ref_value == uut_value):
+                    rospy.logerr("Messages do not match:")
+                    rospy.logerr("Ref:\r\n" + str(ref_msg))
+                    rospy.logerr("UUT:\r\n" + str(uut_msg))
+                    return False;
     return True
-    
     
 def verify_bag_equivalency(ref_bag, uut_bag):
   """
@@ -104,9 +142,10 @@ def verify_bag_equivalency(ref_bag, uut_bag):
         assert(False)
         
       assert(unexpected_messages == 0)
-
-
-
-
-
   
+if __name__ == '__main__':
+    mgen = make_msg_gen(sys.argv[1], sys.argv[2])
+    for m in mgen:
+        print(m)
+        inspect_item(m)
+ 
