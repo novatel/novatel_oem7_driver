@@ -40,18 +40,19 @@ namespace novatel_oem7
 
       enum Oem7MessageType
       {
+        OEM7MSGTYPE_UNKNOWN,
         OEM7MSGTYPE_LOG,
         OEM7MSGTYPE_RSP,
-        OOEM7MSGTYPE_CMD,
-        OEM7MSGTYPE_UNKNOWN = 1000
+        OOEM7MSGTYPE_CMD
       };
 
       enum Oem7MessageFormat
       {
+        OEM7MSGFMT_UNKNOWN,
         OEM7MSGFMT_BINARY,
+        OEM7MSGFMT_SHORTBINARY,
         OEM7MSGFMT_ASCII,
-        OEM7MSGFMT_ABASCII,
-        OEM7MSGFMT_UNKNOWN = 1000
+        OEM7MSGFMT_ABASCII
       };
 
       virtual ~Oem7RawMessageIf(){}

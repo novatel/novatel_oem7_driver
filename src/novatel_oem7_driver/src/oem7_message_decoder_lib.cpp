@@ -1,7 +1,8 @@
 #include <oem7_message_decoder_lib.hpp>
 
 
-
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <decoders/novatel/framer.hpp>
 
 #include <memory>
@@ -27,7 +28,7 @@ namespace novatel_oem7
    */
   class Oem7RawMessage: public Oem7RawMessageIf
   {
-    std::unique_ptr<BaseMessageData> bmd_; ///< binary message obtained from receiver
+    boost::shared_ptr<BaseMessageData> bmd_; ///< binary message obtained from receiver
 
 
   public:
@@ -143,15 +144,15 @@ class Oem7MessageDecoderLib: public Oem7MessageDecoderLibIf
 {
   Oem7MessageDecoderLibUserIf* user_;
   
-  std::unique_ptr<InputStream>     input_stream_; ///< EDIE input stream; refer to EDIE documentation
-  std::unique_ptr<Framer> framer_;   ///< EDIE standard framer
+  boost::shared_ptr<InputStream>     input_stream_; ///< EDIE input stream; refer to EDIE documentation
+  boost::shared_ptr<Framer> framer_;   ///< EDIE standard framer
   
 public:
   Oem7MessageDecoderLib(Oem7MessageDecoderLibUserIf* user):
     user_(user)
   {
-    input_stream_ = std::make_unique<InputStream>(user);
-    framer_       = std::make_unique<Framer>(input_stream_.get());
+    input_stream_ = boost::make_shared<InputStream>(user);
+    framer_       = boost::make_shared<Framer>(input_stream_.get());
 
     framer_->EnableUnknownData(TRUE);
     framer_->SetBMDOutput(FLATTEN);
@@ -160,13 +161,13 @@ public:
   /**
    * Read a complete Oem7 message from EDIE
    */
-  virtual bool readMessage(std::shared_ptr<Oem7RawMessageIf>& msg)
+  virtual bool readMessage(boost::shared_ptr<Oem7RawMessageIf>& msg)
   {
     BaseMessageData* raw_bmd = NULL;
     StreamReadStatus status = framer_->ReadMessage(&raw_bmd);
     if(raw_bmd)
     {
-      msg = std::make_shared<Oem7RawMessage>(raw_bmd);
+      msg = boost::make_shared<Oem7RawMessage>(raw_bmd);
     }
   
     // EOS: No more data is available from EDIE, e.g. EOF reached when reading from file, socket connection broken, etc.
@@ -179,10 +180,10 @@ public:
 /**
  * Factory function
  */
-std::shared_ptr<Oem7MessageDecoderLibIf>
+boost::shared_ptr<Oem7MessageDecoderLibIf>
 GetOem7MessageDecoder(Oem7MessageDecoderLibUserIf* user)
 {
-  std::shared_ptr<Oem7MessageDecoderLib> dec(new Oem7MessageDecoderLib(user));
+  boost::shared_ptr<Oem7MessageDecoderLib> dec(new Oem7MessageDecoderLib(user));
   return dec;
 }
 

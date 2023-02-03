@@ -35,15 +35,35 @@ add_definitions("-D${PROJECT_NAME}_VERSION=\"${${PROJECT_NAME}_VERSION}\"")
 ## Build ##
 ###########
 
+message(STATUS "System Host Proc: '${CMAKE_HOST_SYSTEM_PROCESSOR}'")
+message(STATUS "System Proc: '${CMAKE_SYSTEM_PROCESSOR}'")
+message(STATUS "VOID_P: ${CMAKE_SIZEOF_VOID_P}")
+
+set(OEM7_DECODER novatel_oem7_decoder)
+
+
+include(ExternalProject)
+ExternalProject_Add(${OEM7_DECODER}
+  GIT_REPOSITORY https://github.com/novatel/novatel_edie
+  GIT_TAG origin/dev-ros_install_prefix
+  PREFIX ${CMAKE_BINARY_DIR}/${OEM7_DECODER}
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -DVERSION=1.0.0.2
+)
+
+set(OEM7_DECODER_DIR ${CMAKE_BINARY_DIR}/${OEM7_DECODER}/src/${OEM7_DECODER})
+
 include_directories(include
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${novatel_oem7_msgs_INCLUDE_DIRS}
+    ${novatel_oem7_msgs_INCLUDE_DIRS} 
+    ${OEM7_DECODER_DIR}	
+    ${OEM7_DECODER_DIR}/src
+    ${CMAKE_BINARY_DIR}/usr/include/novatel/edie           
+    ${OEM7_DECODER_DIR}/bin/Novatel/api/
+    ${OEM7_DECODER_DIR}/bin/StreamInterface/api/
     "novatel_oem7/include"
     src
 )
-
-
 
 ## All components are plugins
 add_library(${PROJECT_NAME}
@@ -54,6 +74,7 @@ add_library(${PROJECT_NAME}
    src/oem7_receiver_port.cpp
    src/oem7_receiver_file.cpp
    src/oem7_message_decoder.cpp
+   src/oem7_message_decoder_lib.cpp
    src/oem7_message_util.cpp
    src/oem7_ros_messages.cpp
    src/oem7_debug_file.cpp
@@ -67,35 +88,47 @@ add_library(${PROJECT_NAME}
    src/oem7_imu.cpp
 )
 
+message("Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
+
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-message(STATUS "System Host Proc: '${CMAKE_HOST_SYSTEM_PROCESSOR}'")
-message(STATUS "System Proc: '${CMAKE_SYSTEM_PROCESSOR}'")
-message(STATUS "VOID_P: ${CMAKE_SIZEOF_VOID_P}")
-
-if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm64v8") 
-    else ()
-        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm32v7")
-    endif ()
-else ()
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/amd64") 
-    else ()
-        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/i386")
-    endif ()
-endif ()
-
-
-message(STATUS "Linking to Oem7 Decoder at: '${OEM7_DECODER_LIB}'")
 
 target_link_libraries(${PROJECT_NAME}
+   Boost::boost
+   ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
+   ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
+   ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
+   ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${catkin_LIBRARIES}
-   ${Boost_LIBRARIES}
-   ${OEM7_DECODER_LIB}
+   ${Boost_LIBRARIES}   
 )
+
+add_dependencies(${PROJECT_NAME} ${OEM7_DECODER})
+
+#if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l")
+#    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+#        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm64v8") 
+#    else ()
+#        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/arm32v7")
+#    endif ()
+#else ()
+#    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+#        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/amd64") 
+#    else ()
+#        FIND_LIBRARY(OEM7_DECODER_LIB liboem7decoder.a "novatel_oem7/bin/i386")
+#    endif ()
+#endif ()
+
+
+
+#message(STATUS "Linking to Oem7 Decoder at: '${OEM7_DECODER_LIB}'")
+
+#target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+#   ${Boost_LIBRARIES}
+#   ${OEM7_DECODER_LIB}
+#)
 
 
 #############
