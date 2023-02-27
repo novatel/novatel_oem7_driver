@@ -22,29 +22,45 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __OEM7_RECEIVER_INTERFACE_HPP__
-#define __OEM7_RECEIVER_INTERFACE_HPP__
+#ifndef __OEM7_MESSAGE_DECODER__
+#define __OEM7_MESSAGE_DECODER__
 
+#include <oem7_raw_message_if.hpp>
 
-#include <ros/ros.h>
-#include <cstddef>
+#include <boost/shared_ptr.hpp>
 #include <boost/asio/buffer.hpp>
 
 
 
-
-namespace novatel_oem7_driver
+namespace novatel_oem7
 {
-  class Oem7ReceiverIf
+  typedef short version_element_t;
+
+  class Oem7MessageDecoderLibIf
+  {
+
+  public:
+      virtual ~Oem7MessageDecoderLibIf(){}
+      virtual bool readMessage(boost::shared_ptr<Oem7RawMessageIf>&) = 0;
+
+  };
+
+  class Oem7MessageDecoderLibUserIf
   {
   public:
-    virtual ~Oem7ReceiverIf(){};
-    virtual bool initialize(ros::NodeHandle&) = 0;
-
+    virtual ~Oem7MessageDecoderLibUserIf(){}
     virtual bool read( boost::asio::mutable_buffer, size_t&) = 0;
-    virtual bool write(boost::asio::const_buffer           ) = 0;
   };
+
+  
+  boost::shared_ptr<Oem7MessageDecoderLibIf>
+  GetOem7MessageDecoder(Oem7MessageDecoderLibUserIf*);
+
+  void
+  GetOem7MessageDecoderLibVersion(version_element_t& major, version_element_t& minor, version_element_t& build);
 }
+
+
 
 
 #endif

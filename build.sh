@@ -100,8 +100,8 @@ then
 	# Remove all intermediate and temporary files.
 	rm -rf  .ros devel build doc install  
 	rm -rf *.deb src/*.ddeb 
-	rm -rf src/novatel_oem7_driver/debian src/novatel_oem7_driver/.obj-* src/novatel_oem7_driver/obj-*
-	rm -rf src/novatel_oem7_msgs/debian src/novatel_oem7_msgs/.obj-* src/novatel_oem7_msgs/obj-*
+	rm -rf src/novatel_oem7_driver/debian src/novatel_oem7_driver/obj-*
+	rm -rf src/novatel_oem7_msgs/debian src/novatel_oem7_msgs/obj-*
 	rm -f src/CMakeLists.txt
 
 	if [[ -z $INSTALL && -z $RUN_TESTS && -z $BUILD_DEB_PKG ]];

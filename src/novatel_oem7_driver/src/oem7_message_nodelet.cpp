@@ -351,7 +351,8 @@ namespace novatel_oem7_driver
         }
         else // Log
         {
-          if( raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY  || // binary
+          if( raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY  || 
+              raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_SHORTBINARY  ||
              (raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_ASCII && isNMEAMessage(raw_msg)))
           {
             updateLogStatistics(raw_msg);
