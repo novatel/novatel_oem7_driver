@@ -39,7 +39,7 @@ namespace
 {
   // Versioning: reflects underlying EDIE version
   static const novatel_oem7::version_element_t VERSION_MAJOR  = 10;
-  static const novatel_oem7::version_element_t VERSION_MINOR  = 1;
+  static const novatel_oem7::version_element_t VERSION_MINOR  = 2;
   static const novatel_oem7::version_element_t VERSION_SPECIAL= 0;
 }
 
