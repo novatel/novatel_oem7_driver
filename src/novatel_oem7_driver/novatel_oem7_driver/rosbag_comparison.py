@@ -21,17 +21,16 @@
 #
 #################################################################################
 
-
-
 import os
 import sys
-
 import traceback
-
 
 import sqlite3
 from rosidl_runtime_py.utilities import get_message
 from rclpy.serialization import deserialize_message
+
+import numpy
+
 
 
 def get_topic_list(bag_name):
@@ -61,6 +60,53 @@ def get_topic_messages(bag_name, topic):
     return (m for m in data) 
 
 
+
+""" The functions below check for type of class objects in nested ROS messages """
+primitive_types  = (int, float, bool, str)
+collection_types = (list, tuple)
+float_type = (float)
+def is_primitive(item):  return isinstance(item, primitive_types)
+def is_collection(item): return isinstance(item, collection_types)
+def is_float_type(item): return isinstance(item, float_type)
+
+
+def is_close(a, b, rel_tol=1e-9, abs_tol=0.0):
+    """ Checks equivalency between two float numbers - Following rules of Python PEP485 - https://peps.python.org/pep-0485/#proposed-implementation"""
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+
+
+def item_gen(item):
+    """ Generates values of various types (int, bool, str, float) from a nested bag object """
+
+    for member in dir(item):
+
+        if member.startswith("_"):  # exclude private stuff, it's irrelevant and blows up getattr.
+            continue
+  
+        value = getattr(item, member)
+
+        if is_primitive(value) or is_float_type(value):
+            yield value
+
+        elif is_collection(value):
+            for elt in value:
+                if is_primitive(elt) or is_float_type(elt):
+                    yield elt
+                else:
+                    for c in item_gen(elt):
+                        yield c    
+
+        elif (type(value) is numpy.ndarray):
+            yield value
+
+        elif (repr(type(value)).startswith("<class")):
+            for c in item_gen(value):
+                yield c
+
+        # Ignore methods, etc.
+
+
 def compare_messages(ref_msg, uut_msg):
     """
     Compares a reference message to a UUT message: 
@@ -70,13 +116,41 @@ def compare_messages(ref_msg, uut_msg):
     t = type(ref_msg.header.stamp)
     ref_msg.header.stamp = t()
     uut_msg.header.stamp = t()
-    
-    if(ref_msg != uut_msg):
-        print("Messages do not match:")
-        print("Ref:\r\n" + str(ref_msg))
-        print("UUT:\r\n" + str(uut_msg))
-        return False
-    
+
+    ref_value_gen = item_gen(ref_msg)
+    uut_value_gen = item_gen(uut_msg)
+    for ref_value in ref_value_gen:
+        uut_value = next(uut_value_gen)
+
+        if is_float_type(ref_value):
+            is_match = is_close(ref_value, uut_value) 
+
+        elif type(ref_value) is numpy.ndarray:
+            is_match = numpy.allclose(ref_value, uut_value)
+        else:
+            is_match = ref_value == uut_value
+
+        if not is_match:
+            print("Messages do not match:")
+            print("Ref")
+            print("-" * 100)
+            print(str(ref_msg))
+            print("-" * 100)
+            print("")
+            print("UUT")
+            print("-" * 100)
+            print(str(uut_msg))
+            print("-" * 100)
+            print("")
+            print("Ref value:")
+            print(ref_value)
+            print("")
+            print("UUT value:")
+            print(uut_value)
+            print("Type:      '{}'".format(type(ref_value)))
+            
+            return False;  
+
     return True
     
 
@@ -120,4 +194,10 @@ def verify_bag_equivalency(ref_bag, uut_bag):
         assert(False)
         
       assert(unexpected_messages == 0)
+
+
+if __name__ == '__main__':
+    verify_bag_equivalency(sys.argv[1], sys.argv[2])
+
+
 
