@@ -409,8 +409,6 @@ namespace novatel_oem7_driver
 
       if(inspva_ )
       {
-        double undulation = 0;
-
         // Populate INS data
         gpsfix_->pitch  = -inspva_->pitch;
         gpsfix_->roll   =  inspva_->roll;
@@ -473,14 +471,23 @@ namespace novatel_oem7_driver
         {
           gpsfix_->latitude   = inspva_->latitude;
           gpsfix_->longitude  = inspva_->longitude;
-          gpsfix_->altitude   = inspva_->height;
-
-          gpsfix_->status.position_source |= (GPSStatus::SOURCE_GYRO | GPSStatus::SOURCE_ACCEL);
-
+          // GPSFix needs MSL height; SPAN reports ellipsoidal; so it's computed.
           if(bestpos_)
           {
             gpsfix_->altitude = inspva_->height - bestpos_->undulation;
           }
+          else if(inspvax_)
+          {
+            gpsfix_->altitude = inspva_->height - inspvax_->undulation;
+          }
+          else // Abnormal condition; likely receiver misconfiguration.
+          {
+            RCLCPP_ERROR_STREAM(node_->get_logger(), "No BESTPOS or INSPVAX to get undulation");
+            gpsfix_.reset();
+            return;
+          }
+
+          gpsfix_->status.position_source |= (GPSStatus::SOURCE_GYRO | GPSStatus::SOURCE_ACCEL);
 
           if(inspvax_)
           {
@@ -489,11 +496,6 @@ namespace novatel_oem7_driver
             gpsfix_->position_covariance[4] = std::pow(inspvax_->latitude_stdev,  2);
             gpsfix_->position_covariance[8] = std::pow(inspvax_->height_stdev,    2);
             gpsfix_->position_covariance_type = GPSFix::COVARIANCE_TYPE_DIAGONAL_KNOWN;
-
-            if(!bestpos_)
-            {
-              gpsfix_->altitude = inspva_->height - inspvax_->undulation;
-            }
           }
         }
 
@@ -536,25 +538,17 @@ namespace novatel_oem7_driver
 
     void publishNavSatFix()
     {
-      if(!gpsfix_)
+      if(!gpsfix_ || !bestpos_)
       {
+        // BESTPOS is needed for service status and undulation
         return;
       }
 
       std::shared_ptr<NavSatFix> navsatfix = std::make_shared<NavSatFix>();
 
-      GetNavSatFix(navsatfix);
-
-      NavSatFix_pub_->publish(navsatfix);
-    }
-
-    /*** Generates NavSatFix object from GpsFix and BESTPOS
-     */
-    void GetNavSatFix(NavSatFix::SharedPtr navsatfix)
-    {
       navsatfix->latitude    = gpsfix_->latitude;
       navsatfix->longitude   = gpsfix_->longitude;
-      navsatfix->altitude    = gpsfix_->altitude;
+      navsatfix->altitude    = gpsfix_->altitude + bestpos_->undulation;
 
       navsatfix->position_covariance[0]   = gpsfix_->position_covariance[0];
       navsatfix->position_covariance[4]   = gpsfix_->position_covariance[4];
@@ -562,35 +556,32 @@ namespace novatel_oem7_driver
       navsatfix->position_covariance_type = GpsFixCovTypeToNavSatFixCovType(gpsfix_->position_covariance_type);
 
       navsatfix->status.status  = GpsStatusToNavSatStatus(gpsfix_->status.status);
+      navsatfix->status.service = NavSatStatusService(bestpos_);
 
-      if(bestpos_)
-      {
-        navsatfix->status.service = NavSatStatusService(bestpos_);
-      }
-      else
-      {
-        RCLCPP_DEBUG_STREAM(node_->get_logger(), "No BESTPOS to produce NavSatFix 'service'.");
-      }
-   }
-
+      NavSatFix_pub_->publish(navsatfix);
+    }
 
     void publishOdometry()
     {
-      std::shared_ptr<Odometry> odometry(new Odometry);
-      odometry->child_frame_id = base_frame_;
-
-      if(gpsfix_)
+      if(!gpsfix_)
       {
-        UTMPointFromGnss(
-            odometry->pose.pose.position,
-            gpsfix_->latitude,
-            gpsfix_->longitude,
-            gpsfix_->altitude);
-
-        odometry->pose.covariance[ 0] = gpsfix_->position_covariance[0];
-        odometry->pose.covariance[ 7] = gpsfix_->position_covariance[4];
-        odometry->pose.covariance[14] = gpsfix_->position_covariance[8];
+        // No data derive basic Odometry values
+        return;
       }
+
+      std::shared_ptr<Odometry> odometry = std::make_shared<Odometry>();
+      odometry->child_frame_id = base_frame_;
+  
+      UTMPointFromGnss(
+          odometry->pose.pose.position,
+          gpsfix_->latitude,
+          gpsfix_->longitude,
+          gpsfix_->altitude);
+
+      odometry->pose.covariance[ 0] = gpsfix_->position_covariance[0];
+      odometry->pose.covariance[ 7] = gpsfix_->position_covariance[4];
+      odometry->pose.covariance[14] = gpsfix_->position_covariance[8];
+    
 
       if(inspva_)
       {

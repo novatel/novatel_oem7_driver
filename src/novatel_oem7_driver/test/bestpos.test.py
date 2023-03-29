@@ -33,8 +33,8 @@ def generate_test_description():
                                                '/novatel/oem7/bestutm', 
                                                '/novatel/oem7/inspva',
                                                '/novatel/oem7/odom', 
-                                               '/gps/gps', 
-                                               '/gps/fix']
+                                               '/novatel/oem7/gps', 
+                                               '/novatel/oem7/fix']
                                               )
 
     
