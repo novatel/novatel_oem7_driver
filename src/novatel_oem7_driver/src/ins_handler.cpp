@@ -29,7 +29,8 @@
 
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
-#include "novatel_oem7_driver/oem7_messages.h"
+#include <novatel_oem7_driver/oem7_messages.h>
+#include <novatel_oem7_driver/oem7_imu.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "sensor_msgs/msg/imu.hpp"
@@ -46,15 +47,6 @@
 
 #include <math.h>
 #include <map>
-
-namespace
-{
-  typedef unsigned int imu_type_t; ///< Type of IMU used
-  typedef int imu_rate_t; ///< IMU message rate
-
-  const imu_type_t IMU_TYPE_UNKNOWN = 0;
-}
-
 
 
 namespace novatel_oem7_driver
@@ -87,7 +79,10 @@ namespace novatel_oem7_driver
     std::shared_ptr<novatel_oem7_msgs::msg::CORRIMU>  corrimu_;
     std::shared_ptr<novatel_oem7_msgs::msg::INSSTDEV> insstdev_;
 
-    int imu_rate_;
+    oem7_imu_rate_t imu_rate_;                    ///< IMU output rate
+    double          imu_raw_gyro_scale_factor_;   ///< IMU-specific raw gyroscope scaling
+    double          imu_raw_accel_scale_factor_;  ///< IMU-specific raw acceleration scaling.
+
     std::string frame_id_;
 
     typedef std::map<std::string, std::string> imu_config_map_t;
@@ -96,13 +91,13 @@ namespace novatel_oem7_driver
     std::unique_ptr<DriverParameter<std::string>> imu_rate_p_;
     std::unique_ptr<DriverParameter<std::string>> imu_desc_p_;
 
-    int getImuRate(imu_type_t imu_type)
+    oem7_imu_rate_t getImuRate(oem7_imu_type_t imu_type)
     {
       static DriverParameter<int> rate_p("supported_imus." + std::to_string(imu_type) + ".rate", 0, *node_);
       return rate_p.value();
     }
 
-    void getImuDescription(imu_type_t imu_type, std::string& desc)
+    void getImuDescription(oem7_imu_type_t imu_type, std::string& desc)
     {
       static DriverParameter<std::string> desc_p("supported_imus." + std::to_string(imu_type) + ".name", "", *node_);
       desc = desc_p.value();
@@ -115,15 +110,44 @@ namespace novatel_oem7_driver
       MakeROSMessage(msg, insconfig);
       insconfig_pub_->publish(insconfig);
 
-      if(imu_rate_ == 0)
+      const oem7_imu_type_t imu_type = static_cast<oem7_imu_type_t>(insconfig->imu_type);
+
+      std::string imu_desc;
+      getImuDescription(imu_type, imu_desc);
+      
+      if(imu_rate_ == 0) // No override; this is normal.
       {
-        std::string imu_desc;
-        getImuDescription(insconfig->imu_type, imu_desc);
-
-        imu_rate_ = getImuRate(insconfig->imu_type);
-
-        RCLCPP_INFO_STREAM(node_->get_logger(),  "IMU[" << insconfig->imu_type << "]: '" << imu_desc << "', rate= " << imu_rate_);
+        imu_rate_ = getImuRate(imu_type);
       }
+
+      if(imu_rate_ == 0) // No rate configured at all.
+      {
+        RCLCPP_ERROR_STREAM(node_->get_logger(),
+                    "IMU type = '" << imu_type  << "': IMU rate unavailable. IMU output disabled.");
+        return;
+      }
+
+      if(imu_raw_gyro_scale_factor_  == 0.0 ||
+         imu_raw_accel_scale_factor_ == 0.0) // No override, this is normal.
+      {
+          if(!getImuRawScaleFactors(
+              imu_type,
+              imu_rate_,
+              imu_raw_gyro_scale_factor_,
+              imu_raw_accel_scale_factor_))
+
+          {
+            RCLCPP_ERROR_STREAM(node_->get_logger(), 
+              "IMU type= '" << insconfig->imu_type << "'; Scale factors unavilable. Raw IMU output disabled");
+            return;
+          }
+      }
+              
+      RCLCPP_INFO_STREAM(node_->get_logger(),
+                         "IMU: "          << imu_type  << " '"  << imu_desc << "' "
+                      << "rate= "         << imu_rate_                      << "' "
+                      << "gyro scale= "   << imu_raw_gyro_scale_factor_     << "' "
+                      << "accel scale= "  << imu_raw_accel_scale_factor_);
     }
 
     void publishInsPVAXMsg(Oem7RawMessageIf::ConstPtr msg)
@@ -143,35 +167,29 @@ namespace novatel_oem7_driver
 
     void publishImuMsg()
     {
-      if(!imu_pub_->isEnabled())
+      if(!imu_pub_->isEnabled() || !inspva_ || imu_rate_ == 0)
       {
         return;
       }
 
       std::shared_ptr<sensor_msgs::msg::Imu> imu(new sensor_msgs::msg::Imu);
+    
+      // Azimuth: Oem7 (North=0) to ROS (East=0), using Oem7 LH rule
+      static const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0;
+      double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
 
-      if(inspva_)
-      {
-        // Azimuth: Oem7 (North=0) to ROS (East=0), using Oem7 LH rule
-        static const double ZERO_DEGREES_AZIMUTH_OFFSET = 90.0;
-        double azimuth = inspva_->azimuth - ZERO_DEGREES_AZIMUTH_OFFSET;
+      // Conversion to quaternion addresses rollover.
+      // Pitch and azimuth are adjusted from Y-forward, LH to X-forward, RH.
+      tf2::Quaternion tf_orientation;
+      tf_orientation.setRPY(
+                         degreesToRadians(inspva_->roll),
+                        -degreesToRadians(inspva_->pitch),
+                        -degreesToRadians(azimuth)); // Oem7 LH to ROS RH rule
 
-        // Conversion to quaternion addresses rollover.
-        // Pitch and azimuth are adjusted from Y-forward, LH to X-forward, RH.
-        tf2::Quaternion tf_orientation;
-        tf_orientation.setRPY(
-                          degreesToRadians(inspva_->roll),
-                         -degreesToRadians(inspva_->pitch),
-                         -degreesToRadians(azimuth)); // Oem7 LH to ROS RH rule
+      imu->orientation = tf2::toMsg(tf_orientation);
+ 
 
-        imu->orientation = tf2::toMsg(tf_orientation);
-      }
-      else
-      {
-        return;
-      }
-
-      if(corrimu_ && corrimu_->imu_data_count > 0 && imu_rate_ > 0)
+      if(corrimu_ && corrimu_->imu_data_count > 0)
       {
         double instantaneous_rate_factor = imu_rate_ / corrimu_->imu_data_count;
 
@@ -185,7 +203,7 @@ namespace novatel_oem7_driver
       }
 
       if(insstdev_)
-        {
+      {
         imu->orientation_covariance[0] = std::pow(insstdev_->pitch_stdev,   2);
         imu->orientation_covariance[4] = std::pow(insstdev_->roll_stdev,    2);
         imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
@@ -200,9 +218,28 @@ namespace novatel_oem7_driver
       insstdev_pub_->publish(insstdev_);
     }
 
+    /**
+     * @return angular velocity, rad / sec
+     */
+    inline double computeAngularVelocityFromRaw(double raw_gyro)
+    {
+      return raw_gyro * imu_raw_gyro_scale_factor_ * imu_rate_;
+    }
+
+    /**
+     * @return linear acceleration, m / sec^2
+     */
+    inline double computeLinearAccelerationFromRaw(double raw_acc)
+    {
+      return raw_acc * imu_raw_accel_scale_factor_ * imu_rate_;
+    }
+
     void processRawImuMsg(Oem7RawMessageIf::ConstPtr msg)
     {
-      if(!raw_imu_pub_->isEnabled())
+      if(!raw_imu_pub_->isEnabled()         ||
+         imu_rate_                   == 0   ||
+         imu_raw_gyro_scale_factor_  == 0.0 ||
+         imu_raw_accel_scale_factor_ == 0.0)
       {
         return;
       }
@@ -210,13 +247,16 @@ namespace novatel_oem7_driver
       const RAWIMUSXMem* raw = reinterpret_cast<const RAWIMUSXMem*>(msg->getMessageData(OEM7_BINARY_MSG_SHORT_HDR_LEN));
 
       std::shared_ptr<sensor_msgs::msg::Imu> imu = std::make_shared<sensor_msgs::msg::Imu>();
-      imu->angular_velocity.x = -raw->y_gyro;
-      imu->angular_velocity.y = -raw->x_gyro;
-      imu->angular_velocity.z =  raw->z_gyro;
 
-      imu->linear_acceleration.x = -raw->y_acc;
-      imu->linear_acceleration.y = -raw->x_acc;
-      imu->linear_acceleration.z =  raw->z_acc;
+      // All measurements are in sensor frame, uncorrected for gravity. There is no up, forward, left;
+      // x, y, z are nominal references to enclsoure housing.
+      imu->angular_velocity.x =  computeAngularVelocityFromRaw(raw->x_gyro);
+      imu->angular_velocity.y = -computeAngularVelocityFromRaw(raw->y_gyro); // Refer to RAWIMUSX documentation
+      imu->angular_velocity.z =  computeAngularVelocityFromRaw(raw->z_gyro);
+
+      imu->linear_acceleration.x =  computeLinearAccelerationFromRaw(raw->x_acc);
+      imu->linear_acceleration.y = -computeLinearAccelerationFromRaw(raw->y_acc);  // Refer to RAWIMUSX documentation
+      imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
       imu->orientation_covariance[0] = DATA_NOT_AVAILABLE;
 
@@ -226,7 +266,9 @@ namespace novatel_oem7_driver
 
   public:
     INSHandler():
-      imu_rate_(0)
+      imu_rate_(0),
+      imu_raw_gyro_scale_factor_ (0.0),
+      imu_raw_accel_scale_factor_(0.0)
     {
     }
 

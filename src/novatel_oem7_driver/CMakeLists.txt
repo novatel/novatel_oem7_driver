@@ -78,6 +78,7 @@ add_library(${PROJECT_NAME} SHARED
    src/time_handler.cpp
    src/receiverstatus_handler.cpp
    src/nmea_handler.cpp
+   src/oem7_imu.cpp
 )
 
 ## All components are plugins
