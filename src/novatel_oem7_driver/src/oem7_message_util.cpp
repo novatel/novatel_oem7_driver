@@ -70,7 +70,7 @@ namespace novatel_oem7_driver
     hdr.gps_week_number        = hdr_mem->gps_week;
     hdr.gps_week_milliseconds  = hdr_mem->gps_milliseconds;
     hdr.receiver_status        = hdr_mem->receiver_status;
-    hdr.idle_time              = hdr_mem->idle_time;
+    hdr.idle_time              = hdr_mem->idle_time / 2.0; // Refer to Oem7 manual
   }
 
   void getOem7ShortHeader(
