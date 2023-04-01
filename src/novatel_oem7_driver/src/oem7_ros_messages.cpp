@@ -37,6 +37,7 @@
 #include "novatel_oem7_msgs/msg/bestpos.hpp"
 #include "novatel_oem7_msgs/msg/bestvel.hpp"
 #include "novatel_oem7_msgs/msg/bestutm.hpp"
+#include "novatel_oem7_msgs/msg/bestgnsspos.hpp"
 #include "novatel_oem7_msgs/msg/inspva.hpp"
 #include "novatel_oem7_msgs/msg/inspvax.hpp"
 #include "novatel_oem7_msgs/msg/insconfig.hpp"
@@ -214,6 +215,43 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTUTM>(
     static const std::string name = "BESTUTM";
     SetOem7Header(msg, name, bestutm->nov_header);
   }
+
+template<>
+void
+MakeROSMessage<novatel_oem7_msgs::msg::BESTGNSSPOS>(
+    const Oem7RawMessageIf::ConstPtr& msg,
+    std::shared_ptr<novatel_oem7_msgs::msg::BESTGNSSPOS>& bestgnsspos)
+{
+  assert(msg->getMessageId() == BESTGNSSPOS_OEM7_MSGID);
+
+  const BESTGNSSPOSMem* bgp = reinterpret_cast<const BESTGNSSPOSMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
+  bestgnsspos.reset(new novatel_oem7_msgs::msg::BESTGNSSPOS);
+
+  bestgnsspos->sol_status.status      = bgp->sol_stat;
+  bestgnsspos->pos_type.type          = bgp->pos_type;
+  bestgnsspos->lat                    = bgp->lat;
+  bestgnsspos->lon                    = bgp->lon;
+  bestgnsspos->hgt                    = bgp->hgt;
+  bestgnsspos->undulation             = bgp->undulation;
+  bestgnsspos->datum_id               = bgp->datum_id;
+  bestgnsspos->lat_stdev              = bgp->lat_stdev;
+  bestgnsspos->lon_stdev              = bgp->lon_stdev;
+  bestgnsspos->hgt_stdev              = bgp->hgt_stdev;
+  bestgnsspos->stn_id.assign(           bgp->stn_id, arr_size(bgp->stn_id));
+  bestgnsspos->diff_age               = bgp->diff_age;
+  bestgnsspos->sol_age                = bgp->sol_age;
+  bestgnsspos->num_svs                = bgp->num_svs;
+  bestgnsspos->num_sol_svs            = bgp->num_sol_svs;
+  bestgnsspos->num_sol_l1_svs         = bgp->num_sol_l1_svs;
+  bestgnsspos->num_sol_multi_svs      = bgp->num_sol_multi_svs;
+  bestgnsspos->reserved               = bgp->reserved;
+  bestgnsspos->ext_sol_stat.status    = bgp->ext_sol_stat;
+  bestgnsspos->galileo_beidou_sig_mask= bgp->galileo_beidou_sig_mask;
+  bestgnsspos->gps_glonass_sig_mask   = bgp->gps_glonass_sig_mask;
+
+  static const std::string name = "BESTGNSSPOS";
+  SetOem7Header(msg, name, bestgnsspos->nov_header);
+}
 
 template<>
 void
@@ -511,10 +549,13 @@ template
 void
 MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  std::shared_ptr<novatel_oem7_msgs::msg::BESTVEL>&);
 
-
 template
 void
 MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  std::shared_ptr<novatel_oem7_msgs::msg::BESTUTM>&);
+
+template
+void
+MakeROSMessage(const Oem7RawMessageIf::ConstPtr&,  std::shared_ptr<novatel_oem7_msgs::msg::BESTGNSSPOS>&);
 
 template
 void

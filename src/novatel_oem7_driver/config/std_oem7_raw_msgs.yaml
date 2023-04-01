@@ -1,6 +1,7 @@
 oem7_raw_msgs:
 - 42    # BESTPOS
-- 99    # BESTVEL                  
+- 99    # BESTVEL    
+- 1429  # BESTGNSSPOS              
 - 1465  # INSPVAX                  
 - 1825  # INSUPDATESTATUS
 - 1462  # RAWIMUSX

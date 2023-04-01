@@ -138,6 +138,34 @@ namespace novatel_oem7_driver
   static_assert(sizeof(BESTVELMem) == 44, ASSERT_MSG);
 
 
+   struct __attribute__((packed))
+  BESTGNSSPOSMem
+  {
+    oem7_enum_t        sol_stat;
+    oem7_enum_t        pos_type;
+    double             lat;
+    double             lon;
+    double             hgt;
+    float              undulation;
+    oem7_enum_t        datum_id;
+    float              lat_stdev;
+    float              lon_stdev;
+    float              hgt_stdev;
+    oem7_char_t        stn_id[4];
+    float              diff_age;
+    float              sol_age;
+    uint8_t            num_svs;
+    uint8_t            num_sol_svs;
+    uint8_t            num_sol_l1_svs;
+    uint8_t            num_sol_multi_svs;
+    oem7_hex_t         reserved;
+    oem7_hex_t         ext_sol_stat;
+    uint8_t            galileo_beidou_sig_mask;
+    uint8_t            gps_glonass_sig_mask;
+   };
+   static_assert(sizeof(BESTGNSSPOSMem) == 72, ASSERT_MSG);
+
+
   struct __attribute__((packed))
   INSPVASmem
   {

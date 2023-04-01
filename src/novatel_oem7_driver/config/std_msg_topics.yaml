@@ -7,18 +7,19 @@ Odometry:   {topic: odom,           frame_id: odom}
 
 
 # Oem7-specific 
-Oem7RawMsg: {topic: oem7raw,    frame_id: gps, queue_size: 200}
-BESTPOS:    {topic: bestpos,    frame_id: gps}
-BESTUTM:    {topic: bestutm,    frame_id: gps}
-BESTVEL:    {topic: bestvel,    frame_id: gps}
-CORRIMU:    {topic: corrimu,    frame_id: gps}
-HEADING2:   {topic: heading2,   frame_id: gps}
-INSPVA:     {topic: inspva,     frame_id: gps}
-INSPVAX:    {topic: inspvax,    frame_id: gps,  queue_size: 10}
-INSSTDEV:   {topic: insstdev,   frame_id: gps,  queue_size: 10}
-INSCONFIG:  {topic: insconfig,  frame_id: gps,  queue_size: 10}
-RXSTATUS:   {topic: rxstatus,   frame_id: gps,  queue_size: 10}
-TIME:       {topic: time,       frame_id: gps} 
+Oem7RawMsg:  {topic: oem7raw,     frame_id: gps, queue_size: 200}
+BESTGNSSPOS: {topic: bestgnsspos, frame_id: gps}
+BESTPOS:     {topic: bestpos,     frame_id: gps}
+BESTUTM:     {topic: bestutm,     frame_id: gps}
+BESTVEL:     {topic: bestvel,     frame_id: gps}
+CORRIMU:     {topic: corrimu,     frame_id: gps}
+HEADING2:    {topic: heading2,    frame_id: gps}
+INSPVA:      {topic: inspva,      frame_id: gps}
+INSPVAX:     {topic: inspvax,     frame_id: gps,  queue_size: 10}
+INSSTDEV:    {topic: insstdev,    frame_id: gps,  queue_size: 10}
+INSCONFIG:   {topic: insconfig,   frame_id: gps,  queue_size: 10}
+RXSTATUS:    {topic: rxstatus,    frame_id: gps,  queue_size: 10}
+TIME:        {topic: time,        frame_id: gps} 
 
 
 
