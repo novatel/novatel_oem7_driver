@@ -1,6 +1,6 @@
 uint32 SOL_COMPUTED             = 0
 uint32 INSUFFICIENT_OBS         = 1
-uint32 NO_CONVERGECE            = 2
+uint32 NO_CONVERGENCE            = 2
 uint32 SINGULARITY              = 3
 uint32 COV_TRACE                = 4
 uint32 TEST_DIST                = 5
