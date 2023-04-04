@@ -1,7 +1,8 @@
 oem7_raw_msgs:
 - 42    # BESTPOS
 - 99    # BESTVEL    
-- 1429  # BESTGNSSPOS              
+- 1429  # BESTGNSSPOS    
+- 1538  # PPPPOS          
 - 1465  # INSPVAX                  
 - 1825  # INSUPDATESTATUS
 - 1462  # RAWIMUSX
@@ -15,3 +16,5 @@ oem7_raw_msgs:
 - 101   # TIME                   
 - 93    # RXSTATUS
 - 1945  # INSCONFIG
+- 1719  # TERRASTARINFO
+- 1720  # TERRASTARSTATUS

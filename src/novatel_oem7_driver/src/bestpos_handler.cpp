@@ -33,6 +33,7 @@
 
 #include "novatel_oem7_msgs/msg/solution_status.hpp"
 #include "novatel_oem7_msgs/msg/position_or_velocity_type.hpp"
+#include "novatel_oem7_msgs/msg/ppppos.hpp"
 #include "novatel_oem7_msgs/msg/bestpos.hpp"
 #include "novatel_oem7_msgs/msg/bestutm.hpp"
 #include "novatel_oem7_msgs/msg/bestvel.hpp"
@@ -60,6 +61,7 @@ using sensor_msgs::msg::NavSatFix;
 using sensor_msgs::msg::NavSatStatus;
 using nav_msgs::msg::Odometry;
 
+using novatel_oem7_msgs::msg::PPPPOS;
 using novatel_oem7_msgs::msg::BESTPOS;
 using novatel_oem7_msgs::msg::BESTVEL;
 using novatel_oem7_msgs::msg::BESTUTM;
@@ -244,6 +246,7 @@ namespace novatel_oem7_driver
   {
     rclcpp::Node* node_;
 
+    std::unique_ptr<Oem7RosPublisher<PPPPOS>>         PPPPOS_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTPOS>>        BESTPOS_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTVEL>>        BESTVEL_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTUTM>>        BESTUTM_pub_;
@@ -344,6 +347,13 @@ namespace novatel_oem7_driver
         std::shared_ptr<novatel_oem7_msgs::msg::BESTGNSSPOS> bestgnsspos;
         MakeROSMessage(msg, bestgnsspos);
         BESTGNSSPOS_pub_->publish(bestgnsspos);
+    }
+
+    void publishPPPPOS(Oem7RawMessageIf::ConstPtr msg)
+    {
+        std::shared_ptr<novatel_oem7_msgs::msg::PPPPOS> ppppos;
+        MakeROSMessage(msg, ppppos);
+        PPPPOS_pub_->publish(ppppos);
     }
 
     void publishINSVPA(Oem7RawMessageIf::ConstPtr msg)
@@ -793,6 +803,7 @@ namespace novatel_oem7_driver
     {
       node_ = &node;
 
+      PPPPOS_pub_       = std::make_unique<Oem7RosPublisher<PPPPOS>>(       "PPPPOS",        node);
       BESTPOS_pub_      = std::make_unique<Oem7RosPublisher<BESTPOS>>(      "BESTPOS",       node);
       BESTVEL_pub_      = std::make_unique<Oem7RosPublisher<BESTVEL>>(      "BESTVEL",       node);
       BESTUTM_pub_      = std::make_unique<Oem7RosPublisher<BESTUTM>>(      "BESTUTM",       node);
@@ -829,11 +840,12 @@ namespace novatel_oem7_driver
     {
       static const std::vector<int> MSG_IDS(
                                     {
+                                      INSPVAS_OEM7_MSGID,
                                       BESTPOS_OEM7_MSGID,
                                       BESTVEL_OEM7_MSGID,
                                       BESTUTM_OEM7_MSGID,
                                       BESTGNSSPOS_OEM7_MSGID,
-                                      INSPVAS_OEM7_MSGID,
+                                      PPPPOS_OEM7_MSGID,
                                       INSPVAX_OEM7_MSGID,
                                       PSRDOP2_OEM7_MSGID
                                     });
@@ -883,6 +895,11 @@ namespace novatel_oem7_driver
         publishBESTGNSSPOS(msg);
       }
 
+      if(msg->getMessageId() == PPPPOS_OEM7_MSGID)
+      {
+        publishPPPPOS(msg);
+      }
+
       if(msg->getMessageId() == INSPVAS_OEM7_MSGID)
       {
         publishINSVPA(msg);
@@ -903,8 +920,6 @@ namespace novatel_oem7_driver
         psrdop2_ = msg;
       }
     }
-
-
   };
 
 }
