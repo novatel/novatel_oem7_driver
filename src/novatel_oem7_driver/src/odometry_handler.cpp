@@ -104,12 +104,12 @@ namespace novatel_oem7_driver
     double odom_origin_y_;
     double odom_origin_z_;
 
-    bool imu_present_; ///< Set to true when IMU output is detected
+    bool imu_present_; ///< Set to true when IMU output is detected 
   
     /**
     * Get Geometry (UTM) point from GNSS position, assuming zero origin.
     */
-    void UTMPointFromGnss(
+    bool UTMPointFromGnss(
             geometry_msgs::msg::Point& pt,
             double lat,
             double lon,
@@ -124,14 +124,34 @@ namespace novatel_oem7_driver
 
       int zonespec = utm_zone_ == -1 ? GeographicLib::UTMUPS::zonespec::MATCH : utm_zone_;
       int new_utm_zone = 0;
-      GeographicLib::UTMUPS::Forward(lat, lon, new_utm_zone, northhp, pt.x, pt.y, gamma, k, zonespec);
+      static unsigned int num_failed_conversions = 0;
+      try
+      {
+        GeographicLib::UTMUPS::Forward(lat, lon, new_utm_zone, northhp, pt.x, pt.y, gamma, k, zonespec);
+      }
+      catch(GeographicLib::GeographicErr& ex)
+      {
+        ++num_failed_conversions;
+        auto& clk = *node_->get_clock();
+        RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), clk, 1000,
+          "Failed Conversion (tot: " << num_failed_conversions << ") Lat: "  << lat      << 
+                                                                   " Lon: "  << lon      << 
+                                                                "; Zone: "   << zonespec << 
+                                                                 std::endl   <<
+                                                                 ex.what());
+        return false;
+      }
+      num_failed_conversions = 0;
+      
       if(utm_zone_ != new_utm_zone)
       {
         RCLCPP_INFO_STREAM(node_->get_logger(),
-                  "UTM new Zone:  " << utm_zone_ << " --> " << new_utm_zone << 
-                  "; N: "            << northhp << " X: " << pt.x     << " Y: " << pt.y);
+          "UTM new Zone:  " << utm_zone_ << " --> " << new_utm_zone << 
+          "; N: "            << northhp << " X: " << pt.x     << " Y: " << pt.y);
         utm_zone_ = new_utm_zone;
       }
+
+      return true;
     }
 
     void publishOdometry()
@@ -145,11 +165,14 @@ namespace novatel_oem7_driver
       std::shared_ptr<Odometry> odometry = std::make_shared<Odometry>();
       odometry->child_frame_id = CHILD_FRAME_ID;
   
-      UTMPointFromGnss(
+      if(!UTMPointFromGnss(
           odometry->pose.pose.position,
           gpsfix_->latitude,
           gpsfix_->longitude,
-          gpsfix_->altitude);
+          gpsfix_->altitude))
+      {
+        return;
+      }
 
 
       odometry->pose.covariance[ 0] = gpsfix_->position_covariance[0];
