@@ -12,7 +12,6 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED) 
 find_package(std_msgs REQUIRED)
 find_package(gps_msgs REQUIRED)
-find_package(gps_tools REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nmea_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -21,6 +20,9 @@ find_package(novatel_oem7_msgs REQUIRED)
 find_package(rosidl_default_generators  REQUIRED)
 find_package(Boost  			REQUIRED)
 
+LIST(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
+
+find_package(GeographicLib REQUIRED)
 
 # Make package available as a macro to C++
 add_definitions("-D${PROJECT_NAME}_VERSION=\"${${PROJECT_NAME}_VERSION}\"")
@@ -78,6 +80,7 @@ add_library(${PROJECT_NAME} SHARED
    src/time_handler.cpp
    src/receiverstatus_handler.cpp
    src/nmea_handler.cpp
+   src/odometry_handler.cpp
    src/oem7_imu.cpp
 )
 
@@ -95,6 +98,7 @@ message("Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
 
 target_link_libraries(${PROJECT_NAME}
    Boost::boost
+   ${GeographicLib_LIBRARIES}
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
    ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
@@ -107,7 +111,6 @@ ament_target_dependencies(${PROJECT_NAME}
 	pluginlib
 	std_msgs 
 	gps_msgs
-	gps_tools 
 	sensor_msgs 
 	nmea_msgs 	
 	nav_msgs

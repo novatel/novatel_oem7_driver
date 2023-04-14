@@ -67,6 +67,12 @@
             NMEA 0183 messages. 
         </description>
     </class>
+
+    <class name="OdometryHandler" type="novatel_oem7_driver::OdometryHandler" base_class_type="novatel_oem7_driver::Oem7MessageHandlerIf">
+        <description>
+            Odometry support. 
+        </description>
+    </class>
     
 
 </library>

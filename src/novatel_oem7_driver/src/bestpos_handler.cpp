@@ -41,7 +41,6 @@
 #include "novatel_oem7_msgs/msg/inspva.hpp"
 #include "novatel_oem7_msgs/msg/inspvax.hpp"
 
-#include "nav_msgs/msg/odometry.hpp"
 #include "gps_msgs/msg/gps_fix.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 #include "sensor_msgs/msg/nav_sat_status.hpp"
@@ -49,7 +48,6 @@
 
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <gps_tools/conversions.h>
 
 #include <cmath>
 #include <stdint.h>
@@ -59,7 +57,6 @@ using gps_msgs::msg::GPSFix;
 using gps_msgs::msg::GPSStatus;
 using sensor_msgs::msg::NavSatFix;
 using sensor_msgs::msg::NavSatStatus;
-using nav_msgs::msg::Odometry;
 
 using novatel_oem7_msgs::msg::PPPPOS;
 using novatel_oem7_msgs::msg::BESTPOS;
@@ -223,22 +220,6 @@ namespace novatel_oem7_driver
 
 
 
-
-  /**
-   * Get Geometry (UTM) point from GNSS position, assuming zero origin.
-   */
-  void UTMPointFromGnss(
-          geometry_msgs::msg::Point& pt,
-          double lat,
-          double lon,
-          double hgt)
-  {
-    pt.z = hgt;
-
-    std::string zone; //unused
-    gps_tools::LLtoUTM(lat, lon, pt.y, pt.x, zone);
-  }
-
   /***
    * Handler of position-related messages. Synthesizes ROS messages GPSFix and NavSatFix from native Oem7 Messages.
    */
@@ -255,7 +236,6 @@ namespace novatel_oem7_driver
 
     std::unique_ptr<Oem7RosPublisher<GPSFix>>         GPSFix_pub_;
     std::unique_ptr<Oem7RosPublisher<NavSatFix>>      NavSatFix_pub_;
-    std::unique_ptr<Oem7RosPublisher<Odometry>>       Odometry_pub_;
 
     std::shared_ptr<BESTPOS> bestpos_;
     std::shared_ptr<BESTVEL> bestvel_;
@@ -274,7 +254,6 @@ namespace novatel_oem7_driver
     int32_t bestvel_period_;
     int32_t inspva_period_;
 
-    std::string base_frame_; ///< Base frame for Odometry
 
     bool position_source_BESTPOS_; //< User override: always use BESTPOS
     bool position_source_INS_; ///< User override: always use INS
@@ -581,77 +560,12 @@ namespace novatel_oem7_driver
       NavSatFix_pub_->publish(navsatfix);
     }
 
-    void publishOdometry()
-    {
-      if(!gpsfix_)
-      {
-        // No data derive basic Odometry values
-        return;
-      }
-
-      std::shared_ptr<Odometry> odometry = std::make_shared<Odometry>();
-      odometry->child_frame_id = base_frame_;
-  
-      UTMPointFromGnss(
-          odometry->pose.pose.position,
-          gpsfix_->latitude,
-          gpsfix_->longitude,
-          gpsfix_->altitude);
-
-      odometry->pose.covariance[ 0] = gpsfix_->position_covariance[0];
-      odometry->pose.covariance[ 7] = gpsfix_->position_covariance[4];
-      odometry->pose.covariance[14] = gpsfix_->position_covariance[8];
     
-
-      if(inspva_)
-      {
-        // INSPVA uses 'y-forward' ENU orientation;
-        // ROS uses x-forward orientation.
-
-        tf2::Quaternion oem7_enu_orientation;
-        oem7_enu_orientation.setRPY(
-                              degreesToRadians(inspva_->roll),
-                             -degreesToRadians(inspva_->pitch),
-                             -degreesToRadians(inspva_->azimuth));
-
-        tf2::Quaternion ros_orientation = Z90_DEG_ROTATION * oem7_enu_orientation;
-
-        odometry->pose.pose.orientation = tf2::toMsg(ros_orientation);
-
-        // Convert INSPVA ENU velocities to local frame (base_frame).
-        tf2::Transform velocity_transform(ros_orientation);
-        tf2::Vector3 local_frame_velocity = velocity_transform.inverse()(tf2::Vector3(inspva_->east_velocity, inspva_->north_velocity, inspva_->up_velocity));
-
-        // FIXME
-        //tf2::convert(local_frame_velocity, odometry->twist.twist.linear);
-        odometry->twist.twist.linear.x = local_frame_velocity.getX();
-        odometry->twist.twist.linear.y = local_frame_velocity.getY();
-        odometry->twist.twist.linear.z = local_frame_velocity.getZ();
-
-      } // inspva_
-
-
-      if(inspvax_)
-      {
-        odometry->pose.covariance[21] = std::pow(inspvax_->roll_stdev,      2);
-        odometry->pose.covariance[28] = std::pow(inspvax_->pitch_stdev,     2);
-        odometry->pose.covariance[35] = std::pow(inspvax_->azimuth_stdev,   2);
-
-        odometry->twist.covariance[0]  = std::pow(inspvax_->north_velocity_stdev, 2);
-        odometry->twist.covariance[7]  = std::pow(inspvax_->east_velocity_stdev,  2);
-        odometry->twist.covariance[14] = std::pow(inspvax_->up_velocity_stdev,    2);
-      }
-
-      Odometry_pub_->publish(odometry);
-    }
-
     void publishROSMessages()
     {
       processPositionAndPublishGPSFix(); // Must be published first, since other message may be derived from it.
 
       publishNavSatFix();
-
-      publishOdometry();
     }
 
 
@@ -812,12 +726,9 @@ namespace novatel_oem7_driver
 
       GPSFix_pub_    = std::make_unique<Oem7RosPublisher<GPSFix>>(   "GPSFix",       node);
       NavSatFix_pub_ = std::make_unique<Oem7RosPublisher<NavSatFix>>("NavSatFix",    node);
-      Odometry_pub_  = std::make_unique<Oem7RosPublisher<Odometry>>( "Odometry",     node);
 
-      DriverParameter<std::string> base_frame_p("base_frame", "base_link", node);
       DriverParameter<std::string> pos_source_p("position_source", "",     node);
 
-      base_frame_ = base_frame_p.value();
 
       // Determine if position source is overriden by the user; otherwise it is determined dynamically.
       std::string position_source = pos_source_p.value();

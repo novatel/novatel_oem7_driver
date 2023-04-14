@@ -21,6 +21,7 @@ RUN if [ "$USR" == "build" ]; then \
         ${ROS}-nav-msgs \
         ${ROS}-nmea-msgs \
         ${ROS}-ament-cmake-nose \
+        libgeographic-dev \ 
         socat \
         dh-make fakeroot python3-pip \
         libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev &&\

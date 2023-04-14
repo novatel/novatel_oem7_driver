@@ -47,6 +47,7 @@
 
 #include "novatel_oem7_msgs/msg/oem7_header.hpp"
 
+
 namespace novatel_oem7_driver
 {
   typedef std::vector<std::string> init_cmds_t; ///< List of initialization commands.
@@ -545,12 +546,31 @@ namespace novatel_oem7_driver
       construct();
     }
   };
-}
 
+
+
+  class Oem7OdometryNode :
+      public rclcpp::Node
+  {
+
+      pluginlib::ClassLoader<novatel_oem7_driver::Oem7MessageHandlerIf> loader_;     
+      std::shared_ptr<novatel_oem7_driver::Oem7MessageHandlerIf>  odom_;
+   
+
+    public:
+      Oem7OdometryNode(const rclcpp::NodeOptions& options):
+        rclcpp::Node("Oem7Odometry", options),
+        loader_("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageHandlerIf")
+        {
+          odom_ = loader_.createSharedInstance("OdometryHandler");
+          odom_->initialize(*this);
+        }
+  };
+}
 
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7MessageNode)
-
+RCLCPP_COMPONENTS_REGISTER_NODE(novatel_oem7_driver::Oem7OdometryNode)
 
 
 int main(int argc, char* argv[])
@@ -559,10 +579,12 @@ int main(int argc, char* argv[])
 
   rclcpp::NodeOptions options;
   auto oem7 = std::make_shared<novatel_oem7_driver::Oem7MessageNode>(options);
+  auto odom = std::make_shared<novatel_oem7_driver::Oem7OdometryNode>(options);
 
-  static const size_t THREAD_NUM = 2; // Receive and blocking command service.
+  static const size_t THREAD_NUM = 3; // Receive and blocking command service.
   rclcpp::ExecutorOptions defaultOptions;
-  rclcpp::executors::MultiThreadedExecutor executor(defaultOptions, 2);
+  rclcpp::executors::MultiThreadedExecutor executor(defaultOptions, THREAD_NUM);
+  executor.add_node(odom);
   executor.add_node(oem7);
   executor.spin();
   rclcpp::shutdown();
