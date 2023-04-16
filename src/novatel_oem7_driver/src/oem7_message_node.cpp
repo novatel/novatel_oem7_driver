@@ -100,7 +100,7 @@ namespace novatel_oem7_driver
 
     std::set<long> raw_msg_pub_; ///< Set of raw messages to publish.
 
-    std::shared_ptr<MessageHandler> msg_handler_; ///< Dispatches individual messages for handling.
+    std::unique_ptr<MessageHandler> msg_handler_; ///< Dispatches individual messages for handling.
 
     // Log statistics
     long total_log_count_; ///< Total number of logs received
@@ -116,7 +116,6 @@ namespace novatel_oem7_driver
     std::shared_ptr<novatel_oem7_driver::Oem7ReceiverIf> recvr_; ///< Oem7 Receiver Interface plugin
 
 
-    bool rcvr_init_ok_; ///< Initialization of receiver has completed successfully.
     bool rcvr_init_strict_; ///< When TRUE, publish messages other than oem7raw only after successful receiver initialization.
                             ///< This prevents arbitrary (partial, stale) receiver configurations from generating messages.
 
@@ -167,7 +166,7 @@ namespace novatel_oem7_driver
       msg_decoder->initialize(*this, recvr_.get(), this);
 
 
-      msg_handler_.reset(new MessageHandler(*this));
+      msg_handler_ = std::make_unique<MessageHandler>(*this);
 
       // Oem7 raw messages to publish.
       std::vector<long> init_msg = {0, 0};
@@ -238,8 +237,8 @@ namespace novatel_oem7_driver
       {
         {
           std::lock_guard<std::mutex> lk(rsp_ready_mtx_);
-    	  rsp_.clear();
-    	}
+    	    rsp_.clear();
+    	  }
 
         recvr_->write(boost::asio::buffer(cmd));
         static const std::string NEWLINE("\n");
@@ -386,14 +385,9 @@ namespace novatel_oem7_driver
               raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_BINARY       ||
              (raw_msg->getMessageFormat() == Oem7RawMessageIf::OEM7MSGFMT_ASCII && isNMEAMessage(raw_msg)))
           {
-            if(rcvr_init_ok_ || !rcvr_init_strict_ || raw_msg->getMessageId() == INSCONFIG_OEM7_MSGID)
-            {
-              updateLogStatistics(raw_msg);
-
-              msg_handler_->handleMessage(raw_msg);
-            }
-
-
+            updateLogStatistics(raw_msg);
+            msg_handler_->handleMessage(raw_msg);
+      
             // Publish raw messages regardless; they are all for debugging.
 
             // Publish Oem7RawMsg if specified
@@ -435,6 +429,9 @@ namespace novatel_oem7_driver
 
       recvr_init_timer_->cancel();
 
+      // When strict mode enabled, disallow any messages related to position to avoid generation of position based on wrong config.
+      msg_handler_->setMessageFilter(rcvr_init_strict_ ? MSGFLAG_STATUS_OR_CONFIG : MSGFLAG_ALL);
+
       DriverParameter<init_cmds_t> init_cmds_p(    "receiver_init_commands", init_cmds_t(), *this);
       DriverParameter<init_cmds_t> ext_init_cmds_p("receiver_ext_init_commands", init_cmds_t(), *this);
 
@@ -453,12 +450,12 @@ namespace novatel_oem7_driver
 
       if(rcvr_init_num_errors_ == 0)
       {
-        rcvr_init_ok_ = true;
+        msg_handler_->setMessageFilter(MSGFLAG_ALL); // Allow all messages
       }
       else if(rcvr_init_strict_)
       {
         RCLCPP_INFO_STREAM(get_logger(),
-                           "Receiver Initialization completed with errors; 'Strict' mode is on; Only Oem7Raw messages will be published." );
+                           "Receiver Initialization completed with errors; 'Strict' mode is on; no Position / Odoemetry / INS output." );
       }
 
       // Allow command entry via service for diagnostics, regardless of init status.
@@ -539,7 +536,6 @@ namespace novatel_oem7_driver
       discarded_msg_num_(0),
       publish_delay_sec_(0),
       publish_unknown_oem7raw_(false),
-      rcvr_init_ok_(false),
       rcvr_init_strict_(true),
       rcvr_init_num_errors_(0)
     {

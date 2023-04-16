@@ -32,7 +32,8 @@ namespace novatel_oem7_driver
  */
   MessageHandler::MessageHandler(rclcpp::Node& node):
     node_(node),
-    msg_handler_loader_("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageHandlerIf")
+    msg_handler_loader_("novatel_oem7_driver", "novatel_oem7_driver::Oem7MessageHandlerIf"),
+    msg_filter_(MSGFLAG_NONE)
   {
     // Load the plugins and create the dispatch table.
     std::vector<std::string> init_array = {"", ""};
@@ -41,21 +42,20 @@ namespace novatel_oem7_driver
     std::vector<std::string> msg_handler_names = msg_handlers_param.as_string_array();
     for(const auto& name : msg_handler_names)
     {
-      MessageHandlerShPtr msg_handler = msg_handler_loader_.createSharedInstance(name);
+      MessageHandlerIf msg_handler = msg_handler_loader_.createSharedInstance(name);
 
       msg_handler->initialize(node);
-
       msg_handler_list_.push_back(msg_handler);
 
-      for(int msg_id: msg_handler->getMessageIds())
+      for(auto& msg_rec: msg_handler->getMessageIds())
       {
-        MessageHandlerMap::iterator itr = msg_handler_map_.find(msg_id);
+        MessageHandlerMap::iterator itr = msg_handler_map_.find(msg_rec.first);
         if(itr == msg_handler_map_.end())
         {
-          msg_handler_map_[msg_id].reset(new MsgHandlerList);
+          msg_handler_map_[msg_rec.first].reset(new MsgHandlerRecordList);
         }
 
-        msg_handler_map_[msg_id]->push_back(msg_handler);
+        msg_handler_map_[msg_rec.first]->push_back(MessageHandlerRecord(msg_handler, msg_rec.second));
       }
     }
   }
@@ -72,11 +72,23 @@ namespace novatel_oem7_driver
       return;
     }
 
-    MessageHandlerListPtr& msg_handler_list = itr->second;
-    for(auto& h: *msg_handler_list)
+    auto& msg_handler_list = itr->second;
+    for(auto& msg_handler_rec: *msg_handler_list)
     {
-      h->handleMsg(raw_msg);
+      if(msg_filter_ == MSGFLAG_ALL || msg_filter_ & msg_handler_rec.second)
+      {
+        msg_handler_rec.first->handleMsg(raw_msg);
+      }
     }
   }
+
+  /**
+   * Sets a mask to filter out messages
+   */
+  void MessageHandler::setMessageFilter(unsigned int filter)
+  {
+    msg_filter_ = filter;    
+  }
+  
 }
 

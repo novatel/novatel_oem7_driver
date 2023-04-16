@@ -47,21 +47,25 @@ namespace novatel_oem7_driver
   {
     pluginlib::ClassLoader<novatel_oem7_driver::Oem7MessageHandlerIf> msg_handler_loader_; ///< Plugin loader
 
-    typedef std::shared_ptr<novatel_oem7_driver::Oem7MessageHandlerIf> MessageHandlerShPtr;
-    typedef std::list<MessageHandlerShPtr> MsgHandlerList;
-    typedef std::unique_ptr<MsgHandlerList> MessageHandlerListPtr;
-    typedef std::map<int, MessageHandlerListPtr> MessageHandlerMap;
+    typedef std::shared_ptr<novatel_oem7_driver::Oem7MessageHandlerIf> MessageHandlerIf;
+    typedef std::list<MessageHandlerIf>                                MsgHandlerIfList;
+    typedef std::pair<MessageHandlerIf, unsigned int>                  MessageHandlerRecord;
+    typedef std::list<MessageHandlerRecord>                            MsgHandlerRecordList;
+    typedef std::map<int, std::unique_ptr<MsgHandlerRecordList>>       MessageHandlerMap;
     
-    MsgHandlerList    msg_handler_list_; ///< All message handlers
-    MessageHandlerMap msg_handler_map_; ///< Dispatch map for raw messages.
-    
-
     rclcpp::Node& node_;
+
+    MsgHandlerIfList    msg_handler_list_; ///< All message handlers
+    MessageHandlerMap   msg_handler_map_; ///< Dispatch map for raw messages.
+
+    unsigned int msg_filter_; ///< Mask of all mesages to passed to handlers
 
   public:
     MessageHandler(rclcpp::Node& nh);
 
     void handleMessage(Oem7RawMessageIf::ConstPtr raw_msg);
+
+    void setMessageFilter(unsigned int filter);
   };
 }
 

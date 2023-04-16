@@ -358,13 +358,13 @@ namespace novatel_oem7_driver
       TSTStatus_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::TERRASTARSTATUS>>("TERRASTARSTATUS", node);
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS(
+      static const MessageIdRecords MSG_IDS(
                                       {
-                                        RXSTATUS_OEM7_MSGID,
-                                        TERRASTARINFO_OEM7_MSGID,
-                                        TERRASTARSTATUS_OEM7_MSGID
+                                        {RXSTATUS_OEM7_MSGID,        MSGFLAG_STATUS_OR_CONFIG},
+                                        {TERRASTARINFO_OEM7_MSGID,   MSGFLAG_STATUS_OR_CONFIG},
+                                        {TERRASTARSTATUS_OEM7_MSGID, MSGFLAG_STATUS_OR_CONFIG},
                                       }
                                     );
       return MSG_IDS;

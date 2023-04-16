@@ -346,9 +346,9 @@ namespace novatel_oem7_driver
       }
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS;
+      static const MessageIdRecords MSG_IDS;
       return MSG_IDS;
     }
 

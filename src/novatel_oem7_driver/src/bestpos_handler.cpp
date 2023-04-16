@@ -753,18 +753,18 @@ namespace novatel_oem7_driver
       RCLCPP_INFO_STREAM(node_->get_logger(), "GPSFix position source: " << position_source);
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS(
+      static const MessageIdRecords MSG_IDS(
                                     {
-                                      INSPVAS_OEM7_MSGID,
-                                      BESTPOS_OEM7_MSGID,
-                                      BESTVEL_OEM7_MSGID,
-                                      BESTUTM_OEM7_MSGID,
-                                      BESTGNSSPOS_OEM7_MSGID,
-                                      PPPPOS_OEM7_MSGID,
-                                      INSPVAX_OEM7_MSGID,
-                                      PSRDOP2_OEM7_MSGID
+                                      {INSPVAS_OEM7_MSGID,      MSGFLAG_NONE},
+                                      {BESTPOS_OEM7_MSGID,      MSGFLAG_NONE},
+                                      {BESTVEL_OEM7_MSGID,      MSGFLAG_NONE},
+                                      {BESTUTM_OEM7_MSGID,      MSGFLAG_NONE},
+                                      {BESTGNSSPOS_OEM7_MSGID,  MSGFLAG_NONE},
+                                      {PPPPOS_OEM7_MSGID,       MSGFLAG_NONE},
+                                      {INSPVAX_OEM7_MSGID,      MSGFLAG_NONE},
+                                      {PSRDOP2_OEM7_MSGID,      MSGFLAG_NONE}
                                     });
       return MSG_IDS;
     }

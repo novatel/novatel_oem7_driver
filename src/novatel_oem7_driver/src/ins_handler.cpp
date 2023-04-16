@@ -295,17 +295,18 @@ namespace novatel_oem7_driver
       }
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS(
+      static const MessageIdRecords MSG_IDS(
                                       {
-                                        RAWIMUSX_OEM7_MSGID,
-                                        CORRIMUS_OEM7_MSGID,
-                                        IMURATECORRIMUS_OEM7_MSGID,
-                                        INSPVAS_OEM7_MSGID,
-                                        INSPVAX_OEM7_MSGID,
-                                        INSSTDEV_OEM7_MSGID,
-                                        INSCONFIG_OEM7_MSGID
+                                        {RAWIMUSX_OEM7_MSGID,            MSGFLAG_NONE},
+                                        {CORRIMUS_OEM7_MSGID,            MSGFLAG_NONE},
+                                        {IMURATECORRIMUS_OEM7_MSGID,     MSGFLAG_NONE},
+                                        {INSPVAS_OEM7_MSGID,             MSGFLAG_NONE},
+                                        {INSPVAX_OEM7_MSGID,             MSGFLAG_NONE},
+                                        {INSSTDEV_OEM7_MSGID,            MSGFLAG_NONE},
+                                        {INSPVAS_OEM7_MSGID,             MSGFLAG_NONE},
+                                        {INSCONFIG_OEM7_MSGID,           MSGFLAG_STATUS_OR_CONFIG},
                                       }
                                     );
       return MSG_IDS;

@@ -37,6 +37,7 @@ namespace novatel_oem7_driver
   {
     std::unique_ptr<Oem7RosPublisher<nmea_msgs::msg::Sentence>> NMEA_pub_; ///< Publisher for NMEA sentences;
 
+    MessageIdRecords msg_id_records_;
 
     void publishNMEASentence(Oem7RawMessageIf::ConstPtr msg)
     {
@@ -51,9 +52,15 @@ namespace novatel_oem7_driver
       NMEA_pub_ = std::make_unique<Oem7RosPublisher<nmea_msgs::msg::Sentence>>("NMEA_Sentence", node);
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      return OEM7_NMEA_MSGIDS;
+      for(auto& id: OEM7_NMEA_MSGIDS)
+      {
+        MessageIdRecord rec(id, MSGFLAG_NONE);
+        msg_id_records_.push_back(rec);
+      } 
+
+      return msg_id_records_;
     }
 
     void handleMsg(Oem7RawMessageIf::ConstPtr msg)

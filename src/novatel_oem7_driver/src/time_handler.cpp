@@ -58,9 +58,9 @@ namespace novatel_oem7_driver
       TIME_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::TIME>>("TIME", node);
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS({TIME_OEM7_MSGID});
+      static const MessageIdRecords MSG_IDS({{TIME_OEM7_MSGID, MSGFLAG_NONE}});
       return MSG_IDS;
     }
 

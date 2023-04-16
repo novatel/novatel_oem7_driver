@@ -66,9 +66,9 @@ namespace novatel_oem7_driver
       HEADING2_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::HEADING2>>("HEADING2", node);
     }
 
-    const std::vector<int>& getMessageIds()
+    const MessageIdRecords& getMessageIds()
     {
-      static const std::vector<int> MSG_IDS({HEADING2_OEM7_MSGID});
+      static const MessageIdRecords MSG_IDS({{HEADING2_OEM7_MSGID, MSGFLAG_NONE}});
       return MSG_IDS;
     }
 
