@@ -45,6 +45,8 @@ namespace novatel_oem7_driver
 
       msg_handler->initialize(node);
 
+      msg_handler_list_.push_back(msg_handler);
+
       for(int msg_id: msg_handler->getMessageIds())
       {
         MessageHandlerMap::iterator itr = msg_handler_map_.find(msg_id);

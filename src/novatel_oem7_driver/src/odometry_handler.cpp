@@ -78,8 +78,6 @@ namespace novatel_oem7_driver
    */
   class OdometryHandler: public Oem7MessageHandlerIf
   {
-
-
     rclcpp::Node* node_;
   
     std::unique_ptr<Oem7RosPublisher<Odometry>>       Odometry_pub_;
@@ -292,7 +290,7 @@ namespace novatel_oem7_driver
     {
       gpsfix_ = gpsfix;
 
-      //GPSFix drives odoemetry, until IMU output is detected.
+      //GPSFix drives odometry, until IMU output is detected.
       if(!imu_present_)
       {
         publishOdometry();
@@ -321,8 +319,9 @@ namespace novatel_oem7_driver
 
     std::string topic(std::string publisher)
     {
-      DriverParameter<std::string> topic_p(publisher + ".topic",  "", *node_);
-      return std::string(node_->get_namespace()) + "/" + topic_p.value();
+      std::string topic;
+      node_->get_parameter(publisher + ".topic", topic);
+      return std::string(node_->get_namespace()) + "/" + topic;
     }
 
     void initialize(rclcpp::Node& node)

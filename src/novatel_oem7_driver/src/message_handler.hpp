@@ -51,7 +51,10 @@ namespace novatel_oem7_driver
     typedef std::list<MessageHandlerShPtr> MsgHandlerList;
     typedef std::unique_ptr<MsgHandlerList> MessageHandlerListPtr;
     typedef std::map<int, MessageHandlerListPtr> MessageHandlerMap;
+    
+    MsgHandlerList    msg_handler_list_; ///< All message handlers
     MessageHandlerMap msg_handler_map_; ///< Dispatch map for raw messages.
+    
 
     rclcpp::Node& node_;
 
