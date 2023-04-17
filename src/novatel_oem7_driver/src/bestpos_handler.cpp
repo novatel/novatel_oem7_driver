@@ -438,15 +438,18 @@ namespace novatel_oem7_driver
             ValueRelation time_rel = GetOem7MessageTimeRelation(inspva_->nov_header, bestpos_->nov_header);
             if(time_rel == REL_GT || time_rel == REL_EQ)
             {
-              static const float ACCURACY_MARGIN_FACTOR = 1.1; // Avoid shifting rapidly between data sources.
-              prefer_INS = Get3DPositionError(
-                              inspvax_->latitude_stdev,
-                              inspvax_->longitude_stdev,
-                              inspvax_->height_stdev) <
-                           Get3DPositionError(
-                              bestpos_->lat_stdev,
-                              bestpos_->lon_stdev,
-                              bestpos_->hgt_stdev) * ACCURACY_MARGIN_FACTOR;
+              const double ins_3d_pos_err = Get3DPositionError(
+                                              inspvax_->latitude_stdev,
+                                              inspvax_->longitude_stdev,
+                                              inspvax_->height_stdev);
+              if(ins_3d_pos_err != 0.0) // Never exactly 0.0 for a valid position
+              {
+                static const float ACCURACY_MARGIN_FACTOR = 1.1; // Avoid shifting rapidly between data sources.
+                prefer_INS = ins_3d_pos_err < Get3DPositionError(
+                                                bestpos_->lat_stdev,
+                                                bestpos_->lon_stdev,
+                                                bestpos_->hgt_stdev) * ACCURACY_MARGIN_FACTOR;
+              }
             }
           }
         }
@@ -454,8 +457,11 @@ namespace novatel_oem7_driver
         // Log INS vs BESTPOS preference
         // This logic is not necessary for correct operation.
         static bool prev_prefer_INS = false;
-        if(prev_prefer_INS != prefer_INS)
+        static bool initial_pref = true;
+        if(prev_prefer_INS != prefer_INS || initial_pref)
         {
+          initial_pref = false;
+          
           RCLCPP_INFO_STREAM(node_->get_logger(), "GPSFix position source= INSPVA: " << prev_prefer_INS
                                                                << " --> " << prefer_INS
                                                                << " at GPSTime["
