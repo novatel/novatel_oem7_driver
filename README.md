@@ -21,7 +21,7 @@ http://wiki.ros.org/novatel_oem7_driver
 
 ## Building novatel_oem7_driver from source code
 ### Prerequisites
-* Install ROS2 Foxy.
+* Install ROS2 Humble.
 * Obtain OEM7 receiver.  
 
 
@@ -39,13 +39,13 @@ Please refer to the Community Wiki for detailed run-time documentation for novat
 
 
 #### Option B: Build from source (docker)
-These instructions assume that you are using Ubuntu 18.04.
+These instructions assume that you are using Ubuntu 22.04.
 
 1. Install Docker, add the user you intend on using to the 'docker' group. For example:
    1. Add the current user to the 'docker' group: `sudo usermod -aG docker ${USER}`
    1. Apply the membership changes to the current session: `su - ${USER}`
-1. From the base directory of the repository, create container for the desired ROS architecture and distro, e.g. Foxy:  
-   `./docker/run.sh -r amd64 foxy`  
+1. From the base directory of the repository, create container for the desired ROS architecture and distro, e.g. Humble:  
+   `./docker/run.sh -r amd64 humble`  
    Note: only amd64 and arm64v8 architectures are supported at this point.  
 1. From within your docker container, use standard ROS2 tools, like colcon.
 1. Alternatively, use the build.sh script.
@@ -53,9 +53,8 @@ These instructions assume that you are using Ubuntu 18.04.
 #### Option C: Build from source (local environment)
 Here are approximate instructions for building this driver with your local ROS development environment. Please note this is for reference. The Docker approach is recommended.
 
-1. Install ROS with developer support to your environment ([**ROS Wiki Ubuntu 20.04**](http://wiki.ros.org/Installation/Ubuntu))
+1. Install ROS with developer support to your environment ([**ROS Wiki Ubuntu**](http://wiki.ros.org/Installation/Ubuntu))
 1. Install ROS dependencies using `rosdep install --from-paths src --ignore-src -r -y`
-1. Set `ROS_DISTRO` environment variable (Ex: `ROS_DISTRO=foxy`)
 1. Run `source /opt/ros/${ROS_DISTRO}/setup.bash`
 1. Run build: `./build.sh -f`
 1. After a successful build, source your local environment: . install/setup.sh
