@@ -25,10 +25,9 @@ RUN if [ "$USR" == "build" ]; then \
         socat \
         dh-make fakeroot python3-pip \
         libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev &&\
-        pip3 install bloom \
+        pip3 install bloom nose \ 
 ;fi
 
-RUN python3 -m pip install nose
 
 # Uncomment this to support building .debs for new ROS distros, where we are not in the index yet; add distro to yaml.
 RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
