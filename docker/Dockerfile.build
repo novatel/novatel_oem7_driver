@@ -11,19 +11,18 @@ ARG USR
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y sudo vim git nano curl 
+RUN apt-get update && apt-get install -y sudo vim nano curl 
 
 RUN if [ "$USR" == "build" ]; then \
 	apt-get install -y \
         ${ROS}-tf2-geometry-msgs \
         ${ROS}-gps-msgs \
-        ${ROS}-gps-tools \
         ${ROS}-nav-msgs \
         ${ROS}-nmea-msgs \
         ${ROS}-ament-cmake-nose \
         libgeographic-dev \ 
         socat \
-        dh-make fakeroot python3-pip \
+        git dh-make fakeroot python3-pip \
         libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev &&\
         pip3 install bloom nose \ 
 ;fi
