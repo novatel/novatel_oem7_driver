@@ -336,10 +336,10 @@ namespace novatel_oem7_driver
       inspva_sub_  = node.create_subscription<INSPVA>( topic("INSPVA"),  10, std::bind(&OdometryHandler::handleINSPVA,  this, std::placeholders::_1));
       inspvax_sub_ = node.create_subscription<INSPVAX>(topic("INSPVAX"), 10, std::bind(&OdometryHandler::handleINSPVAX, this, std::placeholders::_1));
    
-      DriverParameter<bool> odom_zero_origin_p("odometry_zero_origin", false, *node_);
+      DriverParameter<bool> odom_zero_origin_p("oem7_odometry_zero_origin", false, *node_);
       odom_zero_origin_ = odom_zero_origin_p.value();
 
-      DriverParameter<bool> odom_transform_p("odometry_transform", false, *node_);
+      DriverParameter<bool> odom_transform_p("oem7_odometry_transform", false, *node_);
       if(odom_transform_p.value())
       {
         tf_bc_ = std::make_unique<TransformBroadcaster>(node);

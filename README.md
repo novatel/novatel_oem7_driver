@@ -67,6 +67,59 @@ You can then install these via `apt` or `dpkg`:
 sudo apt install ./ros-{$ROS_DISTRO}-novatel-oem7*.deb
 ```
 
+## Configuration Parameters
+* **oem7_position_source**: string. Oem7 log used to obtain the position for GPSFix, NavSatFix, Odometry
+
+   **BESTPOS**: Always use BESTPOS log
+
+   **INSPVAS**: Always use INSPVAS log. Requires SPAN
+
+   unset (default): use INSPVAS unless BESTPOS has better quality
+
+* **oem7_imu_rate**: int. Overrides the IMU data rate. 
+
+   Can Used to enable IMU message generation when INSCONFIG is not available, e.g. when feeding input from
+
+   a partial dataset file.
+   
+   default: 0; INSCONFIG must be present in input.
+
+* **oem7_odometry_zero_origin**: bool When 'true', use 0,0,0 as Odometry origin; the first valid GPSFix is used 
+   to set the   origin. 
+
+   default: false
+
+* **oem7_odometry_transform**: bool. When 'true', Transform is published, sourced from Odometry. 
+
+   default: false
+
+* **oem7_receiver_log_file**: string. Path to a file recording all bytes output by the Oem7 Receiver.
+
+   default: "", no output is captured.
+
+* **oem7_decoder_log_file**: Path to a file recording all bytes output by the Oem7 Decoder. Used for decoder debugging. 
+   
+   default: "", no output is captured.
+
+* **oem7_strict_receiver_init**:bool. When 'true', strict initialization is used; no position / velocity /attitude data
+
+   is output unless all receiver initialization commands have succeeded.  
+
+   default: true
+
+* **oem7_publish_unknown_oem7_raw**: bool. When 'true', all Oem7 messages not supported by the decoder are publshed as 'raw'.
+
+    default: false
+
+* **oem7_publish_delay**: double. Seconds to delay before publishing each message. 
+
+   Used for debugging, and with file-based input.
+
+   default: 0
+
+
+
+
 ## Next Steps
 Refer to the novatel_oem7_driver documentation in the ROS wiki for more information:
 http://wiki.ros.org/novatel_oem7_driver

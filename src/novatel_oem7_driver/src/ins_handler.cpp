@@ -287,7 +287,7 @@ namespace novatel_oem7_driver
       inspvax_pub_   = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::INSPVAX>>(  "INSPVAX",   node);
       insconfig_pub_ = std::make_unique<Oem7RosPublisher<novatel_oem7_msgs::msg::INSCONFIG>>("INSCONFIG", node);
 
-      DriverParameter<int> imu_rate_p("imu_rate", 0, *node_);
+      DriverParameter<int> imu_rate_p("oem7_imu_rate", 0, *node_);
       imu_rate_ = imu_rate_p.value();
       if(imu_rate_ > 0)
       {

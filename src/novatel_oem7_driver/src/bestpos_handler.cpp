@@ -733,7 +733,7 @@ namespace novatel_oem7_driver
       GPSFix_pub_    = std::make_unique<Oem7RosPublisher<GPSFix>>(   "GPSFix",       node);
       NavSatFix_pub_ = std::make_unique<Oem7RosPublisher<NavSatFix>>("NavSatFix",    node);
 
-      DriverParameter<std::string> pos_source_p("position_source", "",     node);
+      DriverParameter<std::string> pos_source_p("oem7_position_source", "",     node);
 
 
       // Determine if position source is overriden by the user; otherwise it is determined dynamically.
