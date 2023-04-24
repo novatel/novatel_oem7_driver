@@ -17,7 +17,6 @@ find_package(nmea_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(novatel_oem7_msgs REQUIRED)
-find_package(rosidl_default_generators  REQUIRED)
 find_package(Boost  			REQUIRED)
 
 LIST(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
