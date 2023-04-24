@@ -11,25 +11,20 @@ ARG USR
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y sudo vim nano curl 
+RUN apt-get update && apt-get install -y sudo vim nano curl socat python3-pip
 
 RUN if [ "$USR" == "build" ]; then \
-	apt-get install -y \
-        ${ROS}-tf2-geometry-msgs \
-        ${ROS}-gps-msgs \
-        ${ROS}-nav-msgs \
-        ${ROS}-nmea-msgs \
-        ${ROS}-ament-cmake-nose \
-        libgeographic-dev \ 
-        socat \
-        git dh-make fakeroot python3-pip \
-        libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev &&\
-        pip3 install bloom nose \ 
+	apt-get install -y git dh-make fakeroot &&\
+        pip3 install bloom nose \
+;fi
+
+RUN --mount=type=bind,source=src,destination=/home/${USR}/tmp/src if [ "$USR" == "build" ]; then \
+        rosdep update && rosdep install -i --from-paths /home/${USR}/tmp -y \
 ;fi
 
 
 # Uncomment this to support building .debs for new ROS distros, where we are not in the index yet; add distro to yaml.
-RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
+#RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
 
 
 RUN groupadd -g 1000 ${USR}
@@ -37,5 +32,5 @@ RUN useradd -u 1000 -g 1000 -G sudo,${USR},dialout -ms /bin/bash ${USR}
 RUN echo "${USR}:${USR}" | chpasswd
 USER ${USR}
 
-CMD "/bin/bash"
 
+CMD "/bin/bash"

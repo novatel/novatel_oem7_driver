@@ -27,7 +27,7 @@ print_usage()
 build_docker()
 {
 	
-    docker build $CLEAN -t $NAME --build-arg=USR=$TYPE --build-arg=ROS_ARCH=$ROS_ARCH --build-arg=ROS_DISTRO=$ROS_DISTRO - < docker/Dockerfile.build
+    docker build $CLEAN -t $NAME --build-arg=USR=$TYPE --build-arg=ROS_ARCH=$ROS_ARCH --build-arg=ROS_DISTRO=$ROS_DISTRO --file docker/Dockerfile.build .
 }
 
 
