@@ -321,7 +321,8 @@ namespace novatel_oem7_driver
     {
       std::string topic;
       node_->get_parameter(publisher + ".topic", topic);
-      return std::string(node_->get_namespace()) + "/" + topic;
+      return std::string(node_->get_namespace()) + 
+                        (node_->get_namespace() == std::string("/") ? topic : "/" + topic);
     }
 
     void initialize(rclcpp::Node& node)
