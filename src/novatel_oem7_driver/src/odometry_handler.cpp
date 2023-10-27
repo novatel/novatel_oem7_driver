@@ -113,7 +113,7 @@ namespace novatel_oem7_driver
             double lon,
             double hgt)
     {
-      pt.z = hgt;
+      pt.z = hgt + inspvax_->undulation;
 
       // unused:
       bool northhp = false; 
@@ -154,7 +154,7 @@ namespace novatel_oem7_driver
 
     void publishOdometry()
     {
-      if(!gpsfix_)
+      if(!gpsfix_ || !inspvax_)
       {
         // No data to derive basic Odometry values
         return;
