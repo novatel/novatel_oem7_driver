@@ -192,7 +192,7 @@ pluginlib_export_plugin_description_file(${PROJECT_NAME} novatel_oem7_driver_plu
 install(TARGETS ${PROJECT_NAME} 
    ARCHIVE DESTINATION lib 
    LIBRARY DESTINATION lib 
-   RUNTIME DESTINATION bin} 
+   RUNTIME DESTINATION bin 
 )
 
 install(FILES ${PROJECT_NAME}_plugins.xml DESTINATION share)
