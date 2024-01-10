@@ -1,0 +1,13 @@
+<launch>
+
+    <!-- USB serial port connection to the receiver; you need to determine your tty name. -->
+    <arg name="oem7_tty_name"   default="/dev/ttyUSB0" />
+    <arg name="oem7_tty_baud"   default="9600" />
+    
+    <param name="oem7_msg/oem7_if"        value="Oem7ReceiverPort"       type="string" />
+    <param name="oem7_msg/oem7_tty_name"  value="$(arg oem7_tty_name)"   type="string" />
+    <param name="oem7_msg/oem7_tty_baud"  value="$(arg oem7_tty_baud)"   type="int" />
+
+    <!-- Standard configuration, default oem7 components. -->
+    <include file="$(find novatel_oem7_driver)/config/std_driver_config_2.xml" />
+</launch>
