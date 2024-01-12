@@ -1,0 +1,34 @@
+<launch>
+
+	<!-- Example of running two driver instances under different namespaces -->
+	
+	
+	<!-- Example of remapping specific topics-->
+	<remap from="gps" to="gps/gps"/>
+	<remap from="fix" to="gps/fix"/>
+
+	
+	<!-- TTY connection to the receiver -->
+	
+	<group ns="one/oem7">
+	    <param name="oem7_msg/oem7_if"        value="Oem7ReceiverPort"       type="string" />
+	    <param name="oem7_msg/oem7_tty_name"  value="$(arg oem7_tty1_name)"  type="string" />
+            <param name="oem7_msg/oem7_tty_baud"  value="$(arg oem7_tty_baud)"   type="int"    />
+
+
+	    <include file="$(find novatel_oem7_driver)/config/std_driver_config_2.xml"/> 
+	</group>
+
+	<group ns="two/oem7">
+	    <param name="oem7_msg/oem7_if"        value="Oem7ReceiverPort"       type="string" />
+	    <param name="oem7_msg/oem7_tty_name"  value="$(arg oem7_tty2_name)"  type="string" />
+            <param name="oem7_msg/oem7_tty_baud"  value="$(arg oem7_tty_baud)"   type="int"    />
+
+	
+	    <include file="$(find novatel_oem7_driver)/config/std_driver_config_2.xml"/> 
+	</group>
+
+
+</launch>
+
+
