@@ -40,6 +40,8 @@ receiver_init_commands:
 # Reset logging
 
 - "UNLOGALL THISPORT"
+#- If connecting with external IMU, use CONNECTIMU command:
+#- "CONNECTIMU IMUPort IMUType"
 #- "FRESET"
 #- "!PAUSE 10"
 
@@ -84,7 +86,7 @@ receiver_init_commands:
 - "LOG PSRDOP2B ONCHANGED"
 - "LOG INSPVASB ONTIME 0.02"
 - "LOG INSPVAXB ONTIME 1"
-- "LOG CORRIMUSB ONTIME 0.01"
+- "LOG CORRIMUSB ONTIME 0.01" # Change logging rate according to IMU rate required
 - "LOG INSSTDEVB ONTIME 1"
 - "LOG BESTGNSSPOSB ONTIME 0.1"
 - "LOG RAWIMUSXB ONNEW"

@@ -10,7 +10,7 @@ supported_imus:
    "16" : { name:  "KVH CPT IMU",                                  rate: "200"   }
    "19" : { name:  "Northrop Grumman Litef LCI-1",                 rate: "200"   }
    "20" : { name:  "Honeywell HG1930 AA99",                        rate: "100"   }
-   "26" : { name:  "Northrop Grumman Litef ISA-100C",              rate: "100"   }
+   "26" : { name:  "Northrop Grumman Litef ISA-100C",              rate: "200"   }
    "27" : { name:  "Honeywell HG1900 CA50",                        rate: "100"   }
    "28" : { name:  "Honeywell HG1930 CA50",                        rate: "100"   }
    "31" : { name:  "Analog Devices ADIS16488",                     rate: "200"   }

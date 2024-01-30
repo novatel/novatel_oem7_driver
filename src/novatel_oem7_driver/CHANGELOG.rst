@@ -1,6 +1,23 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4.3.0 (2024-01-30)
+------------------
+* ISA 100C data changed in src/novatel_oem7_driver/config/oem7_supported_imus.yaml
+
+* CMake error fix in docker/Dockerfile.build
+
+* CONNECTIMU command and CORRIMUSB comment added in src/novatel_oem7_driver/config/std_init_commands.yaml
+
+4.2.0 (2023-03-14)
+------------------
+* Minor fix to include missing header file
+
+* CMakeLists update to suppress external project
+
+4.1.0 (2023-02-27)
+------------------
+* ROS1 now builds NovAtel EDIE from external repository
 
 4.0.0 (2022-03-04)
 ------------------

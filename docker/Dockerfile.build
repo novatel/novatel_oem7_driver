@@ -17,7 +17,7 @@ RUN if [ "$USR" == "build" ]; then \
                                 ${ROS}-gps-common \
                                 ${ROS}-nav-msgs \
                                 ${ROS}-nmea-msgs \
-                                dh-make fakeroot python3-pip &&\
+                                git dh-make fakeroot python3-pip &&\
                                 pip3 install bloom \
 ;fi
 
