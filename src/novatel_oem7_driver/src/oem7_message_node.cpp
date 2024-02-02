@@ -107,7 +107,7 @@ namespace novatel_oem7_driver
 
     typedef std::map<int, long> log_count_map_t;
     log_count_map_t log_counts_; ///< Indidividual log counts.
-    
+
     long unknown_msg_num_;   ///< number of messages received that could not be identified.
     long discarded_msg_num_; ///< Number of messages received and discarded by the driver.
 
@@ -140,7 +140,7 @@ namespace novatel_oem7_driver
 
       declare_parameter<bool>("oem7_strict_receiver_init", true);
       get_parameter("oem7_strict_receiver_init", rcvr_init_strict_);
-      
+
       declare_parameter<bool>("oem7_publish_unknown_oem7raw", false);
       get_parameter("oem7_publish_unknown_oem7raw", publish_unknown_oem7raw_);
 
@@ -320,7 +320,7 @@ namespace novatel_oem7_driver
         assert(oem7_raw_msg->message_data.size() == raw_msg->getMessageDataLength());
 
         oem7rawmsg_pub_.publish(oem7_raw_msg);
-    } 
+    }
 
 
    /**
@@ -387,7 +387,7 @@ namespace novatel_oem7_driver
           {
             updateLogStatistics(raw_msg);
             msg_handler_->handleMessage(raw_msg);
-      
+
             // Publish raw messages regardless; they are all for debugging.
 
             // Publish Oem7RawMsg if specified
@@ -461,8 +461,8 @@ namespace novatel_oem7_driver
       // Allow command entry via service for diagnostics, regardless of init status.
 
       // Now that all internal init commands have been issued, allow external commands:
-      static rmw_qos_profile_t qos = rmw_qos_profile_default;
-      qos.depth = 20;
+      static auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+      qos.keep_last(20);
       oem7_abascii_cmd_srv_ = create_service<novatel_oem7_msgs::srv::Oem7AbasciiCmd>(
                                "Oem7Cmd",
                                std::bind(
