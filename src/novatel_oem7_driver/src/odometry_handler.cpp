@@ -42,6 +42,8 @@
 
 #include "novatel_oem7_msgs/msg/inspva.hpp"
 #include "novatel_oem7_msgs/msg/inspvax.hpp"
+#include "novatel_oem7_msgs/msg/bestpos.hpp"
+
 
 #include <GeographicLib/UTMUPS.hpp>
 
@@ -51,6 +53,7 @@ using gps_msgs::msg::GPSFix;
 using gps_msgs::msg::GPSStatus;
 using nav_msgs::msg::Odometry;
 
+using novatel_oem7_msgs::msg::BESTPOS;
 using novatel_oem7_msgs::msg::INSPVA;
 using novatel_oem7_msgs::msg::INSPVAX;
 
@@ -89,11 +92,14 @@ namespace novatel_oem7_driver
     rclcpp::Subscription<Imu>::SharedPtr       imu_sub_;
     rclcpp::Subscription<INSPVA>::SharedPtr    inspva_sub_;
     rclcpp::Subscription<INSPVAX>::SharedPtr   inspvax_sub_;
+    rclcpp::Subscription<BESTPOS>::SharedPtr    bestpos_sub_;
+
 
     GPSFix::SharedPtr   gpsfix_;
     Imu::SharedPtr      imu_;
     INSPVA::SharedPtr   inspva_;
     INSPVAX::SharedPtr  inspvax_;
+    BESTPOS::SharedPtr  bestpos_;
 
     int utm_zone_; // UTM Zone we are operating in. Crossing zone boundary results in position jump.
     bool odom_zero_origin_;
@@ -113,7 +119,20 @@ namespace novatel_oem7_driver
             double lon,
             double hgt)
     {
-      pt.z = hgt + inspvax_->undulation;
+      // Odometry is reported with ellipsoidal height to match NavSatFix altitude
+      if(bestpos_)
+      {
+        pt.z = hgt + bestpos_->undulation;
+      }
+      else if(inspvax_)
+      {
+        pt.z = hgt + inspvax_->undulation;
+      }
+      else // Abnormal condition; likely receiver misconfiguration
+      {
+        RCLCPP_ERROR_STREAM(node_->get_logger(), "No BESTPOS or INSPVAX to get undulation for odometry");
+        return false;
+      }
 
       // unused:
       bool northhp = false; 
@@ -154,7 +173,7 @@ namespace novatel_oem7_driver
 
     void publishOdometry()
     {
-      if(!gpsfix_ || !inspvax_)
+      if(!gpsfix_) 
       {
         // No data to derive basic Odometry values
         return;
@@ -248,7 +267,6 @@ namespace novatel_oem7_driver
       odometry->pose.pose.position.x -= odom_origin_x_;
       odometry->pose.pose.position.y -= odom_origin_y_;
       odometry->pose.pose.position.z -= odom_origin_z_;
-
       Odometry_pub_->publish(odometry);
 
       if(tf_bc_) // Publish Transform
@@ -307,6 +325,12 @@ namespace novatel_oem7_driver
       inspvax_ = inspvax;
     }
 
+    void handleBESTPOS(const BESTPOS::SharedPtr bestpos)
+    {
+      bestpos_ = bestpos;
+    }
+
+
     void handleImu(const Imu::SharedPtr imu)
     {
       imu_ = imu;
@@ -336,7 +360,8 @@ namespace novatel_oem7_driver
       imu_sub_     = node.create_subscription<Imu>(    topic("IMU"),     10, std::bind(&OdometryHandler::handleImu,     this, std::placeholders::_1));
       inspva_sub_  = node.create_subscription<INSPVA>( topic("INSPVA"),  10, std::bind(&OdometryHandler::handleINSPVA,  this, std::placeholders::_1));
       inspvax_sub_ = node.create_subscription<INSPVAX>(topic("INSPVAX"), 10, std::bind(&OdometryHandler::handleINSPVAX, this, std::placeholders::_1));
-   
+      bestpos_sub_ = node.create_subscription<BESTPOS>(topic("BESTPOS"), 10, std::bind(&OdometryHandler::handleBESTPOS, this, std::placeholders::_1));
+
       DriverParameter<bool> odom_zero_origin_p("oem7_odometry_zero_origin", false, *node_);
       odom_zero_origin_ = odom_zero_origin_p.value();
 
