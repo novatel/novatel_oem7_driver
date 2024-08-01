@@ -11,6 +11,7 @@
   <url type="website">http://www.novatel.com</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>git</buildtool_depend>
   
   <depend>pluginlib</depend>
   <depend>boost</depend>
