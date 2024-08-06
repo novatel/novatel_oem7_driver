@@ -77,5 +77,4 @@ else
    mkdir -p $HOST_DIR
 fi
 
-docker run -ti --mount type=bind,source=$HOST_DIR,target=$CONT_DIR -w $CONT_DIR -u `id -u`:`id -g` --group-add sudo --rm $NAME:latest 
-
+docker run -ti --mount type=bind,source=$HOST_DIR,target=$CONT_DIR -w $CONT_DIR --group-add sudo --rm $NAME:latest 

@@ -15,4 +15,4 @@ src/CMakeLists.txt
 *.ddeb
 debian
 .obj-*
-
+log/

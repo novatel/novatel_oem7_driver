@@ -1,8 +1,8 @@
-ARG ROS_DISTRO
-ARG ROS_ARCH
+ARG ROS_DISTRO=jazzy
+ARG ROS_ARCH=amd64
 
 
-from ${ROS_ARCH}/ros:${ROS_DISTRO}
+FROM ${ROS_ARCH}/ros:${ROS_DISTRO}
 
 
 ARG ROS_DISTRO
@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y sudo vim nano curl socat python3-pip
 
 RUN if [ "$USR" == "build" ]; then \
 	apt-get install -y git dh-make fakeroot &&\
-        pip3 install bloom nose \
+        apt-get -y install python3-bloom python3-nose \
 ;fi
 
 RUN --mount=type=bind,source=src,destination=/home/${USR}/tmp/src if [ "$USR" == "build" ]; then \
@@ -24,13 +24,13 @@ RUN --mount=type=bind,source=src,destination=/home/${USR}/tmp/src if [ "$USR" ==
 
 
 # Uncomment this to support building .debs for new ROS distros, where we are not in the index yet; add distro to yaml.
-#RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
+RUN echo "yaml file:///home/build/docker/rosdep.yaml" > /etc/ros/rosdep/sources.list.d/50-local-packages.list
 
 
-RUN groupadd -g 1000 ${USR}
-RUN useradd -u 1000 -g 1000 -G sudo,${USR},dialout -ms /bin/bash ${USR}
-RUN echo "${USR}:${USR}" | chpasswd
+
+RUN groupadd -g 1001 ${USR} \
+RUN useradd -u 1001 -g 1000 -G sudo,${USR},dialout -ms /bin/bash ${USR} \
+RUN echo "${USR}:${USR}" | chpasswd \
 USER ${USR}
-
 
 CMD "/bin/bash"

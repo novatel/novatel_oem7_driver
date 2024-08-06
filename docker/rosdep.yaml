@@ -1,3 +1,4 @@
 novatel_oem7_msgs: 
     ubuntu: 
         jammy:  [ros-humble-novatel-oem7-msgs]
+        noble:  [ros-jazzy-novatel-oem7-msgs]
