@@ -76,7 +76,7 @@ def generate_test_description(name, topics):
         )
     
     rosbag_desc = launch.actions.ExecuteProcess(
-            cmd= ['ros2', 'bag', 'record', '-o', name] + topics,
+            cmd= ['ros2', 'bag', 'record', '-o', name, '-s', 'sqlite3'] + topics,
             output='screen')
     
     

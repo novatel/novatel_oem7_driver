@@ -461,8 +461,8 @@ namespace novatel_oem7_driver
       // Allow command entry via service for diagnostics, regardless of init status.
 
       // Now that all internal init commands have been issued, allow external commands:
-      static rmw_qos_profile_t qos = rmw_qos_profile_default;
-      qos.depth = 20;
+           static auto qos = 	 rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+      qos.keep_last(20);
       oem7_abascii_cmd_srv_ = create_service<novatel_oem7_msgs::srv::Oem7AbasciiCmd>(
                                "Oem7Cmd",
                                std::bind(
