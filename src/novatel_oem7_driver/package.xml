@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>novatel_oem7_driver</name>
-  <version>20.4.0</version>
+  <version>20.5.0</version>
   <description>NovAtel Oem7 ROS Driver</description>
 
   <maintainer email="support.novatel@hexagon.com">NovAtel Support</maintainer>

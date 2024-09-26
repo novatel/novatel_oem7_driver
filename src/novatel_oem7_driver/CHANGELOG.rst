@@ -2,6 +2,11 @@
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+20.5.0 (2024-09-26)
+--------------------
+Misc ROS2 fixes
+
+
 20.4.0 (2024-07-25)
 --------------------
 Implementation of Odometry to publish ellipsoid height for GNSS only and SPAN receivers
