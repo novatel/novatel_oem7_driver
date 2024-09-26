@@ -93,7 +93,7 @@ add_executable(${PROJECT_NAME}_exe
 
 
 
-message("Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
+message(STATUS "Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
 
 target_link_libraries(${PROJECT_NAME}
    Boost::boost
