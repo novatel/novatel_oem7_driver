@@ -19,7 +19,7 @@ RUN if [ "$USR" == "build" ]; then \
 ;fi
 
 RUN --mount=type=bind,source=src,destination=/home/${USR}/tmp/src if [ "$USR" == "build" ]; then \
-        rosdep update && rosdep install -i --from-paths /home/${USR}/tmp -y \
+        rosdep update --include-eol-distros && rosdep install -i --from-paths /home/${USR}/tmp -y \
 ;fi
 
 
