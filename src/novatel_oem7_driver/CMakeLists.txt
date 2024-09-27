@@ -51,6 +51,10 @@ ExternalProject_Add(${OEM7_DECODER}
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -DVERSION=1.0.0.2
   LOG_DOWNLOAD ON
   LOG_OUTPUT_ON_FAILURE ON
+  BUILD_BYPRODUCTS 
+  ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
+  ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
+  ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
 )
 
 

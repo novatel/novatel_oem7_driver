@@ -5,6 +5,7 @@ Changelog for package novatel_oem7_driver
 20.5.0 (2024-09-26)
 --------------------
 Misc ROS2 fixes
+Added support in the CMakeLists.txt to include building with ninja
 
 
 20.4.0 (2024-07-25)
