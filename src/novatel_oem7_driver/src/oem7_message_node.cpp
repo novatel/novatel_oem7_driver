@@ -273,8 +273,8 @@ namespace novatel_oem7_driver
      */
     void outputLogStatistics()
     {
-      RCLCPP_INFO_STREAM(get_logger(), "Log Statistics:");
-      RCLCPP_INFO_STREAM(get_logger(), "Logs: " << total_log_count_ << "; unknown: "   << unknown_msg_num_
+      RCLCPP_DEBUG_STREAM(get_logger(), "Log Statistics:");
+      RCLCPP_DEBUG_STREAM(get_logger(), "Logs: " << total_log_count_ << "; unknown: "   << unknown_msg_num_
                                                        << "; discarded: " << discarded_msg_num_);
 
       for(log_count_map_t::iterator itr = log_counts_.begin();
@@ -284,7 +284,7 @@ namespace novatel_oem7_driver
         int  id    = itr->first;
         long count = itr->second;
 
-        RCLCPP_INFO_STREAM(get_logger(), "Log[" << id << "]:" <<  count);
+        RCLCPP_DEBUG_STREAM(get_logger(), "Log[" << id << "]:" <<  count);
       }
     }
 
