@@ -143,7 +143,7 @@ namespace novatel_oem7_driver
           }
       }
               
-      RCLCPP_INFO_STREAM(node_->get_logger(),
+      RCLCPP_DEBUG_STREAM(node_->get_logger(),
                          "IMU: "          << imu_type  << " '"  << imu_desc << "' "
                       << "rate= "         << imu_rate_                      << "' "
                       << "gyro scale= "   << imu_raw_gyro_scale_factor_     << "' "
