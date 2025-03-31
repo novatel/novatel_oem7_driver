@@ -293,7 +293,7 @@ namespace novatel_oem7_driver
 
       // orientation is in local ENU form track heading, but odom is in UTM, so we need to rotate it
       tf2::Quaternion meridian_rotation;
-      meridian_rotation.setRPY(0., 0., -meridian_convergence_); 
+      meridian_rotation.setRPY(0., 0., meridian_convergence_); 
       orientation = meridian_rotation * orientation;
       odometry_.pose.pose.orientation = tf2::toMsg(orientation);
 
@@ -340,8 +340,8 @@ namespace novatel_oem7_driver
         double cos_yaw = std::cos(yaw_temp);
         // using corrected yaw in UTM to get local linear velocity
         tf2::Vector3 local_linear_velocity = local_tf_inv(tf2::Vector3(
-                                                              gpsfix_->speed * sin_yaw,
                                                               gpsfix_->speed * cos_yaw,
+                                                              gpsfix_->speed * sin_yaw,
                                                               gpsfix_->climb));
         // tf2::Vector3 local_linear_velocity = local_tf_inv(tf2::Vector3(
         //                                                           gpsfix_->speed * sin_trk,
