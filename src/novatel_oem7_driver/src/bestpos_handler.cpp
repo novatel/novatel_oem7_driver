@@ -827,6 +827,7 @@ namespace novatel_oem7_driver
                                       {BESTVEL_OEM7_MSGID,      MSGFLAG_NONE},
                                       {BESTUTM_OEM7_MSGID,      MSGFLAG_NONE},
                                       {BESTGNSSPOS_OEM7_MSGID,  MSGFLAG_NONE},
+                                      {BESTGNSSVEL_OEM7_MSGID,  MSGFLAG_NONE},
                                       {PPPPOS_OEM7_MSGID,       MSGFLAG_NONE},
                                       {INSPVAX_OEM7_MSGID,      MSGFLAG_NONE},
                                       {PSRDOP2_OEM7_MSGID,      MSGFLAG_NONE},
