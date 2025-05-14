@@ -20,6 +20,7 @@ set(MSG_FILES
   msg/BESTUTM.msg
   msg/BESTVEL.msg
   msg/BESTGNSSPOS.msg
+  msg/BESTGNSSVEL.msg
   msg/PPPPOS.msg
   msg/HEADING2.msg
   msg/INSCONFIG.msg

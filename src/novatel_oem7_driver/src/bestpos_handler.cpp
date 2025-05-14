@@ -37,6 +37,7 @@
 #include "novatel_oem7_msgs/msg/bestpos.hpp"
 #include "novatel_oem7_msgs/msg/bestutm.hpp"
 #include "novatel_oem7_msgs/msg/bestvel.hpp"
+#include "novatel_oem7_msgs/msg/bestgnssvel.hpp"
 #include "novatel_oem7_msgs/msg/bestgnsspos.hpp"
 #include "novatel_oem7_msgs/msg/inspva.hpp"
 #include "novatel_oem7_msgs/msg/inspvax.hpp"
@@ -68,6 +69,7 @@ using sensor_msgs::msg::NavSatStatus;
 using novatel_oem7_msgs::msg::PPPPOS;
 using novatel_oem7_msgs::msg::BESTPOS;
 using novatel_oem7_msgs::msg::BESTVEL;
+using novatel_oem7_msgs::msg::BESTGNSSVEL;
 using novatel_oem7_msgs::msg::BESTUTM;
 using novatel_oem7_msgs::msg::BESTGNSSPOS;
 using novatel_oem7_msgs::msg::INSPVA;
@@ -247,6 +249,7 @@ namespace novatel_oem7_driver
     std::unique_ptr<Oem7RosPublisher<PPPPOS>>       PPPPOS_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTPOS>>      BESTPOS_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTVEL>>      BESTVEL_pub_;
+    std::unique_ptr<Oem7RosPublisher<BESTGNSSVEL>>  BESTGNSSVEL_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTUTM>>      BESTUTM_pub_;
     std::unique_ptr<Oem7RosPublisher<BESTGNSSPOS>>  BESTGNSSPOS_pub_;
     std::unique_ptr<Oem7RosPublisher<TRACKSTAT>>    TRACKSTAT_pub_;
@@ -262,6 +265,7 @@ namespace novatel_oem7_driver
     std::shared_ptr<BESTPOS> bestpos_ = std::make_shared<BESTPOS>();
     std::shared_ptr<BESTGNSSPOS> bestgnsspos_ = std::make_shared<BESTGNSSPOS>();
     std::shared_ptr<BESTVEL> bestvel_ = std::make_shared<BESTVEL>();
+    std::shared_ptr<BESTGNSSVEL> bestgnssvel_ = std::make_shared<BESTGNSSVEL>();
     std::shared_ptr<GPSFix>  gpsfix_ = std::make_shared<GPSFix>();
 
     Oem7RawMessageIf::ConstPtr psrdop2_;
@@ -270,11 +274,13 @@ namespace novatel_oem7_driver
 
     int64_t last_bestpos_;
     int64_t last_bestvel_;
+    int64_t last_bestgnssvel_;
     int64_t last_inspva_;
     int64_t last_bestgnsspos_;
 
     int32_t bestpos_period_;
     int32_t bestvel_period_;
+    int32_t bestgnssvel_period_;
     int32_t inspva_period_;
     int32_t bestgnsspos_period_;
 
@@ -289,6 +295,7 @@ namespace novatel_oem7_driver
     {
       return period <= bestpos_period_ &&
              period <= bestvel_period_ &&
+             period <= bestgnssvel_period_ && 
              period <= bestgnsspos_period_ &&
              period <= inspva_period_;
     }
@@ -333,6 +340,13 @@ namespace novatel_oem7_driver
       MakeROSMessage(msg, *bestvel_);
       updatePeriod(bestvel_, last_bestvel_, bestvel_period_);
       BESTVEL_pub_->publish(bestvel_);
+    }
+
+    void publishBESTGNSSVEL(const Oem7RawMessageIf::ConstPtr& msg)
+    {
+      MakeROSMessage(msg, *bestgnssvel_);
+      updatePeriod(bestgnssvel_, last_bestgnssvel_, bestgnssvel_period_);
+      BESTGNSSVEL_pub_->publish(bestgnssvel_);
     }
 
     void publishBESTUTM(const Oem7RawMessageIf::ConstPtr& msg)
@@ -845,6 +859,15 @@ namespace novatel_oem7_driver
           publishBESTVEL(msg);
 
           if(isShortestPeriod(bestvel_period_))
+          {
+            publishROSMessages();
+          }
+          break;
+        
+        case BESTGNSSVEL_OEM7_MSGID:
+          publishBESTGNSSVEL(msg);
+          
+          if(isShortestPeriod(bestgnssvel_period_))
           {
             publishROSMessages();
           }
