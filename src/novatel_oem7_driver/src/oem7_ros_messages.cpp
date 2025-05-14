@@ -36,6 +36,7 @@
 #include "novatel_oem7_msgs/msg/heading2.hpp"
 #include "novatel_oem7_msgs/msg/bestpos.hpp"
 #include "novatel_oem7_msgs/msg/bestvel.hpp"
+#include "novatel_oem7_msgs/msg/bestgnssvel.hpp"
 #include "novatel_oem7_msgs/msg/bestutm.hpp"
 #include "novatel_oem7_msgs/msg/bestgnsspos.hpp"
 #include "novatel_oem7_msgs/msg/ppppos.hpp"
@@ -177,6 +178,29 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTVEL>(
 
   static const std::string name = "BESTVEL";
   SetOem7Header(msg, name, bestvel.nov_header);
+}
+
+template<>
+void
+MakeROSMessage<novatel_oem7_msgs::msg::BESTGNSSVEL>(
+    const Oem7RawMessageIf::ConstPtr& msg,
+    novatel_oem7_msgs::msg::BESTGNSSVEL& bestgnssvel)
+{
+  assert(msg->getMessageId() == BESTGNSSVEL_OEM7_MSGID);
+
+  const BESTGNSSVELMem* bv = reinterpret_cast<const BESTGNSSVELMem*>(msg->getMessageData(OEM7_BINARY_MSG_HDR_LEN));
+
+  bestgnssvel.sol_status.status = bv->sol_stat;
+  bestgnssvel.vel_type.type     = bv->vel_type;
+  bestgnssvel.latency           = bv->latency;
+  bestgnssvel.diff_age          = bv->diff_age;
+  bestgnssvel.hor_speed         = bv->hor_speed;
+  bestgnssvel.trk_gnd           = bv->track_gnd;
+  bestgnssvel.ver_speed         = bv->ver_speed;
+  bestgnssvel.reserved          = bv->reserved;
+
+  static const std::string name = "BESTGNSSVEL";
+  SetOem7Header(msg, name, bestgnssvel.nov_header);
 }
 
 template<>

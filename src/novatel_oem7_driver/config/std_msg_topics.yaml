@@ -10,6 +10,7 @@ INS_Twist:        {topic: ins_twist,        frame_id: gps}
 # Oem7-specific 
 Oem7RawMsg:       {topic: oem7raw,          frame_id: gps,  queue_size: 200}
 BESTGNSSPOS:      {topic: bestgnsspos,      frame_id: gps}
+BESTGNSSVEL:      {topic: bestgnssvel,      frame_id: gps}
 BESTPOS:          {topic: bestpos,          frame_id: gps}
 BESTUTM:          {topic: bestutm,          frame_id: gps}
 BESTVEL:          {topic: bestvel,          frame_id: gps}
