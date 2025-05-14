@@ -778,6 +778,7 @@ namespace novatel_oem7_driver
       BESTVEL_pub_ = std::make_unique<Oem7RosPublisher<BESTVEL>>("BESTVEL",       node);
       BESTUTM_pub_ = std::make_unique<Oem7RosPublisher<BESTUTM>>("BESTUTM",       node);
       BESTGNSSPOS_pub_ = std::make_unique<Oem7RosPublisher<BESTGNSSPOS>>("BESTGNSSPOS", node);
+      BESTGNSSVEL_pub_ = std::make_unique<Oem7RosPublisher<BESTGNSSVEL>>("BESTGNSSVEL", node);
       TRACKSTAT_pub_ = std::make_unique<Oem7RosPublisher<TRACKSTAT>>("TRACKSTAT", node);
 
       GPSFix_pub_  = std::make_unique<Oem7RosPublisher<GPSFix>>(  "GPSFix",       node);
