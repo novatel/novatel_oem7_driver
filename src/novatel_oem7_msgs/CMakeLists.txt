@@ -22,6 +22,7 @@ set(MSG_FILES
   msg/BESTGNSSPOS.msg
   msg/BESTGNSSVEL.msg
   msg/PPPPOS.msg
+  msg/PSRXYZ.msg
   msg/HEADING2.msg
   msg/INSCONFIG.msg
   msg/INSPVA.msg
