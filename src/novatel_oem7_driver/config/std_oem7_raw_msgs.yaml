@@ -4,6 +4,7 @@ oem7_raw_msgs:
 # Standard messages - Do not remove.
 - 42    # BESTPOS
 - 99    # BESTVEL
+- 100   # PSRVEL
 - 1429  # BESTGNSSPOS
 - 1430  # BESTGNSSVEL
 - 1538  # PPPPOS
