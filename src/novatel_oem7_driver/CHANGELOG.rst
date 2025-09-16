@@ -2,11 +2,27 @@
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+24.2.0 (2025-09-09)
+--------------------
+Documentation Release and ROS2 Fixes
+
+Features:
+
+* ROS2 Documentation Release
+
+Modifications:
+
+* RAWIMUSX and /imu/data_raw topic duplicate publishing bug fix
+* Decrease Boost dependency to only headers (`#98 <https://github.com/novatel/novatel_oem7_driver/pull/98>`_)
+* Update tf2_ros to hpp headers (`#104 <https://github.com/novatel/novatel_oem7_driver/pull/104>`_)
+* Similar Changes as Release 20.8.0 for Humble
+
 24.1.0 (2025-03-17)
 --------------------
 Odometry Bug Fixes
 
 Modifications:
+
 * Odometry is no longer published when the receiver position type = None
 * Similar Changes as Release 20.7.0 for Humble
 
@@ -19,7 +35,7 @@ Modifications:
 
 * Upgraded oem7_receiver_if.hpp to remove Boost dependency
 * Upgraded port and net receiver connections to ensure that they are non-blocking
-* Removed Boost dependency from the port and net receiver connections. This removes the ability to build with Windows. These files have been left but labelled as sync (to indicate they are blocking), these files are deprecated and will be removed in a future release 
+* Removed Boost dependency from the port and net receiver connections. This removes the ability to build with Windows. These files have been left but labelled as sync (to indicate they are blocking), these files are deprecated and will be removed in a future release
 * Updates to address various deprecation warnings by third party libraries
 
 
@@ -30,7 +46,7 @@ Various QoL changes
 Modifications:
 
 * Reduced log verbosity of various expected logs to DEBUG
-* Updated launch files to include all configurable parameters 
+* Updated launch files to include all configurable parameters
 * Added BESTGNSSVEL and RAWIMUSX Oem7 Messages
 * Expanded oem7_msgs.yaml and std_oem7_raw_msgs.yaml to include all topics matching Oem7Decoder database
 * Minor adjustments to std_init_commands.yaml
@@ -58,11 +74,11 @@ Formal support for Humble; functionality updated to that of ROS1 v4.2.0
 Features:
 
 * BESTGNSSPOS, PPPPOS, TERRASTARINFO, TERRASTARSTATUS Oem7 Messages
-     
+
 * imu/data_raw output, source from RAWIMUSX and scaled
-    
+
 * HG4930_AN04, HG4930_AN04_400Hz IMUs
-  
+
 * Odometry Angular velocities
 
 * Optionally, publish Odometry Transform
@@ -104,16 +120,16 @@ Initial Support for ROS2/Foxy
 2.0.0 (2020-12-18)
 ------------------
 * Support logging 'unknown' OEM7 messages under Oem7Raw topic
-   
-  
+
+
 * Populate gps_common/GPSStatus.status with more detailed status info
 
 * Source gps_common/GPSFix, gps_common/NavSatFix position data from the most recent and higher quality
   INSPVAS or BESTPOS/BESTVEL messsage.
-  
+
   Previously, position data was always sourced from BESTPOS/BESTVEL, which is transmitted
   at lower rate than INSPVAS
-  (`#13 <https://github.com/novatel/novatel_oem7_driver/issues/13>`_)   
+  (`#13 <https://github.com/novatel/novatel_oem7_driver/issues/13>`_)
 * Support nmea_msgs/Sentence for all OEM7 NMEA0183 messages (`#4 <https://github.com/novatel/novatel_oem7_driver/issues/4>`_)
 
 * Support nav_msgs/Odometry, with position and orientation populated based on BESTPOS/BESTVEL/INSPVAS

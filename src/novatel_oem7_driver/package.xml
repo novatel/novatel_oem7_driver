@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>novatel_oem7_driver</name>
-  <version>24.1.0</version>
+  <version>24.2.0</version>
   <description>NovAtel Oem7 ROS Driver</description>
 
   <maintainer email="support.novatel@hexagon.com">NovAtel Support</maintainer>
@@ -12,7 +12,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>git</buildtool_depend>
-  
+
   <build_depend>libboost-dev</build_depend>
 
   <depend>pluginlib</depend>
@@ -25,10 +25,10 @@
   <depend>novatel_oem7_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>geographiclib</depend>
-	  
+
   <test_depend>launch_testing</test_depend>
   <test_depend>launch_testing_ros</test_depend>
-  <test_depend>launch_testing_ament_cmake</test_depend> 
+  <test_depend>launch_testing_ament_cmake</test_depend>
   <test_depend>rosidl_runtime_py</test_depend>
   <test_depend>rclpy</test_depend>
   <test_depend>rosbag2</test_depend>
@@ -38,5 +38,6 @@
 
     <nodelet             plugin="${prefix}/novatel_oem7_driver_nodelets.xml" />
     <novatel_oem7_driver plugin="${prefix}/novatel_oem7_driver_plugins.xml" />
+    <rosdoc2>rosdoc2.yaml</rosdoc2>
   </export>
 </package>

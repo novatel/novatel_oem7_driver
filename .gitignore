@@ -8,7 +8,6 @@ devel
 install
 docker-kinetic-test
 docker-melodic-test
-doc
 src/CMakeLists.txt
 *.pyc
 *.deb
@@ -16,3 +15,6 @@ src/CMakeLists.txt
 debian
 .obj-*
 log/
+docs_build
+docs_output
+cross_reference
