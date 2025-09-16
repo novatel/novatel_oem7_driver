@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y sudo vim nano curl socat python3-pip
 
 RUN if [ "$USR" == "build" ]; then \
 	apt-get install -y git dh-make fakeroot &&\
-        pip3 install bloom nose \
+        pip3 install bloom nose &&\
+        apt install -y python3-rosdoc2 \
 ;fi
 
 RUN --mount=type=bind,source=src,destination=/home/${USR}/tmp/src if [ "$USR" == "build" ]; then \

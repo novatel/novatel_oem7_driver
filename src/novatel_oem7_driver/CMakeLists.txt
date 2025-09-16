@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(ament_cmake REQUIRED)
 
 find_package(pluginlib)
-find_package(rclcpp REQUIRED) 
-find_package(rclcpp_components REQUIRED) 
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(gps_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -17,7 +17,7 @@ find_package(nmea_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(novatel_oem7_msgs REQUIRED)
-find_package(Boost REQUIRED COMPONENTS headers)
+find_package(Boost 1.69 REQUIRED COMPONENTS headers) ## >=1.69 is required to build headers only. Prior to 1.69 Boost.System should also be included.
 
 LIST(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
 
@@ -51,7 +51,7 @@ ExternalProject_Add(${OEM7_DECODER}
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -DVERSION=1.0.0.2
   LOG_DOWNLOAD ON
   LOG_OUTPUT_ON_FAILURE ON
-  BUILD_BYPRODUCTS 
+  BUILD_BYPRODUCTS
   ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
   ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
   ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
@@ -62,9 +62,9 @@ set(OEM7_DECODER_DIR ${CMAKE_BINARY_DIR}/${OEM7_DECODER}/src/${OEM7_DECODER})
 
 include_directories(include
     src
-    ${OEM7_DECODER_DIR}	
+    ${OEM7_DECODER_DIR}
     ${OEM7_DECODER_DIR}/src
-    ${CMAKE_BINARY_DIR}/usr/include/novatel/edie           
+    ${CMAKE_BINARY_DIR}/usr/include/novatel/edie
     ${OEM7_DECODER_DIR}/bin/Novatel/api/
     ${OEM7_DECODER_DIR}/bin/StreamInterface/api/
 )
@@ -95,7 +95,7 @@ add_executable(${PROJECT_NAME}_exe
    src/oem7_message_util.cpp
    src/oem7_ros_messages.cpp
    src/message_handler.cpp
-) 
+)
 
 
 
@@ -107,28 +107,28 @@ target_link_libraries(${PROJECT_NAME}
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
    ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
-   ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a   
+   ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
 )
 
 add_dependencies(${PROJECT_NAME} ${OEM7_DECODER})
 
-ament_target_dependencies(${PROJECT_NAME} 
+ament_target_dependencies(${PROJECT_NAME}
 	pluginlib
-	std_msgs 
+	std_msgs
 	gps_msgs
-	sensor_msgs 
-	nmea_msgs 	
+	sensor_msgs
+	nmea_msgs
 	nav_msgs
-	tf2_geometry_msgs 
+	tf2_geometry_msgs
 	novatel_oem7_msgs
 )
 
 
-ament_target_dependencies(${PROJECT_NAME}_exe 
+ament_target_dependencies(${PROJECT_NAME}_exe
     rclcpp
     rclcpp_components
 	pluginlib
-	novatel_oem7_msgs 
+	novatel_oem7_msgs
 )
 
 
@@ -144,45 +144,45 @@ if(BUILD_TESTING)
  	add_launch_test(
 		test/align.test.py
 		ARGS "test_name:=align"
-	 	ARGS "test_dir:=${TEST_DIR}" 
+	 	ARGS "test_dir:=${TEST_DIR}"
 	 	ARGS "oem7_file_name:=${TEST_DIR}/align.gps"
 	 	)
-	 	
+
  	add_launch_test(
 		test/bestpos.test.py
 		ARGS "test_name:=bestpos"
- 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "test_dir:=${TEST_DIR}"
  		ARGS "oem7_file_name:=${TEST_DIR}/bestpos.gps"
  	)
- 	
+
  	add_launch_test(
 		test/ins1.test.py
 		ARGS "test_name:=ins1"
- 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "test_dir:=${TEST_DIR}"
  		ARGS "oem7_file_name:=${TEST_DIR}/ins1.gps"
  	)
- 	
+
  	add_launch_test(
 		test/ins2.test.py
 		ARGS "test_name:=ins2"
- 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "test_dir:=${TEST_DIR}"
  		ARGS "oem7_file_name:=${TEST_DIR}/ins2.gps"
  	)
 
  	add_launch_test(
 		test/rxstatus.test.py
 		ARGS "test_name:=rxstatus"
- 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "test_dir:=${TEST_DIR}"
  		ARGS "oem7_file_name:=${TEST_DIR}/rxstatus.gps"
  	)
- 	
+
  	add_launch_test(
 		test/time.test.py
 		ARGS "test_name:=time"
- 		ARGS "test_dir:=${TEST_DIR}" 
+ 		ARGS "test_dir:=${TEST_DIR}"
  		ARGS "oem7_file_name:=${TEST_DIR}/time.gps"
  	)
-	 	
+
 endif()
 
 
@@ -195,10 +195,10 @@ ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} novatel_oem7_driver_plugins.xml)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} 
-   ARCHIVE DESTINATION lib 
-   LIBRARY DESTINATION lib 
-   RUNTIME DESTINATION bin 
+install(TARGETS ${PROJECT_NAME}
+   ARCHIVE DESTINATION lib
+   LIBRARY DESTINATION lib
+   RUNTIME DESTINATION bin
 )
 
 install(FILES ${PROJECT_NAME}_plugins.xml DESTINATION share)

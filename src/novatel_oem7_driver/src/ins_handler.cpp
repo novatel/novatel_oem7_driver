@@ -313,7 +313,6 @@ namespace novatel_oem7_driver
                                       {
                                         {RAWIMUSX_OEM7_MSGID,            MSGFLAG_NONE},
                                         {CORRIMUS_OEM7_MSGID,            MSGFLAG_NONE},
-                                        {RAWIMUSX_OEM7_MSGID,            MSGFLAG_NONE},
                                         {IMURATECORRIMUS_OEM7_MSGID,     MSGFLAG_NONE},
                                         {INSPVAS_OEM7_MSGID,             MSGFLAG_NONE},
                                         {INSPVAX_OEM7_MSGID,             MSGFLAG_NONE},
