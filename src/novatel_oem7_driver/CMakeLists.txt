@@ -17,7 +17,7 @@ find_package(nmea_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(novatel_oem7_msgs REQUIRED)
-find_package(Boost  			REQUIRED)
+find_package(Boost REQUIRED COMPONENTS headers)
 
 LIST(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
 
@@ -110,7 +110,7 @@ add_executable(${PROJECT_NAME}_exe
 message(STATUS "Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
 
 target_link_libraries(${PROJECT_NAME}
-   Boost::boost
+   Boost::headers
    ${GeographicLib_LIBRARIES}
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
