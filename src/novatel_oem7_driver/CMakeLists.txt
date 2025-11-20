@@ -109,34 +109,33 @@ add_executable(${PROJECT_NAME}_exe
 
 message(STATUS "Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
    Boost::headers
    ${GeographicLib_LIBRARIES}
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a
    ${CMAKE_BINARY_DIR}/usr/lib/libNovatel.a
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
+   ${gps_msgs_TARGETS}
+   ${nav_msgs_TARGETS}
+   ${nmea_msgs_TARGETS}
+   ${novatel_oem7_msgs_TARGETS}
+   ${sensor_msgs_TARGETS}
+   ${std_msgs_TARGETS}
+   pluginlib::pluginlib
+   sensor_msgs::sensor_msgs_library
+   tf2_geometry_msgs::tf2_geometry_msgs
 )
 
 add_dependencies(${PROJECT_NAME} ${OEM7_DECODER})
 
-ament_target_dependencies(${PROJECT_NAME}
-	pluginlib
-	std_msgs
-	gps_msgs
-	sensor_msgs
-	nmea_msgs
-	nav_msgs
-	tf2_geometry_msgs
-	novatel_oem7_msgs
-)
 
-
-ament_target_dependencies(${PROJECT_NAME}_exe
-    rclcpp
-    rclcpp_components
-	pluginlib
-	novatel_oem7_msgs
+target_link_libraries(${PROJECT_NAME}_exe PUBLIC
+   ${novatel_oem7_msgs_TARGETS}
+   pluginlib::pluginlib
+   rclcpp::rclcpp
+   rclcpp_components::component
+   rclcpp_components::component_manager
 )
 
 
