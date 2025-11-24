@@ -17,7 +17,6 @@ find_package(nmea_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(novatel_oem7_msgs REQUIRED)
-find_package(Boost 1.69 REQUIRED COMPONENTS headers) ## >=1.69 is required to build headers only. Prior to 1.69 Boost.System should also be included.
 
 LIST(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
 
@@ -78,9 +77,7 @@ include_directories(include
 ## All components are plugins
 add_library(${PROJECT_NAME} SHARED
    src/oem7_receiver_net.cpp
-   src/oem7_receiver_net_sync.cpp
    src/oem7_receiver_port.cpp
-   src/oem7_receiver_port_sync.cpp
    src/oem7_receiver_file.cpp
    src/oem7_message_decoder.cpp
    src/oem7_message_decoder_lib.cpp
@@ -109,8 +106,7 @@ add_executable(${PROJECT_NAME}_exe
 
 message(STATUS "Linking to EDIE at: '${CMAKE_BINARY_DIR}'")
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-   Boost::headers
+target_link_libraries(${PROJECT_NAME}
    ${GeographicLib_LIBRARIES}
    ${CMAKE_BINARY_DIR}/usr/lib/libCommon.a
    ${CMAKE_BINARY_DIR}/usr/lib/libStreamInterface.a

@@ -61,7 +61,7 @@ The message ID for each log can be found in the OEM7 manual.
 
 .. Warning::
    Not all NovAtel logs will be supported by the ROS driver.
-   The only logs supported by the ROS driver are listed in oem7_msgs.yaml starting with Humble 20.6.0 and in all newer releases including Jazzy.
+   The only logs supported by the ROS driver are listed in oem7_msgs.yaml starting with Humble 20.6.0 and in all newer releases including Jazzy and Kilted.
    If you would like an additional log to be published into either oem7raw or into a ROS topic, please contact Support to request it.
 
 oem7_supported_imus.yaml

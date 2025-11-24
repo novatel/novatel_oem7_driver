@@ -2,6 +2,11 @@
 Changelog for package novatel_oem7_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+28.0.0 (2025-10-02)
+--------------------
+Formal support for Kilted
+
+
 24.0.0 (2025-01-31)
 --------------------
 Formal support for Jazzy

@@ -21,10 +21,10 @@ print_usage()
     echo " -t: container used for testing; only ros-base installed; no driver dependencies installed"
     echo ""
     echo " ROS_ARCH:   amd64 | arm64v8" 
-    echo " ROS_DISTRO: jazzy"
+    echo " ROS_DISTRO: kilted"
     echo " e.g.:"
-    echo "  $0 amd64 jazzy"
-    echo "  $0 arm64 jazzy"
+    echo "  $0 amd64 kilted"
+    echo "  $0 arm64 kilted"
     echo ""
     echo "Only arch/platform combinations avaliable from OSRF are supported."  
 }

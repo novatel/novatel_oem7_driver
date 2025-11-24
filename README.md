@@ -23,13 +23,18 @@ https://docs.ros.org/en/jazzy/p/novatel_oem7_driver/
 
 ## Building novatel_oem7_driver from source code
 ### Prerequisites
-* Install ROS2 Jazzy.
+* Install ROS2 Kilted.
 * Obtain OEM7 receiver.
 
+### GitHub Branch To Use
+* Humble - Official Support for Humble
+* Jazzy - Official Support for Jazzy
+* Kilted - Official Support for Kilted
+* Other branches: not actively maintained, unstable/experimental, or for end of life ROS versions
 
 ### Installation
 #### Option A: Install binary package
-There is substantial documention regarding use of the binary release of this driver on the novatel_oem7_driver documentation pages, located here: https://docs.ros.org/en/jazzy/p/novatel_oem7_driver/
+There is substantial documention regarding use of the binary release of this driver on the novatel_oem7_driver documentation pages, located here: https://docs.ros.org/en/kilted/p/novatel_oem7_driver/
 
 The key step is:
 ```
@@ -45,8 +50,8 @@ These instructions assume that you are using Ubuntu 24.04.
 1. Install Docker, add the user you intend on using to the 'docker' group. For example:
    1. Add the current user to the 'docker' group: `sudo usermod -aG docker ${USER}`
    1. Apply the membership changes to the current session: `su - ${USER}`
-1. From the base directory of the repository, create container for the desired ROS architecture and distro, e.g. Jazzy:
-   `./docker/run.sh -r amd64 jazzy`
+1. From the base directory of the repository, create container for the desired ROS architecture and distro, e.g. Kilted:
+   `./docker/run.sh -r amd64 kilted`
    Note: only amd64 and arm64v8 architectures are supported at this point.
 1. From within your docker container, use standard ROS2 tools, like colcon.
 1. Alternatively, use the build.sh script.
@@ -124,13 +129,13 @@ To configure the driver revert to the Configuration of novatel_oem7_driver Getti
 
 ## Limitations
 
-* This branch only supports ROS2 Jazzy, other branches contain the versions they support until that version is End of Life. While officially unsupported and functionality is not guranteed, to build with Foxy and older it is recommended to use the Humble branch and revert these changes: https://github.com/novatel/novatel_oem7_driver/pull/104
+* This branch only supports ROS2 Kilted, other branches contain the versions they support until that version is End of Life. While officially unsupported and functionality is not guranteed, to build with Foxy and older it is recommended to use the Humble branch and revert these changes: https://github.com/novatel/novatel_oem7_driver/pull/104
 
-* Building the driver in its default state requires Boost 1.69 or greater. If working with an older version, revert these changes locally: https://github.com/novatel/novatel_oem7_driver/pull/98
+* Support is not provided for building in Windows
 
 
 ## Next Steps
-Refer to the novatel_oem7_driver documentation for more information: https://docs.ros.org/en/jazzy/p/novatel_oem7_driver/
+Refer to the novatel_oem7_driver documentation for more information: https://docs.ros.org/en/kilted/p/novatel_oem7_driver/
 
 ## Authors
 

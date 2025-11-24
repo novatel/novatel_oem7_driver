@@ -2,6 +2,14 @@
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+28.0.0 (2025-10-02)
+--------------------
+Formal support for Kilted
+
+Modifications:
+
+* Removed all remaining Boost header dependencies
+
 24.2.0 (2025-09-09)
 --------------------
 Documentation Release and ROS2 Fixes

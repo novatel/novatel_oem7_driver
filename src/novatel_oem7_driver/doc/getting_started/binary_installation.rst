@@ -35,11 +35,11 @@ Therefore, installation of the binary driver simply requires installing the ``no
 
       sudo apt install ros-${ROS_DISTRO}-novatel-oem7-driver
 
-For example, on a ROS2 Jazzy installation, the command to install the driver would be:
+For example, on a ROS2 Kilted installation, the command to install the driver would be:
 
 ::
 
-   sudo apt install ros-jazzy-novatel-oem7-driver
+   sudo apt install ros-kilted-novatel-oem7-driver
 
 --------------
 
@@ -52,4 +52,4 @@ If you cannot use the binary driver, you may consider building the driver from t
 The instructions to build from the source code are bundled with the code provided on GitHub `here <https://github.com/novatel/novatel_oem7_driver>`__.
 
 .. note::
-   The official branches on GitHub intended for use are named after the distribution they support, e.g. Use branch Jazy to build the driver for ROS2 Jazzy
+   The official branches on GitHub intended for use are named after the distribution they support, e.g. Use branch jazzy to build the driver for ROS2 Jazzy

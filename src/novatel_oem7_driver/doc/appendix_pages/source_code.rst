@@ -9,6 +9,7 @@ The official branches on the GitHub are:
 
 -    humble
 -    jazzy
+-    kilted
 
 All other branches are not actively maintained, unstable/experimental or end of life
 

@@ -15,7 +15,7 @@ It allows NovAtel OEM7 devices to communicate via the ROS framework in a simple,
 
 This document focuses on use of the pre-built binary version of the NovAtel OEM7 ROS driver.
 For modifying and installing the ROS driver from source code, refer to the NovAtel GitHub ROS driver repository at
-`GitHub <https://github.com/novatel/novatel_oem7_driver/tree/jazzy>`__.
+`GitHub <https://github.com/novatel/novatel_oem7_driver/tree/kilted>`__.
 
 For full documentation on NovAtel OEM7 products and their interface, refer to:
 
@@ -50,6 +50,9 @@ novatel_oem7_driver currently supports these ROS2 releases:
 -  `humble <https://docs.ros.org/en/humble>`__
 
 -  `jazzy <https://docs.ros.org/en/jazzy>`__
+
+-  `kilted <https://docs.ros.org/en/kilted>`__
+
 
 If you are interested in support for another version, please upvote the relevant issue here, or create a new issue `here <https://github.com/novatel/novatel_oem7_driver/issues>`__.
 

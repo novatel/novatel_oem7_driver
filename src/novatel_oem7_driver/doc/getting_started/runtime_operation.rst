@@ -23,11 +23,11 @@ The protocol (TCP or UDP) and port numbers used can be configured by editing the
 
    /opt/ros/{$ROS_DISTRO}/share/novatel_oem7_driver/launch/oem7_net.launch.py
 
-For example, Jazzy users would therefore find this template file at:
+For example, Kilted users would therefore find this template file at:
 
 ::
 
-   /opt/ros/jazzy/share/novatel_oem7_driver/launch/oem7_net.launch.py
+   /opt/ros/kilted/share/novatel_oem7_driver/launch/oem7_net.launch.py
 
 Users may copy this template to a project directory, edit it and then run it with ``ros2 launch <the edited launch file>``.
 To change the default TCP port that novatel_oem7_driver is configured to use, edit the default value of the ``oem7_port`` argument in your copy of the ``oem7_net.launch.py`` file.

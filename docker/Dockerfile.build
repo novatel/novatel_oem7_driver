@@ -1,4 +1,4 @@
-ARG ROS_DISTRO=jazzy
+ARG ROS_DISTRO=kilted
 ARG ROS_ARCH=amd64
 
 
