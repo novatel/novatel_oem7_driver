@@ -266,7 +266,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTGNSSPOS>(
   bestgnsspos->lat_stdev              = bgp->lat_stdev;
   bestgnsspos->lon_stdev              = bgp->lon_stdev;
   bestgnsspos->hgt_stdev              = bgp->hgt_stdev;
-  bestgnsspos->stn_id.assign(           bgp->stn_id, arr_size(bgp->stn_id));
+  bestgnsspos->stn_id.assign(           bgp->stn_id, std::strlen(bgp->stn_id));
   bestgnsspos->diff_age               = bgp->diff_age;
   bestgnsspos->sol_age                = bgp->sol_age;
   bestgnsspos->num_svs                = bgp->num_svs;
@@ -617,7 +617,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::PPPPOS>(
   ppppos->lat_stdev              = pp->lat_stdev;
   ppppos->lon_stdev              = pp->lon_stdev;
   ppppos->hgt_stdev              = pp->hgt_stdev;
-  ppppos->stn_id.assign(           pp->stn_id, arr_size(pp->stn_id));
+  ppppos->stn_id.assign(           pp->stn_id, std::strlen(pp->stn_id));
   ppppos->diff_age               = pp->diff_age;
   ppppos->sol_age                = pp->sol_age;
   ppppos->num_svs                = pp->num_svs;
