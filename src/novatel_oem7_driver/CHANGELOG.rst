@@ -2,6 +2,14 @@
 Changelog for package novatel_oem7_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+24.2.1 (2026-03-13)
+--------------------
+Move towards Rolling support
+
+Modifications:
+
+* Removes ament_target_dependencies, which is removed in ROS2 rolling (`#100 <https://github.com/novatel/novatel_oem7_driver/pull/100>`_)
+
 24.2.0 (2025-09-09)
 --------------------
 Documentation Release and ROS2 Fixes
