@@ -35,10 +35,49 @@ using novatel_oem7::Oem7RawMessageIf;
 
 #include "oem7_messages.h"
 
+#include "builtin_interfaces/msg/time.hpp"
+
+#include <cmath>
+#include <cstdint>
+
 #include <rclcpp/rclcpp.hpp>
 
 namespace novatel_oem7_driver
 {
+  // GPS time has no leap seconds; convert GPS time to Unix/UTC time via the
+  // fixed GPS epoch offset (1980-01-06 -> 1970-01-01) plus the current
+  // GPS-UTC leap-second offset. Update kGpsUtcLeapSeconds if IERS announces
+  // a new leap second (last one: 2016-12-31, offset 18s).
+  inline constexpr int64_t kGpsEpochUnixOffsetSec = 315964800; // 1980-01-06 - 1970-01-01
+  inline constexpr int32_t kGpsUtcLeapSeconds = 18;
+
+  inline bool HasValidGpsTime(const novatel_oem7_msgs::msg::Oem7Header& hdr)
+  {
+    return hdr.gps_week_number != 0;
+  }
+
+  inline builtin_interfaces::msg::Time GpsWeekMsToRosTime(uint16_t week, uint32_t week_ms)
+  {
+    const int64_t gps_ms = static_cast<int64_t>(week) * 604800000LL + week_ms;
+    const int64_t unix_ms = gps_ms + kGpsEpochUnixOffsetSec * 1000LL - kGpsUtcLeapSeconds * 1000LL;
+    builtin_interfaces::msg::Time out;
+    out.sec = static_cast<int32_t>(unix_ms / 1000);
+    out.nanosec = static_cast<uint32_t>((unix_ms % 1000) * 1000000LL);
+    return out;
+  }
+
+  /**
+   * Converts GPS time expressed as seconds-since-GPS-epoch (e.g. gps_msgs::msg::GPSFix::time)
+   * to Unix/UTC ROS time.
+   */
+  inline builtin_interfaces::msg::Time GpsSecondsToRosTime(double gps_seconds)
+  {
+    const double unix_sec = gps_seconds + kGpsEpochUnixOffsetSec - kGpsUtcLeapSeconds;
+    builtin_interfaces::msg::Time out;
+    out.sec = static_cast<int32_t>(std::floor(unix_sec));
+    out.nanosec = static_cast<uint32_t>((unix_sec - std::floor(unix_sec)) * 1e9);
+    return out;
+  }
 
   static const std::vector<int> OEM7_NMEA_MSGIDS(
     {

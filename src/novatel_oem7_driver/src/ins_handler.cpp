@@ -31,6 +31,7 @@
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
 #include <novatel_oem7_driver/oem7_messages.h>
 #include <novatel_oem7_driver/oem7_imu.hpp>
+#include <novatel_oem7_driver/oem7_message_util.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include "sensor_msgs/msg/imu.hpp"
@@ -219,6 +220,12 @@ namespace novatel_oem7_driver
         imu->orientation_covariance[8] = std::pow(insstdev_->azimuth_stdev, 2);
       }
 
+      if(corrimu_ && HasValidGpsTime(corrimu_->nov_header))
+      {
+        imu->header.stamp = GpsWeekMsToRosTime(corrimu_->nov_header.gps_week_number,
+                                                corrimu_->nov_header.gps_week_milliseconds);
+      }
+
       imu_pub_->publish(imu);
     }
 
@@ -269,6 +276,14 @@ namespace novatel_oem7_driver
       imu->linear_acceleration.z =  computeLinearAccelerationFromRaw(raw->z_acc);
 
       imu->orientation_covariance[0] = DATA_NOT_AVAILABLE;
+
+      // rawimusx_ was already parsed and stamped from this same raw message
+      // by publishRawImuSXMsg() just before this call; reuse its GPS header
+      // instead of re-parsing the raw buffer.
+      if(rawimusx_)
+      {
+        imu->header.stamp = rawimusx_->header.stamp;
+      }
 
       raw_imu_pub_->publish(imu);
     }

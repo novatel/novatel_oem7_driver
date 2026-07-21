@@ -254,6 +254,11 @@ namespace novatel_oem7_driver
         }
       }
 
+      if(imu_)
+      {
+        odometry->header.stamp = imu_->header.stamp;
+      }
+
 
       if(odom_zero_origin_ &&
         !odom_zero_origin_set_ &&
