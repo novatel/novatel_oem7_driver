@@ -20,7 +20,7 @@ supported_imus:
    "45" : { name:  "KVH 1725 IMU",                                 rate: 200   }
    "52" : { name:  "Litef microIMU" ,                              rate: 200   }
    "56" : { name:  "Sensonor STIM300, Direct Connection",          rate: 125   }
-   "58" : { name:  "Honeywell HG4930 AN01",                        rate: 200   }
+   "58" : { name:  "Honeywell HG4930 AN01",                        rate: 100   }
    "61" : { name:  "Epson G370N",                                  rate: 200   }
    "62" : { name:  "Epson G320N - 200Hz",                          rate: 200   }
    "68" : { name:  "HG4930_AN04",                                  rate: 100   }
