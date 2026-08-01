@@ -32,6 +32,8 @@
 #include "novatel_oem7_driver/oem7_messages.h"
 #include "novatel_oem7_driver/oem7_message_util.hpp"
 
+#include "builtin_interfaces/msg/time.hpp"
+#include "std_msgs/msg/header.hpp"
 
 #include "novatel_oem7_msgs/msg/heading2.hpp"
 #include "novatel_oem7_msgs/msg/bestpos.hpp"
@@ -59,31 +61,48 @@ namespace novatel_oem7_driver
 {
 
 /*
- * Populates Oem7header from raw message
+ * Stamps a ROS message's header.stamp from GPS time, once its Oem7Header has been populated.
  */
+template <typename T>
+void
+StampFromOem7Header(T& rosMsg)
+{
+  if(HasValidGpsTime(rosMsg.nov_header))
+  {
+    rosMsg.header.stamp = GpsWeekMsToRosTime(rosMsg.nov_header.gps_week_number, rosMsg.nov_header.gps_week_milliseconds);
+  }
+}
+
+/*
+ * Populates Oem7header from raw message and stamps header.stamp from GPS time
+ */
+template <typename T>
 void
 SetOem7Header(
     const Oem7RawMessageIf::ConstPtr& msg, ///< in: raw message
     const std::string& name, ///< message name
-    novatel_oem7_msgs::msg::Oem7Header::Type& oem7_hdr ///< header to populate
+    T& rosMsg ///< ROS message with .header and .nov_header to populate
     )
 {
-  getOem7Header(msg, oem7_hdr);
-  oem7_hdr.message_name = name;
+  getOem7Header(msg, rosMsg.nov_header);
+  rosMsg.nov_header.message_name = name;
+  StampFromOem7Header(rosMsg);
 }
 
 /*
- * Populates Oem7header from a 'short' raw message
+ * Populates Oem7header from a 'short' raw message and stamps header.stamp from GPS time
  */
+template <typename T>
 void
 SetOem7ShortHeader(
     const Oem7RawMessageIf::ConstPtr& msg, ///< in: short raw message
     const std::string& name, ///< message name
-    novatel_oem7_msgs::msg::Oem7Header::Type& oem7_hdr ///< header to populate
+    T& rosMsg ///< ROS message with .header and .nov_header to populate
     )
 {
-  getOem7ShortHeader(msg, oem7_hdr);
-  oem7_hdr.message_name = name;
+  getOem7ShortHeader(msg, rosMsg.nov_header);
+  rosMsg.nov_header.message_name = name;
+  StampFromOem7Header(rosMsg);
 }
 
 // Template specializations from specific messages
@@ -119,7 +138,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::HEADING2>(
   heading2->gps_glonass_sig_mask    = mem->gps_glonass_sig_mask;
 
   static const std::string name = "HEADING2";
-  SetOem7Header(msg, name, heading2->nov_header);
+  SetOem7Header(msg, name, *heading2);
 }
 
 template<>
@@ -156,7 +175,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTPOS>(
   bestpos->gps_glonass_sig_mask   = bp->gps_glonass_sig_mask;
 
   static const std::string name = "BESTPOS";
-  SetOem7Header(msg, name, bestpos->nov_header);
+  SetOem7Header(msg, name, *bestpos);
 }
 
 template<>
@@ -180,7 +199,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTVEL>(
   bestvel->reserved          = bv->reserved;
 
   static const std::string name = "BESTVEL";
-  SetOem7Header(msg, name, bestvel->nov_header);
+  SetOem7Header(msg, name, *bestvel);
 }
 
 template<>
@@ -204,7 +223,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTGNSSVEL>(
   bestgnssvel->reserved          = bgv->reserved;
 
   static const std::string name = "BESTGNSSVEL";
-  SetOem7Header(msg, name, bestgnssvel->nov_header);
+  SetOem7Header(msg, name, *bestgnssvel);
 }
 
 template<>
@@ -242,7 +261,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTUTM>(
     bestutm->gps_glonass_sig_mask   = mem->gps_glonass_sig_mask;
 
     static const std::string name = "BESTUTM";
-    SetOem7Header(msg, name, bestutm->nov_header);
+    SetOem7Header(msg, name, *bestutm);
   }
 
 template<>
@@ -279,7 +298,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::BESTGNSSPOS>(
   bestgnsspos->gps_glonass_sig_mask   = bgp->gps_glonass_sig_mask;
 
   static const std::string name = "BESTGNSSPOS";
-  SetOem7Header(msg, name, bestgnsspos->nov_header);
+  SetOem7Header(msg, name, *bestgnsspos);
 }
 
 template<>
@@ -305,7 +324,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::INSPVA>(
   pva->status.status   =     pvamem->status;
 
   static const std::string name = "INSPVA";
-  SetOem7ShortHeader(msg, name, pva->nov_header);
+  SetOem7ShortHeader(msg, name, *pva);
 }
 
 
@@ -389,7 +408,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::INSCONFIG>(
   }
 
   static const std::string name = "INSCONFIG";
-  SetOem7Header(msg, name, insconfig->nov_header);
+  SetOem7Header(msg, name, *insconfig);
 }
 
 
@@ -428,7 +447,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::INSPVAX>(
   inspvax->ext_sol_status.status    = mem->extended_status;
 
   static const std::string name = "INSPVAX";
-  SetOem7Header(msg, name, inspvax->nov_header);
+  SetOem7Header(msg, name, *inspvax);
 }
 
 
@@ -460,7 +479,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::INSSTDEV>(
   insstdev->reserved3              = raw->reserved3;
 
   static const std::string name = "INSSTDEV";
-  SetOem7Header(msg, name, insstdev->nov_header);
+  SetOem7Header(msg, name, *insstdev);
 }
 
 template<>
@@ -500,7 +519,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::CORRIMU>(
   }
 
   static const std::string name = "CORRIMU";
-  SetOem7ShortHeader(msg, name, corrimu->nov_header);
+  SetOem7ShortHeader(msg, name, *corrimu);
 }
 
 template<>
@@ -527,7 +546,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::RAWIMUSX>(
 
 
   static const std::string name = "RAWIMUSX";
-  SetOem7ShortHeader(msg, name, rawimusx->nov_header);
+  SetOem7ShortHeader(msg, name, *rawimusx);
 }
 
 template<>
@@ -554,7 +573,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::TIME>(
   time->utc_status    = mem->utc_status;
 
   static const std::string name = "TIME";
-  SetOem7Header(msg, name, time->nov_header);
+  SetOem7Header(msg, name, *time);
 }
 
 template<>
@@ -593,7 +612,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::RXSTATUS>(
 
 
   static const std::string name = "RXSTATUS";
-  SetOem7Header(msg, name, rxstatus->nov_header);
+  SetOem7Header(msg, name, *rxstatus);
 };
 
 template<>
@@ -630,7 +649,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::PPPPOS>(
   ppppos->gps_glonass_sig_mask   = pp->gps_glonass_sig_mask;
 
   static const std::string name = "PPPPOS";
-  SetOem7Header(msg, name, ppppos->nov_header);
+  SetOem7Header(msg, name, *ppppos);
 }
 
 template<>
@@ -656,7 +675,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::TERRASTARINFO>(
   terrastarinfo->radius                         = tsi->radius;
 
   static const std::string name = "TERRASTARINFO";
-  SetOem7Header(msg, name, terrastarinfo->nov_header);
+  SetOem7Header(msg, name, *terrastarinfo);
 }
 
 template<>
@@ -677,7 +696,7 @@ MakeROSMessage<novatel_oem7_msgs::msg::TERRASTARSTATUS>(
   terrastarstatus->geo_status.status         = tss->geo_status;
 
   static const std::string name = "TERRASTARSTATUS";
-  SetOem7Header(msg, name, terrastarstatus->nov_header);
+  SetOem7Header(msg, name, *terrastarstatus);
 }
 
 

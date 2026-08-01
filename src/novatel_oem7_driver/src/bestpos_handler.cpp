@@ -28,6 +28,7 @@
 
 
 #include <novatel_oem7_driver/oem7_ros_messages.hpp>
+#include <novatel_oem7_driver/oem7_message_util.hpp>
 #include <oem7_ros_publisher.hpp>
 #include <driver_parameter.hpp>
 
@@ -549,6 +550,11 @@ namespace novatel_oem7_driver
         RCLCPP_DEBUG_STREAM(node_->get_logger(), "<PSRDOP");
       }
 
+      if(gpsfix_->time != 0.0)
+      {
+        gpsfix_->header.stamp = GpsSecondsToRosTime(gpsfix_->time);
+      }
+
       GPSFix_pub_->publish(gpsfix_);
     }
 
@@ -561,6 +567,7 @@ namespace novatel_oem7_driver
       }
 
       std::shared_ptr<NavSatFix> navsatfix = std::make_shared<NavSatFix>();
+      navsatfix->header.stamp = gpsfix_->header.stamp;
 
       navsatfix->latitude    = gpsfix_->latitude;
       navsatfix->longitude   = gpsfix_->longitude;

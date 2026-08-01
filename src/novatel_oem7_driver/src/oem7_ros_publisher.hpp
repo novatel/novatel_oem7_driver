@@ -94,7 +94,10 @@ public:
     }
 
     msg->header.frame_id = frame_id_;
-    msg->header.stamp    = node_.now();
+    if(msg->header.stamp.sec == 0 && msg->header.stamp.nanosec == 0) // Not pre-stamped from GPS time
+    {
+      msg->header.stamp = node_.now();
+    }
 
     ros_pub_->publish(*msg);
   }
