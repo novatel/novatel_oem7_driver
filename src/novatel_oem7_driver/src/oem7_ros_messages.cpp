@@ -420,9 +420,10 @@ MakeROSMessage<novatel_oem7_msgs::INSCONFIG>(
   insconfig->reserved_6 = insconfigmem->reserved_6;
   insconfig->reserved_7 = insconfigmem->reserved_7;
 
-  insconfig->translations.reserve(Get_INSCONFIG_NumTranslations(insconfigmem));
+  insconfig->number_of_translations = Get_INSCONFIG_NumTranslations(insconfigmem);
+  insconfig->translations.resize(insconfig->number_of_translations);
   for(size_t idx = 0;
-             idx < Get_INSCONFIG_NumTranslations(insconfigmem);
+             idx < insconfig->translations.size();
              idx++)
   {
     const INSCONFIG_TranslationMem* trmem = Get_INSCONFIG_Translation(insconfigmem, idx);
@@ -439,9 +440,10 @@ MakeROSMessage<novatel_oem7_msgs::INSCONFIG>(
     tr.translation_source.status  = trmem->translation_source;
   }
 
-  insconfig->rotations.reserve(Get_INSCONFIG_NumRotations(insconfigmem));
+  insconfig->number_of_rotations = Get_INSCONFIG_NumRotations(insconfigmem);
+  insconfig->rotations.resize(insconfig->number_of_rotations);
   for(size_t idx = 0;
-             idx < Get_INSCONFIG_NumRotations(insconfigmem);
+             idx < insconfig->rotations.size();
              idx++)
   {
     const INSCONFIG_RotationMem* rtmem = Get_INSCONFIG_Rotation(insconfigmem, idx);
